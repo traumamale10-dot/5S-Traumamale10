@@ -502,7 +502,7 @@ function persist(){
 function setConn(ok, msg){
   const el = document.getElementById('connState');
   el.innerHTML = ok
-    ? '<span class="dot" style="background:#4FC08D"></span>เชื่อมต่อ Google Sheet แล้ว'
+    ? '<span class="dot" style="background:#4FC08D"></span>ข้อมูลจาก Google Sheet'
     : '<span class="dot" style="background:#E6B400"></span>โหมดทดลอง (เก็บในเครื่อง)';
   if(msg && CFG.API_URL) el.title = msg;
 }
@@ -545,6 +545,9 @@ function zoneScore(zid, wk){
 function zoneAvg(zid){
   const arr = rows5s().filter(x=>x.zone===zid).map(x=>x.total);
   return arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : null;
+}
+function normName(s){
+  return String(s||'').replace(/\s+/g,'').replace(/^(นางสาว|นาง|นาย|น\.ส\.)/,'').trim();
 }
 function membersOf(zid){ return state.db.members.filter(m=>m.zone===zid); }
 function follows(){
@@ -1251,8 +1254,37 @@ function vTeam(){
   const counts = ZONES.map(z=>`<span class="chip" style="background:${z.hex}18;color:${z.hex};margin-right:6px">โซน${z.name} ${membersOf(z.id).length} คน</span>`).join('');
   const none = state.db.members.filter(m=>!m.zone).length;
 
+  const dupes = (()=>{ const seen={}, d=[]; state.db.members.forEach(m=>{ const k=normName(m.name); if(!k) return; if(seen[k]) d.push(m.name); seen[k]=1; }); return d; })();
+  const noMail = state.db.members.filter(m=>!m.email).length;
+  const inApp = new Set(state.db.members.map(m=>normName(m.name)));
+  const missing = SEED_MEMBERS.filter(m=>!inApp.has(normName(m.name)));
+
   return `<h2 class="page-title">สมาชิกทีมโซน</h2>
   <p class="page-sub">เลือกโซนให้แต่ละคนจากช่องโซน ระบบจะนำไปแสดงบนแผนผังและใช้ติดตามการส่งกิจกรรมโดยอัตโนมัติ</p>
+
+  <div class="card" style="margin-bottom:16px;border-top:4px solid ${CFG.API_URL?'var(--ok)':'#E6B400'}">
+    <h3>ที่มาของรายชื่อ</h3>
+    <p class="hint">${ CFG.API_URL
+      ? 'ตอนนี้อ่านและเขียนกับชีต Members บน Google Sheet โดยตรง การแก้ไขในหน้านี้จะถูกส่งขึ้นชีตทันที'
+      : 'ตอนนี้ยังเป็นโหมดทดลอง รายชื่อที่เห็นมาจากเครื่องนี้เท่านั้น ยังไม่ได้เชื่อมกับชีต Members ไปวาง Web app URL ที่เมนูเชื่อมต่อ Google Sheet ก่อน' }</p>
+    <p style="font-size:13.5px;margin:0 0 12px">
+      มีในระบบ <b>${state.db.members.length} คน</b>
+      ${ missing.length ? ` · <span class="chip late">ขาดจากทะเบียนเดิม ${missing.length} คน</span>` : '' }
+      ${ dupes.length ? ` <span class="chip late">ชื่อซ้ำ ${dupes.length} รายการ</span>` : '' }
+      ${ noMail ? ` <span class="chip late">ไม่มีอีเมล ${noMail} คน</span>` : '' }
+      ${ (!missing.length && !dupes.length && !noMail) ? ' <span class="chip">รายชื่อครบและไม่ซ้ำ</span>' : '' }
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="mPull" ${CFG.API_URL?'':'disabled'}>ดึงรายชื่อจาก Google Sheet</button>
+      <button class="btn btn-primary" id="mPush" ${CFG.API_URL?'':'disabled'}>ส่งรายชื่อนี้ขึ้น Google Sheet</button>
+      ${ missing.length ? `<button class="btn" id="mAdd">เพิ่มชื่อที่ขาด (${missing.length})</button>` : '' }
+      ${ dupes.length ? `<button class="btn" id="mDedupe">ลบชื่อซ้ำ</button>` : '' }
+      ${ noMail ? `<button class="btn" id="mMail">เติมอีเมลที่ว่าง</button>` : '' }
+      <button class="btn" id="mSort">จัดเรียงและออกรหัสใหม่</button>
+    </div>
+    ${ missing.length ? `<p class="hint" style="margin:10px 0 0">ยังไม่มีในระบบ: ${esc(missing.map(m=>m.name.replace(/^นาง(สาว)?/,'')).join(', '))}</p>` : '' }
+  </div>
+
   <div style="margin-bottom:12px">${counts}${none?`<span class="chip late">ยังไม่กำหนดโซน ${none} คน</span>`:''}</div>
   <div class="card scroll">
     <table class="tbl">
@@ -1468,6 +1500,69 @@ function bind(){
       el.addEventListener('change', h);
     });
     $('#addMember').onclick=()=>{ state.db.members.push({id:uid(),name:'',email:'',role:'พยาบาลวิชาชีพ',zone:''}); persist(); render(); };
+
+    const btn = (id, fn) => { const b=$('#'+id); if(b) b.onclick=fn; };
+
+    btn('mPull', async()=>{
+      if(!confirm('ดึงรายชื่อจากชีต Members มาแทนรายชื่อในหน้านี้ทั้งหมด?')) return;
+      try{
+        const d = await api('getAll', {});
+        state.db.members = (d.members||[]).filter(m=>String(m.name||'').trim());
+        store.write(state.db);            // เก็บลงเครื่องโดยไม่เขียนกลับขึ้นชีต
+        fillUsers(); render(); toast('ดึงมาแล้ว '+state.db.members.length+' คน');
+      }catch(e){ toast('ดึงไม่สำเร็จ: '+e.message); }
+    });
+
+    btn('mPush', async()=>{
+      if(!confirm('ส่งรายชื่อ '+state.db.members.length+' คนนี้ขึ้นชีต Members และเขียนทับของเดิม?')) return;
+      try{ await api('saveAll', state.db); toast('ส่งขึ้นชีตแล้ว'); }
+      catch(e){ toast('ส่งไม่สำเร็จ: '+e.message); }
+    });
+
+    btn('mAdd', ()=>{
+      const inApp = new Set(state.db.members.map(m=>normName(m.name)));
+      let n=0;
+      SEED_MEMBERS.forEach(m=>{
+        if(inApp.has(normName(m.name))) return;
+        state.db.members.push({ id:uid(), name:m.name, email:m.email, role:m.role, zone:'' }); n++;
+      });
+      persist(); toast('เพิ่มแล้ว '+n+' คน'); fillUsers(); render();
+    });
+
+    btn('mDedupe', ()=>{
+      const seen = {}, keep = [];
+      state.db.members.forEach(m=>{
+        const k = normName(m.name);
+        if(!k){ keep.push(m); return; }
+        if(seen[k]){                      // รวมข้อมูลของแถวซ้ำเข้ากับแถวแรก
+          const first = seen[k];
+          if(!first.email && m.email) first.email = m.email;
+          if(!first.zone  && m.zone)  first.zone  = m.zone;
+          return;
+        }
+        seen[k] = m; keep.push(m);
+      });
+      const n = state.db.members.length - keep.length;
+      state.db.members = keep; persist(); toast('ลบชื่อซ้ำแล้ว '+n+' รายการ'); fillUsers(); render();
+    });
+
+    btn('mMail', ()=>{
+      const dir = {}; SEED_MEMBERS.forEach(m=>dir[normName(m.name)] = m.email);
+      let n=0;
+      state.db.members.forEach(m=>{ if(!m.email && dir[normName(m.name)]){ m.email = dir[normName(m.name)]; n++; } });
+      persist(); toast(n?('เติมอีเมลแล้ว '+n+' คน'):'ไม่พบอีเมลที่ตรงกับชื่อในทะเบียนเดิม'); render();
+    });
+
+    btn('mSort', ()=>{
+      const order = {}; ZONES.forEach((z,i)=>order[z.id]=i);
+      state.db.members.sort((a,b)=>{
+        const za = a.zone?order[a.zone]:99, zb = b.zone?order[b.zone]:99;
+        if(za!==zb) return za-zb;
+        return normName(a.name).localeCompare(normName(b.name),'th');
+      });
+      state.db.members.forEach((m,i)=>m.id='m'+(i+1));
+      persist(); toast('จัดเรียงและออกรหัสใหม่แล้ว'); fillUsers(); render();
+    });
     $('#saveTeam').onclick=()=>{ persist(); toast('บันทึกรายชื่อทีมแล้ว'); fillUsers(); };
     document.querySelectorAll('[data-delm]').forEach(b=>b.onclick=()=>{
       state.db.members = state.db.members.filter(m=>m.id!==b.dataset.delm); persist(); render();
