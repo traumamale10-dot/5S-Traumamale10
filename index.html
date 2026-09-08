@@ -390,8 +390,11 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
    ============================================================ */
 
 /* ---------- 1. ตั้งค่า ---------- */
+/* Web app URL ของ Apps Script — แก้ที่นี่ หรือจะไปตั้งค่าในหน้า "เชื่อมต่อ Google Sheet" ก็ได้
+   ค่าที่ตั้งในหน้าเว็บจะถูกใช้ก่อนเสมอ */
+const DEFAULT_API = 'https://script.google.com/macros/s/AKfycbwEzObU9pZiTNrHUs0V15v6CVLCq_E81A21u7WIqA8HZ5Sb5NTUOyHZBGf3B8oY5OYQ/exec';
 const CFG = {
-  API_URL: '',                    // วาง Web app URL ของ Apps Script ที่หน้า "เชื่อมต่อ Google Sheet"
+  API_URL: DEFAULT_API,
   LS: 'ward5s.v1'
 };
 
@@ -533,7 +536,7 @@ const OPT_ETHIC = [
 /* ---------- 7. สถานะแอป ---------- */
 const now = new Date();
 const state = {
-  page:'home',
+  page:'home', lastError:'',
   month: now.getMonth()+1,
   year:  now.getFullYear()+543,
   user:  '',
@@ -550,26 +553,54 @@ const store = {
 };
 
 async function api(action, payload){
-  if(!CFG.API_URL) throw new Error('offline');
+  if(!CFG.API_URL) throw new Error('ยังไม่ได้ตั้ง Web app URL');
+  try{
+    return await apiPost(action, payload);
+  }catch(e){
+    // บางเครือข่าย/บางการตั้งค่า Deploy บล็อก POST ข้ามโดเมน ลองอ่านด้วย GET แทน
+    if(action==='getAll' || action==='ping'){
+      try{ return await apiGet(action); }catch(e2){ throw e; }
+    }
+    throw e;
+  }
+}
+async function apiPost(action, payload){
   const res = await fetch(CFG.API_URL, {
-    method:'POST',
+    method:'POST', redirect:'follow',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify({ action, payload })
   });
-  const json = await res.json();
+  return unwrap(res);
+}
+async function apiGet(action){
+  const res = await fetch(CFG.API_URL + (CFG.API_URL.includes('?')?'&':'?') + 'action=' + encodeURIComponent(action), { redirect:'follow' });
+  return unwrap(res);
+}
+async function unwrap(res){
+  const text = await res.text();
+  if(!res.ok) throw new Error('เซิร์ฟเวอร์ตอบรหัส '+res.status+' — ตรวจว่า URL ลงท้ายด้วย /exec และยัง Deploy อยู่');
+  let json;
+  try{ json = JSON.parse(text); }
+  catch(e){
+    if(/accounts\.google\.com|ServiceLogin|Sign in/i.test(text))
+      throw new Error('Google ขอให้เข้าสู่ระบบก่อน ให้ตั้ง Who has access เป็น Anyone');
+    if(/Script function not found|not found/i.test(text))
+      throw new Error('ไม่พบสคริปต์ตาม URL นี้ ให้ Deploy ใหม่แล้วคัดลอก URL มาวางอีกครั้ง');
+    throw new Error('คำตอบไม่ใช่ JSON (ได้ '+text.slice(0,60).replace(/\s+/g,' ')+'…)');
+  }
   if(!json.ok) throw new Error(json.error||'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
   return json.data;
 }
 
 async function loadAll(){
-  CFG.API_URL = store.readCfg();
+  CFG.API_URL = store.readCfg() || DEFAULT_API;
   if(CFG.API_URL){
     try{
       const d = await api('getAll', {});
       state.db = { members:(d.members||[]).filter(m=>String(m.name||'').trim()), check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[] };
       store.write(state.db);
-      setConn(true); return;
-    }catch(e){ setConn(false, e.message); }
+      state.lastError = ''; setConn(true); return;
+    }catch(e){ state.lastError = e.message; setConn(false, e.message); }
   }
   const local = store.read();
   state.db = local || { members:[], check5s:[], onegcl:[], waste:[] };
@@ -1389,7 +1420,8 @@ function vSetup(){
 
   <div class="card" style="margin-bottom:16px">
     <div class="field"><label for="apiUrl">Web app URL</label>
-      <input type="text" id="apiUrl" value="${esc(store.readCfg())}" placeholder="https://script.google.com/macros/s/.../exec"></div>
+      <input type="text" id="apiUrl" value="${esc(store.readCfg()||DEFAULT_API)}" placeholder="https://script.google.com/macros/s/.../exec">
+      <p class="hint" style="margin:6px 0 0">${ store.readCfg() ? 'กำลังใช้ URL ที่ตั้งไว้ในเบราว์เซอร์นี้' : 'กำลังใช้ URL ค่าเริ่มต้นที่ฝังไว้ในไฟล์' }</p></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-primary" id="saveApi">บันทึกและเชื่อมต่อ</button>
       <button class="btn" id="testApi">ทดสอบการเชื่อมต่อ</button>
@@ -1397,19 +1429,40 @@ function vSetup(){
     </div>
   </div>
 
+  <div class="card" style="margin-bottom:16px">
+    <h3>สถานะการเชื่อมต่อ</h3>
+    <p style="font-size:13.5px;margin:6px 0 10px">
+      ${ CFG.API_URL
+        ? (state.lastError
+            ? `<span class="chip late">ต่อไม่ติด</span> ${esc(state.lastError)}`
+            : `<span class="chip">ต่อติดแล้ว</span> อ่านข้อมูลจากชีตได้ ${state.db.members.length} รายชื่อ`)
+        : '<span class="chip late">ยังไม่ได้ตั้ง URL</span>' }
+    </p>
+    <p style="font-size:12.5px;word-break:break-all;color:var(--muted);margin:0 0 10px">
+      URL ที่ใช้อยู่: ${esc(CFG.API_URL||'—')}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="reloadNow">ดึงข้อมูลจากชีตอีกครั้ง</button>
+      ${ CFG.API_URL ? `<a class="btn" href="${esc(CFG.API_URL)}" target="_blank" rel="noopener">เปิด URL นี้ในแท็บใหม่</a>` : '' }
+    </div>
+    <p class="hint" style="margin:10px 0 0">ถ้าเปิดในแท็บใหม่แล้วเห็นข้อความขึ้นต้นด้วย <code>{"ok":true</code> แปลว่าฝั่ง Google ทำงานปกติ ถ้าเห็นหน้าให้เข้าสู่ระบบหรือหน้าไม่พบ ให้ Deploy ใหม่ตามขั้นตอนด้านล่าง</p>
+  </div>
+
   <div class="card">
     <h3>ขั้นตอนติดตั้งฝั่ง Google</h3>
     <ol style="font-size:13.5px;line-height:1.85;padding-left:20px;margin:8px 0">
-      <li>เปิดสเปรดชีตที่ใช้อยู่ (ไฟล์เดียวกับชีต OneGCLnew) แล้วไปที่ ส่วนขยาย → Apps Script</li>
-      <li>วางโค้ดจากไฟล์ <b>Code.gs</b> ที่แนบมาลงไป แล้วแก้ค่า SHEET_ID ให้เป็นรหัสของสเปรดชีต</li>
-      <li>กด Deploy → New deployment → เลือก Web app → Execute as: Me → Who has access: Anyone</li>
-      <li>คัดลอก Web app URL มาวางในช่องด้านบน แล้วกดบันทึกและเชื่อมต่อ</li>
-      <li>ระบบจะสร้างชีตย่อย <b>Members</b>, <b>Check5S</b>, <b>OneGCL_App</b> และ <b>Waste</b> ให้อัตโนมัติในครั้งแรก</li>
-      <li>ถ้าชีต Members ยังว่าง ให้รันฟังก์ชัน <b>refreshMembersFromLegacy</b> ใน Apps Script หนึ่งครั้ง เพื่อดึงชื่อและอีเมลจากชีต OneGCLnew มาลงให้</li>
-      <li>รูปกิจกรรมทั้งหมดจะถูกเก็บในโฟลเดอร์ <b>OneGCL_Images_App</b> ที่อยู่ข้างสเปรดชีต</li>
+      <li>เปิดสเปรดชีตที่มีชีต OneGCLnew แล้วไปที่ ส่วนขยาย → Apps Script</li>
+      <li>วางโค้ดจากไฟล์ <b>Code.gs</b> ทับของเดิมทั้งหมด แล้วกดบันทึก</li>
+      <li>รันฟังก์ชัน <b>setupOnce</b> หนึ่งครั้ง กดอนุญาตสิทธิ์ให้ครบทุกหน้าจอ ระบบจะสร้างชีต Members, Check5S, OneGCL_App, Waste และดึงรายชื่อจาก OneGCLnew มาลงให้</li>
+      <li>กด <b>Deploy → New deployment</b> เลือกชนิดเป็น <b>Web app</b></li>
+      <li>ตั้ง <b>Execute as: Me</b> และ <b>Who has access: Anyone</b> ข้อนี้สำคัญที่สุด ถ้าตั้งเป็น Anyone with Google account จะดึงข้อมูลไม่ได้</li>
+      <li>คัดลอก Web app URL ที่ลงท้ายด้วย <b>/exec</b> มาวางในช่องด้านบน แล้วกดบันทึกและเชื่อมต่อ</li>
     </ol>
-    <p class="hint" style="margin-top:10px">ชีต OneGCLnew เดิมยังใช้งานได้ตามปกติ โค้ดจะอ่านข้อมูลเก่ามาแสดงด้วยโดยไม่แก้ไขแถวเดิม รายชื่อสมาชิกทั้งหมดอ่านจากชีต Members เท่านั้น ไม่มีรายชื่อฝังอยู่ในไฟล์เว็บ</p>
-    <div style="margin-top:12px"><button class="btn" id="resetLocal">ล้างข้อมูลในเครื่อง</button></div>
+    <p class="hint" style="margin-top:10px">แก้โค้ดทีหลังต้องกด Deploy → Manage deployments → ไอคอนดินสอ → Version: New version → Deploy ทุกครั้ง มิฉะนั้น URL เดิมจะยังรันโค้ดเวอร์ชันเก่า</p>
+    <p class="hint" style="margin-top:6px">ชีต OneGCLnew เดิมยังใช้งานได้ตามปกติ โค้ดอ่านข้อมูลเก่ามาแสดงโดยไม่แก้ไขแถวเดิม รายชื่อสมาชิกอ่านจากชีต Members เท่านั้น ไม่มีรายชื่อฝังอยู่ในไฟล์เว็บ</p>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="clearMembers">ล้างรายชื่อที่ค้างในเครื่อง</button>
+      <button class="btn" id="resetLocal">ล้างข้อมูลในเครื่องทั้งหมด</button>
+    </div>
   </div>`;
 }
 
@@ -1639,15 +1692,25 @@ function bind(){
 
   // ตั้งค่า
   if(state.page==='setup'){
-    $('#saveApi').onclick=async()=>{ store.writeCfg($('#apiUrl').value.trim()); await loadAll(); toast(CFG.API_URL?'เชื่อมต่อแล้ว':'กลับสู่โหมดทดลอง'); render(); };
+    $('#saveApi').onclick=async()=>{ store.writeCfg($('#apiUrl').value.trim()); await loadAll(); fillUsers(); toast(CFG.API_URL?'เชื่อมต่อแล้ว · ดึงข้อมูล '+state.db.members.length+' รายชื่อ':'กลับสู่โหมดทดลอง'); render(); };
     $('#testApi').onclick=async()=>{
       const u=$('#apiUrl').value.trim(); if(!u){ toast('ยังไม่ได้ใส่ URL'); return; }
       const old=CFG.API_URL; CFG.API_URL=u;
-      try{ await api('ping',{}); toast('เชื่อมต่อสำเร็จ'); }catch(e){ toast('เชื่อมต่อไม่สำเร็จ: '+e.message); CFG.API_URL=old; }
+      try{ const r = await api('ping',{}); toast('เชื่อมต่อสำเร็จ · เวลาเซิร์ฟเวอร์ '+String(r.time).slice(11,19)); }
+      catch(e){ toast('เชื่อมต่อไม่สำเร็จ: '+e.message+' — ตรวจว่า Deploy เป็น Web app และตั้ง Who has access เป็น Anyone'); CFG.API_URL=old; }
     };
     $('#pushLocal').onclick=async()=>{
       if(!CFG.API_URL){ toast('เชื่อมต่อ URL ก่อน'); return; }
       try{ await api('saveAll', state.db); toast('ส่งข้อมูลขึ้น Sheet แล้ว'); }catch(e){ toast('ส่งไม่สำเร็จ: '+e.message); }
+    };
+    $('#reloadNow').onclick=async()=>{
+      store.writeCfg($('#apiUrl').value.trim());
+      await loadAll(); fillUsers(); render();
+      toast(state.lastError ? ('ดึงไม่สำเร็จ: '+state.lastError) : ('ดึงข้อมูลแล้ว · '+state.db.members.length+' รายชื่อ'));
+    };
+    $('#clearMembers').onclick=()=>{
+      if(!confirm('ล้างรายชื่อที่เก็บไว้ในเครื่องนี้? ข้อมูลบนชีต Members ไม่ถูกลบ')) return;
+      state.db.members = []; store.write(state.db); fillUsers(); render(); toast('ล้างรายชื่อในเครื่องแล้ว กดดึงข้อมูลจากชีตอีกครั้งได้เลย');
     };
     $('#resetLocal').onclick=()=>{
       if(!confirm('ล้างข้อมูลที่เก็บในเครื่องทั้งหมด? ข้อมูลบน Google Sheet จะไม่ถูกลบ')) return;
