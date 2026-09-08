@@ -2,7 +2,8 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F3529">
 <title>5ส · หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,12 +199,100 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 .bc-track{height:20px;background:#EFF6F2;border-radius:6px;overflow:hidden}
 .bc-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--leaf),var(--canopy))}
 .bc-row b{text-align:right;font-variant-numeric:tabular-nums}
-@media(max-width:820px){
+
+/* ---------- แถบหัวสำหรับมือถือ ---------- */
+.mtop{display:none;align-items:center;gap:10px;padding:10px 14px;
+  background:linear-gradient(120deg,#0F3529,#1B6A4E);color:#fff;
+  position:sticky;top:0;z-index:40;padding-top:calc(10px + env(safe-area-inset-top))}
+.mtop .burger{width:42px;height:42px;flex:none;border:0;border-radius:11px;
+  background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center;cursor:pointer}
+.mtop .burger svg{width:22px;height:22px}
+.mtop h2{margin:0;font-size:17px;font-weight:600;flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mtop .mlogo{width:34px;height:34px;flex:none}
+.scrim{position:fixed;inset:0;background:rgba(10,38,28,.5);z-index:55;opacity:0;
+  pointer-events:none;transition:opacity .2s;backdrop-filter:blur(2px)}
+.side-close{display:none}
+
+@media(max-width:900px){
+  body{font-size:15.5px}
   .shell{grid-template-columns:1fr}
-  .side{position:static;height:auto}
-  .nav{flex-direction:row;flex-wrap:wrap}
-  .nav button{width:auto}
-  .wrap,.topbar{padding-left:16px;padding-right:16px}
+  .mtop{display:flex}
+  .side{position:fixed;left:0;top:0;bottom:0;width:min(300px,84vw);height:100dvh;z-index:60;
+    transform:translateX(-103%);transition:transform .24s ease;padding-top:calc(20px + env(safe-area-inset-top))}
+  .side.open{transform:none;box-shadow:0 0 46px rgba(0,0,0,.4)}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .side-close{display:grid;place-items:center;position:absolute;top:14px;right:12px;
+    width:36px;height:36px;border:0;border-radius:10px;background:rgba(255,255,255,.14);color:#fff;cursor:pointer}
+  .nav button{padding:13px 13px;font-size:15.5px}
+  .nav svg{width:21px;height:21px}
+
+  .topbar{padding:10px 14px;gap:8px;position:static;backdrop-filter:none}
+  .topbar .period{flex:1;min-width:0}
+  .topbar .period label{display:none}
+  .topbar select{flex:1;min-width:0}
+  #selUser{max-width:100%}
+
+  .wrap{padding:16px 14px 96px}
+  h2.page-title{font-size:21px}
+  .page-sub{font-size:13px;margin-bottom:16px}
+
+  .hero{padding:20px 18px;border-radius:16px}
+  .hero h2{font-size:20px}
+  .hero-deco{width:210px;right:-40px;top:-30px}
+  .hero-stats{gap:14px 22px;margin-top:16px}
+  .hs b{font-size:23px}
+  .hs span{font-size:11.5px}
+
+  .g2,.g3{grid-template-columns:1fr}
+  .g5{grid-template-columns:repeat(2,1fr)}
+  .card{padding:15px;border-radius:13px}
+
+  /* ตารางกว้าง ให้ปัดดูแทนการบีบตัวอักษร */
+  .scroll{-webkit-overflow-scrolling:touch}
+  .scroll .tbl{min-width:720px}
+  .scroll .tbl.wide{min-width:1000px}
+  .scroll::after{content:'ปัดซ้าย–ขวาเพื่อดูทั้งตาราง';display:block;
+    font-size:11.5px;color:var(--muted);padding-top:8px}
+
+  /* แผนผัง ปัดดูในขนาดที่อ่านออก */
+  .map-wrap{overflow-x:auto;padding:10px}
+  .map-wrap svg{min-width:860px}
+  .map-wrap::after{content:'ปัดเพื่อเลื่อนดูแผนผัง';display:block;
+    font-size:11.5px;color:var(--muted);padding-top:6px;position:sticky;left:0}
+
+  /* ให้คะแนนแบบแตะง่าย */
+  .s-item{flex-direction:column;align-items:stretch;gap:7px;padding:11px 0}
+  .s-item span{font-size:14px}
+  .rate{width:100%}
+  .rate button{flex:1;height:40px;font-size:14px}
+  fieldset{padding:12px 13px}
+  .pill-group button{padding:9px 15px}
+
+  /* ปุ่มและช่องกรอกขนาดนิ้วมือ */
+  .btn{padding:11px 16px}
+  .btn-sm{padding:7px 12px}
+  select,input,textarea{font-size:16px;padding:10px 11px}
+  .row{grid-template-columns:1fr}
+  .bc-row{grid-template-columns:110px 1fr 56px;font-size:12.5px}
+  .toast{bottom:calc(20px + env(safe-area-inset-bottom));width:calc(100% - 32px);text-align:center}
+  .alert{flex-wrap:wrap}
+  .alert .btn{width:100%}
+
+  .pic{flex-direction:column;align-items:stretch}
+  .pic .btn{width:100%}
+}
+
+@media(max-width:400px){
+  .g5{grid-template-columns:1fr}
+  .hero h2{font-size:18px}
+}
+
+@media print{
+  .side,.mtop,.topbar,.scrim,.btn{display:none!important}
+  .wrap{padding:0}
+  .scroll .tbl{min-width:0}
+  .scroll::after{display:none}
 }
 </style>
 </head>
@@ -211,7 +300,9 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 
 <div class="shell">
   <!-- ============ แถบข้าง ============ -->
-  <aside class="side">
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="side">
+    <button class="side-close" id="sideClose" aria-label="ปิดเมนู"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
         <circle cx="24" cy="24" r="23" fill="#0F3529" stroke="#4FC08D" stroke-width="1.5"/>
@@ -264,6 +355,19 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 
   <!-- ============ เนื้อหา ============ -->
   <main class="main">
+    <header class="mtop">
+      <button class="burger" id="burger" aria-label="เปิดเมนู" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <h2 id="mTitle">ภาพรวมหอผู้ป่วย</h2>
+      <svg class="mlogo" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" fill="rgba(255,255,255,.14)"/>
+        <path d="M24 34c0-7 4-12 10-13-1 7-4 11-10 13z" fill="#7FD3A3"/>
+        <path d="M24 34c0-7-4-12-10-13 1 7 4 11 10 13z" fill="#4FC08D"/>
+        <path d="M24 34V19" stroke="#7FD3A3" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="24" cy="15" r="4.2" fill="#E6B400"/>
+      </svg>
+    </header>
     <div class="topbar">
       <div class="period">
         <label for="selMonth">รอบเดือน</label>
@@ -423,31 +527,8 @@ const OPT_ETHIC = [
   '4.2 ความซื่อสัตย์และรักษาสัญญา — ทำตามที่ให้ไว้กับผู้ป่วยและญาติ'
 ];
 
-/* ---------- 6. รายชื่อทีมตั้งต้น (จากชีต OneGCLnew) ---------- */
-const SEED_MEMBERS = [
-  ['นางอัญญารัตน์ เจียมธนานุรักษ์','anyarat.nok@gmail.com','หัวหน้าหอผู้ป่วย'],
-  ['นางสาวจันจิรา ศรีตะ','trauma952@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางคำพุด โสตรุดร','sotarudon.k@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวอรอุมา รักไร่กลาง','onuma1114900@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวนวลตา พันธุ์กาง','nuantata@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวสุพรรณี สำลีอ่อน','supanneeple817@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวพุทธชาติ สุมาลี','numberone.put@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวสรวงสุดา ตู้จันทึก','1997ploysuangsuda@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวอริสรา ป้องงูเหลือม','arisarapongngulueam@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวฐิตินันท์ อินทร์ช้าง','titinanja@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวอุ้มบุญ ชื่นนอก','aoombun2001@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวพิศา จันทะค่อม','pisajantakhom@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวอัญชลี ภักดีเกษม','kaepakdeekasaim16@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวชนาภา ทบสนธิ์','chanapa042356@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวศิริรัตน์ โพยนอก','siriratbam.2910@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวกนกพร เพิกขุนทด','aooakp12@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวสุรีรัตน์ พลธรรม','sureerat1988.p@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวสาคร แสวงชู','sakron2731@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวจารุวรรณ สุทธิประภา','jaruwan3425@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวสุนันทา ผาสุขโสม','phasuk24390@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาวเบญจมาศ รัตนารักษ์','benjamart23@gmail.com','พยาบาลวิชาชีพ'],
-  ['นางสาววริศรา ย่อกลาง','warisara383@gmail.com','พยาบาลวิชาชีพ']
-].map((m,i)=>({ id:'m'+(i+1), name:m[0], email:m[1], role:m[2], zone:'' }));
+/* ---------- 6. รายชื่อทีม ---------- */
+/* รายชื่อทั้งหมดมาจากชีต Members บน Google Sheet เท่านั้น ไม่มีการฝังชื่อไว้ในไฟล์นี้ */
 
 /* ---------- 7. สถานะแอป ---------- */
 const now = new Date();
@@ -485,15 +566,15 @@ async function loadAll(){
   if(CFG.API_URL){
     try{
       const d = await api('getAll', {});
-      state.db = { members:d.members||[], check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[] };
-      if(!state.db.members.length) state.db.members = SEED_MEMBERS.slice();
+      state.db = { members:(d.members||[]).filter(m=>String(m.name||'').trim()), check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[] };
+      store.write(state.db);
       setConn(true); return;
     }catch(e){ setConn(false, e.message); }
   }
   const local = store.read();
-  state.db = local || { members: SEED_MEMBERS.slice(), check5s:[], onegcl:[], waste:[] };
+  state.db = local || { members:[], check5s:[], onegcl:[], waste:[] };
   if(!state.db.waste) state.db.waste = [];
-  if(!state.db.members.length) state.db.members = SEED_MEMBERS.slice();
+  if(!state.db.members) state.db.members = [];
 }
 function persist(){
   store.write(state.db);
@@ -549,6 +630,10 @@ function zoneAvg(zid){
 function normName(s){
   return String(s||'').replace(/\s+/g,'').replace(/^(นางสาว|นาง|นาย|น\.ส\.)/,'').trim();
 }
+function memberOptions(sel){
+  if(!state.db.members.length) return '<option value="">— ยังไม่มีรายชื่อในชีต Members —</option>';
+  return state.db.members.map(m=>`<option ${m.name===sel?'selected':''}>${esc(m.name)}</option>`).join('');
+}
 function membersOf(zid){ return state.db.members.filter(m=>m.zone===zid); }
 function follows(){
   const out=[];
@@ -576,6 +661,7 @@ function render(){
   document.querySelectorAll('#nav button').forEach(b=>{
     if(b.dataset.page===state.page) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
   });
+  const mt = $('#mTitle'); if(mt) mt.textContent = PAGE_TITLE[state.page] || '5ส';
   const v = $('#view');
   v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, waste:vWaste, report:vReport, team:vTeam, setup:vSetup}[state.page]||vHome)();
   bind();
@@ -805,7 +891,7 @@ function vCheck(){
       <div class="field"><label for="f5date">วันที่ตรวจ</label>
         <input type="date" id="f5date" value="${existing?existing.date:todayISO()}"></div>
       <div class="field"><label for="f5by">ผู้ตรวจ</label>
-        <select id="f5by">${state.db.members.map(m=>`<option ${((existing&&existing.inspector)||state.user)===m.name?'selected':''}>${esc(m.name)}</option>`).join('')}</select></div>
+        <select id="f5by">${memberOptions((existing&&existing.inspector)||state.user)}</select></div>
     </div>
     ${existing?`<div class="chip" style="background:#EAF4EE">มีบันทึกของสัปดาห์นี้อยู่แล้ว — บันทึกซ้ำจะเป็นการแก้ไข</div>`:''}
   </div>
@@ -861,7 +947,7 @@ function vRound(){
   <p class="page-sub">รูปแบบเดียวกับแบบฟอร์มกระดาษเดิม พิมพ์หน้านี้ออกเก็บเข้าแฟ้มได้เลย</p>
 
   <div class="card scroll" style="margin-bottom:18px">
-    <table class="tbl">
+    <table class="tbl wide">
       <thead>
         <tr>
           <th rowspan="2" style="width:110px">โซน</th>
@@ -942,7 +1028,7 @@ function vGCL(){
     <div class="row">
       <div class="field"><label for="gDate">วันที่</label><input type="date" id="gDate" value="${todayISO()}"></div>
       <div class="field"><label for="gName">ชื่อ–สกุล</label>
-        <select id="gName">${state.db.members.map(m=>`<option ${m.name===state.user?'selected':''}>${esc(m.name)}</option>`).join('')}</select></div>
+        <select id="gName">${memberOptions(state.user)}</select></div>
       <div class="field"><label for="gZone">โซน</label>
         <select id="gZone"><option value="">— ไม่ระบุ —</option>${ZONES.map(z=>`<option value="${z.id}">โซน${z.name}</option>`).join('')}</select></div>
     </div>
@@ -1001,7 +1087,7 @@ function vGCL(){
 
   const logHTML = list.length ? `<div class="card scroll">
     <h3>บันทึกทั้งหมดในเดือนนี้ (${list.length} รายการ)</h3>
-    <table class="tbl"><thead><tr><th>วันที่</th><th style="text-align:left">ชื่อ–สกุล</th><th>ต้นไม้</th><th style="text-align:left">One Cleaned</th><th style="text-align:left">One Lean</th><th>จริยธรรม</th><th>รูปกิจกรรม</th><th></th></tr></thead>
+    <table class="tbl wide"><thead><tr><th>วันที่</th><th style="text-align:left">ชื่อ–สกุล</th><th>ต้นไม้</th><th style="text-align:left">One Cleaned</th><th style="text-align:left">One Lean</th><th>จริยธรรม</th><th>รูปกิจกรรม</th><th></th></tr></thead>
     <tbody>${list.slice().reverse().map(r=>`<tr>
       <td style="white-space:nowrap">${thDate(r.date)}</td>
       <td>${esc(r.name)}</td>
@@ -1095,7 +1181,7 @@ function vWaste(){
       <div class="row">
         <div class="field"><label for="wBuyer">ผู้รับซื้อ / ร้าน</label><input type="text" id="wBuyer" placeholder="เช่น ร้านรับซื้อของเก่าหน้าโรงพยาบาล"></div>
         <div class="field"><label for="wBy">ผู้บันทึก</label>
-          <select id="wBy">${state.db.members.map(m=>`<option ${m.name===state.user?'selected':''}>${esc(m.name)}</option>`).join('')}</select></div>
+          <select id="wBy">${memberOptions(state.user)}</select></div>
       </div>
       <div class="field"><label>สถานะการรับเงิน</label>
         <div class="pill-group" id="wStatus">
@@ -1127,7 +1213,7 @@ function vWaste(){
   <div class="card scroll">
     <h3>รายการทั้งหมดในเดือนนี้ (${ws.length} รายการ)</h3>
     <p class="hint">กดปุ่มรับเงินแล้วเมื่อได้รับเงินจริง ยอดจะย้ายจากช่องค้างจ่ายไปช่องรับเงินแล้วทันที</p>
-    ${ ws.length ? `<table class="tbl">
+    ${ ws.length ? `<table class="tbl wide">
       <thead><tr><th>วันที่</th><th>โซน</th><th>ประเภท</th><th>น้ำหนัก (กก.)</th><th>ราคา/กก.</th><th>จำนวนเงิน</th><th>ผู้รับซื้อ</th><th>สถานะ</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
       <tfoot><tr><th colspan="5" style="text-align:right">รวม</th>
@@ -1256,38 +1342,36 @@ function vTeam(){
 
   const dupes = (()=>{ const seen={}, d=[]; state.db.members.forEach(m=>{ const k=normName(m.name); if(!k) return; if(seen[k]) d.push(m.name); seen[k]=1; }); return d; })();
   const noMail = state.db.members.filter(m=>!m.email).length;
-  const inApp = new Set(state.db.members.map(m=>normName(m.name)));
-  const missing = SEED_MEMBERS.filter(m=>!inApp.has(normName(m.name)));
+  const blank  = state.db.members.filter(m=>!String(m.name||'').trim()).length;
 
   return `<h2 class="page-title">สมาชิกทีมโซน</h2>
-  <p class="page-sub">เลือกโซนให้แต่ละคนจากช่องโซน ระบบจะนำไปแสดงบนแผนผังและใช้ติดตามการส่งกิจกรรมโดยอัตโนมัติ</p>
+  <p class="page-sub">รายชื่อทั้งหมดมาจากชีต Members บน Google Sheet เลือกโซนให้แต่ละคนจากช่องโซน ระบบจะนำไปแสดงบนแผนผังและใช้ติดตามการส่งกิจกรรมโดยอัตโนมัติ</p>
 
   <div class="card" style="margin-bottom:16px;border-top:4px solid ${CFG.API_URL?'var(--ok)':'#E6B400'}">
     <h3>ที่มาของรายชื่อ</h3>
     <p class="hint">${ CFG.API_URL
-      ? 'ตอนนี้อ่านและเขียนกับชีต Members บน Google Sheet โดยตรง การแก้ไขในหน้านี้จะถูกส่งขึ้นชีตทันที'
-      : 'ตอนนี้ยังเป็นโหมดทดลอง รายชื่อที่เห็นมาจากเครื่องนี้เท่านั้น ยังไม่ได้เชื่อมกับชีต Members ไปวาง Web app URL ที่เมนูเชื่อมต่อ Google Sheet ก่อน' }</p>
+      ? 'อ่านและเขียนกับชีต Members บน Google Sheet โดยตรง การแก้ไขในหน้านี้จะถูกส่งขึ้นชีตทันที'
+      : 'ยังไม่ได้เชื่อมต่อ ไปวาง Web app URL ที่เมนูเชื่อมต่อ Google Sheet ก่อน แล้วกลับมากดดึงรายชื่อ' }</p>
     <p style="font-size:13.5px;margin:0 0 12px">
       มีในระบบ <b>${state.db.members.length} คน</b>
-      ${ missing.length ? ` · <span class="chip late">ขาดจากทะเบียนเดิม ${missing.length} คน</span>` : '' }
       ${ dupes.length ? ` <span class="chip late">ชื่อซ้ำ ${dupes.length} รายการ</span>` : '' }
+      ${ blank ? ` <span class="chip late">ยังไม่ได้กรอกชื่อ ${blank} แถว</span>` : '' }
       ${ noMail ? ` <span class="chip late">ไม่มีอีเมล ${noMail} คน</span>` : '' }
-      ${ (!missing.length && !dupes.length && !noMail) ? ' <span class="chip">รายชื่อครบและไม่ซ้ำ</span>' : '' }
+      ${ (state.db.members.length && !dupes.length && !blank && !noMail) ? ' <span class="chip">รายชื่อครบและไม่ซ้ำ</span>' : '' }
     </p>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn" id="mPull" ${CFG.API_URL?'':'disabled'}>ดึงรายชื่อจาก Google Sheet</button>
-      <button class="btn btn-primary" id="mPush" ${CFG.API_URL?'':'disabled'}>ส่งรายชื่อนี้ขึ้น Google Sheet</button>
-      ${ missing.length ? `<button class="btn" id="mAdd">เพิ่มชื่อที่ขาด (${missing.length})</button>` : '' }
+      <button class="btn btn-primary" id="mPull" ${CFG.API_URL?'':'disabled'}>ดึงรายชื่อจาก Google Sheet</button>
+      <button class="btn" id="mPush" ${CFG.API_URL?'':'disabled'}>ส่งรายชื่อนี้ขึ้น Google Sheet</button>
       ${ dupes.length ? `<button class="btn" id="mDedupe">ลบชื่อซ้ำ</button>` : '' }
-      ${ noMail ? `<button class="btn" id="mMail">เติมอีเมลที่ว่าง</button>` : '' }
-      <button class="btn" id="mSort">จัดเรียงและออกรหัสใหม่</button>
+      ${ state.db.members.length ? `<button class="btn" id="mSort">จัดเรียงและออกรหัสใหม่</button>` : '' }
     </div>
-    ${ missing.length ? `<p class="hint" style="margin:10px 0 0">ยังไม่มีในระบบ: ${esc(missing.map(m=>m.name.replace(/^นาง(สาว)?/,'')).join(', '))}</p>` : '' }
+    <p class="hint" style="margin:10px 0 0">ถ้าชีต Members ยังว่าง ให้เปิด Apps Script แล้วรันฟังก์ชัน <b>refreshMembersFromLegacy</b> หนึ่งครั้ง ระบบจะดึงชื่อและอีเมลจากชีต OneGCLnew มาลงให้เอง</p>
   </div>
 
   <div style="margin-bottom:12px">${counts}${none?`<span class="chip late">ยังไม่กำหนดโซน ${none} คน</span>`:''}</div>
   <div class="card scroll">
-    <table class="tbl">
+    ${ state.db.members.length ? '' : emptyHTML('ยังไม่มีรายชื่อ','เชื่อมต่อ Google Sheet แล้วกดดึงรายชื่อ หรือกดเพิ่มสมาชิกเพื่อกรอกเอง') }
+    <table class="tbl" ${state.db.members.length?'':'style="display:none"'}>
       <thead><tr><th style="text-align:left;width:26%">ชื่อ–สกุล</th><th style="text-align:left;width:18%">ตำแหน่ง</th><th style="text-align:left;width:20%">โซนที่รับผิดชอบ</th><th style="text-align:left">อีเมล</th><th style="width:60px"></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -1321,9 +1405,10 @@ function vSetup(){
       <li>กด Deploy → New deployment → เลือก Web app → Execute as: Me → Who has access: Anyone</li>
       <li>คัดลอก Web app URL มาวางในช่องด้านบน แล้วกดบันทึกและเชื่อมต่อ</li>
       <li>ระบบจะสร้างชีตย่อย <b>Members</b>, <b>Check5S</b>, <b>OneGCL_App</b> และ <b>Waste</b> ให้อัตโนมัติในครั้งแรก</li>
+      <li>ถ้าชีต Members ยังว่าง ให้รันฟังก์ชัน <b>refreshMembersFromLegacy</b> ใน Apps Script หนึ่งครั้ง เพื่อดึงชื่อและอีเมลจากชีต OneGCLnew มาลงให้</li>
       <li>รูปกิจกรรมทั้งหมดจะถูกเก็บในโฟลเดอร์ <b>OneGCL_Images_App</b> ที่อยู่ข้างสเปรดชีต</li>
     </ol>
-    <p class="hint" style="margin-top:10px">ชีต OneGCLnew เดิมยังใช้งานได้ตามปกติ โค้ดจะอ่านข้อมูลเก่ามาแสดงด้วยโดยไม่แก้ไขแถวเดิม</p>
+    <p class="hint" style="margin-top:10px">ชีต OneGCLnew เดิมยังใช้งานได้ตามปกติ โค้ดจะอ่านข้อมูลเก่ามาแสดงด้วยโดยไม่แก้ไขแถวเดิม รายชื่อสมาชิกทั้งหมดอ่านจากชีต Members เท่านั้น ไม่มีรายชื่อฝังอยู่ในไฟล์เว็บ</p>
     <div style="margin-top:12px"><button class="btn" id="resetLocal">ล้างข้อมูลในเครื่อง</button></div>
   </div>`;
 }
@@ -1519,16 +1604,6 @@ function bind(){
       catch(e){ toast('ส่งไม่สำเร็จ: '+e.message); }
     });
 
-    btn('mAdd', ()=>{
-      const inApp = new Set(state.db.members.map(m=>normName(m.name)));
-      let n=0;
-      SEED_MEMBERS.forEach(m=>{
-        if(inApp.has(normName(m.name))) return;
-        state.db.members.push({ id:uid(), name:m.name, email:m.email, role:m.role, zone:'' }); n++;
-      });
-      persist(); toast('เพิ่มแล้ว '+n+' คน'); fillUsers(); render();
-    });
-
     btn('mDedupe', ()=>{
       const seen = {}, keep = [];
       state.db.members.forEach(m=>{
@@ -1544,13 +1619,6 @@ function bind(){
       });
       const n = state.db.members.length - keep.length;
       state.db.members = keep; persist(); toast('ลบชื่อซ้ำแล้ว '+n+' รายการ'); fillUsers(); render();
-    });
-
-    btn('mMail', ()=>{
-      const dir = {}; SEED_MEMBERS.forEach(m=>dir[normName(m.name)] = m.email);
-      let n=0;
-      state.db.members.forEach(m=>{ if(!m.email && dir[normName(m.name)]){ m.email = dir[normName(m.name)]; n++; } });
-      persist(); toast(n?('เติมอีเมลแล้ว '+n+' คน'):'ไม่พบอีเมลที่ตรงกับชื่อในทะเบียนเดิม'); render();
     });
 
     btn('mSort', ()=>{
@@ -1583,7 +1651,7 @@ function bind(){
     };
     $('#resetLocal').onclick=()=>{
       if(!confirm('ล้างข้อมูลที่เก็บในเครื่องทั้งหมด? ข้อมูลบน Google Sheet จะไม่ถูกลบ')) return;
-      state.db={members:SEED_MEMBERS.slice(),check5s:[],onegcl:[],waste:[]}; persist(); render(); toast('ล้างข้อมูลในเครื่องแล้ว');
+      state.db={members:[],check5s:[],onegcl:[],waste:[]}; persist(); render(); toast('ล้างข้อมูลในเครื่องแล้ว');
     };
   }
 }
@@ -1605,9 +1673,25 @@ function fillUsers(){
   u.onchange=()=>{ state.user=u.value; $('#whoami').textContent=state.user.replace(/^นาง(สาว)?/,''); };
 }
 
+const PAGE_TITLE = {
+  home:'ภาพรวมหอผู้ป่วย', map:'แผนผังโซน', check5s:'ตรวจ 5ส รายสัปดาห์',
+  round:'ตาราง Round 5ส', onegcl:'One G-C-L & Ethics', waste:'ค่าขยะ & รายรับ',
+  report:'สรุปรายเดือน', team:'สมาชิกทีมโซน', setup:'เชื่อมต่อ Google Sheet'
+};
+const drawer = {
+  open(){ $('#side').classList.add('open'); $('#scrim').classList.add('show');
+          $('#burger').setAttribute('aria-expanded','true'); document.body.style.overflow='hidden'; },
+  close(){ $('#side').classList.remove('open'); $('#scrim').classList.remove('show');
+           $('#burger').setAttribute('aria-expanded','false'); document.body.style.overflow=''; }
+};
+$('#burger').onclick = ()=> $('#side').classList.contains('open') ? drawer.close() : drawer.open();
+$('#scrim').onclick = drawer.close;
+$('#sideClose').onclick = drawer.close;
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') drawer.close(); });
+
 document.getElementById('nav').addEventListener('click', e=>{
   const b = e.target.closest('button[data-page]'); if(!b) return;
-  state.page = b.dataset.page; render();
+  state.page = b.dataset.page; drawer.close(); render();
 });
 
 (async function init(){
