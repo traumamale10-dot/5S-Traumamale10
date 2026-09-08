@@ -21,11 +21,11 @@
   --warn-bg:#FDF0E9;
   --ok:#1E8A5C;
 
-  --z-bua:#E0699F;      /* ดอกบัว */
-  --z-dao:#F08A1D;      /* ดาวเรือง */
-  --z-tan:#E6B400;      /* ทานตะวัน */
-  --z-puang:#DD5326;    /* พวงแสด */
-  --z-kul:#C9345F;      /* กุหลาบหิน */
+  --z-kul:#F0821E;      /* กุหลาบหิน — กรอบสีส้ม */
+  --z-puang:#E5B71C;    /* พวงแสด — กรอบสีเหลือง */
+  --z-tan:#D6489B;      /* ทานตะวัน — กรอบสีชมพู */
+  --z-dao:#4CA64C;      /* ดาวเรือง — กรอบสีเขียว */
+  --z-bua:#2C64C8;      /* ดอกบัว — กรอบสีน้ำเงิน */
 
   --r:14px;
   --shadow:0 1px 2px rgba(15,53,41,.06), 0 8px 24px -12px rgba(15,53,41,.22);
@@ -185,6 +185,14 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 .chip.late{background:var(--warn-bg);color:var(--warn)}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:11px;box-shadow:var(--shadow);z-index:99;font-weight:500}
 .hide{display:none!important}
+.pic{border:1.5px dashed #C3DCCD;border-radius:11px;padding:11px;background:#fff;display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+.pic .btn{white-space:nowrap}
+.pic-prev{display:flex;gap:8px;align-items:center}
+.pic-prev img{height:78px;width:78px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.pic-prev span{font-size:12px;color:var(--muted)}
+.thumb{width:46px;height:46px;object-fit:cover;border-radius:7px;border:1px solid var(--line);display:block}
+.thumb-row{display:flex;gap:5px}
+.uploading{opacity:.6;pointer-events:none}
 .barchart{display:flex;flex-direction:column;gap:9px}
 .bc-row{display:grid;grid-template-columns:150px 1fr 44px;gap:10px;align-items:center;font-size:13px}
 .bc-track{height:20px;background:#EFF6F2;border-radius:6px;overflow:hidden}
@@ -282,55 +290,90 @@ const CFG = {
 
 /* ---------- 2. ข้อมูลหลักของโซน ---------- */
 const ZONES = [
-  { id:'bua',   name:'ดอกบัว',    color:'var(--z-bua)',   hex:'#E0699F', icon:'lotus' },
-  { id:'dao',   name:'ดาวเรือง',  color:'var(--z-dao)',   hex:'#F08A1D', icon:'marigold' },
-  { id:'tan',   name:'ทานตะวัน',  color:'var(--z-tan)',   hex:'#E6B400', icon:'sunflower' },
-  { id:'puang', name:'พวงแสด',    color:'var(--z-puang)', hex:'#DD5326', icon:'trumpet' },
-  { id:'kul',   name:'กุหลาบหิน', color:'var(--z-kul)',   hex:'#C9345F', icon:'kalanchoe' }
+  { id:'kul',   name:'กุหลาบหิน', color:'var(--z-kul)',   hex:'#F0821E', icon:'kalanchoe' },
+  { id:'puang', name:'พวงแสด',    color:'var(--z-puang)', hex:'#E5B71C', icon:'trumpet' },
+  { id:'tan',   name:'ทานตะวัน',  color:'var(--z-tan)',   hex:'#D6489B', icon:'sunflower' },
+  { id:'dao',   name:'ดาวเรือง',  color:'var(--z-dao)',   hex:'#4CA64C', icon:'marigold' },
+  { id:'bua',   name:'ดอกบัว',    color:'var(--z-bua)',   hex:'#2C64C8', icon:'lotus' }
 ];
 const Z = Object.fromEntries(ZONES.map(z=>[z.id,z]));
 
-/* ---------- 3. แผนผังหอผู้ป่วย (viewBox 1000 x 640) ---------- */
-/* แก้ไขตำแหน่ง/ชื่อห้องได้ที่นี่ให้ตรงผังจริง */
+/* ---------- 3. แผนผังหอผู้ป่วย (viewBox 1480 x 1160) ---------- */
+/* วางตามผังจริงของหอผู้ป่วย แก้พิกัด/ชื่อห้องได้ที่นี่ */
 const MAP = {
-  zoneBlocks:[
-    { z:'bua',   x:44,  y:52,  w:384, h:104, label:'ห้องผู้ป่วยรวม ก1–ก4' },
-    { z:'dao',   x:44,  y:168, w:384, h:104, label:'ห้องผู้ป่วยรวม ข1–ข4' },
-    { z:'tan',   x:44,  y:284, w:384, h:104, label:'ห้องผู้ป่วยรวม ค1–ค4' },
-    { z:'puang', x:44,  y:400, w:384, h:104, label:'ห้องผู้ป่วยรวม ง1–ง4' },
-    { z:'kul',   x:44,  y:516, w:384, h:78,  label:'ห้องแยก / ห้องพิเศษ' }
+  outline:{ x:40, y:44, w:1400, h:1096 },
+
+  /* กรอบสีประจำโซน (ตรงกับกรอบสีในผังกระดาษ) */
+  frames:[
+    { z:'kul',   x:58,   y:148, w:256,  h:976 },
+    { z:'tan',   x:318,  y:56,  w:1100, h:302 },
+    { z:'puang', x:316,  y:366, w:528,  h:208 },
+    { z:'tan',   x:846,  y:444, w:200,  h:130 },
+    { z:'dao',   x:1048, y:366, w:152,  h:208 },
+    { z:'bua',   x:1204, y:366, w:212,  h:208 },
+    { z:'puang', x:316,  y:576, w:256,  h:540 },
+    { z:'tan',   x:574,  y:576, w:264,  h:540 },
+    { z:'dao',   x:840,  y:576, w:208,  h:540 },
+    { z:'bua',   x:1050, y:576, w:366,  h:540 }
   ],
+
   rooms:[
-    { z:'bua',   x:440, y:52,  w:106, h:48, label:'ห้องพักแพทย์' },
-    { z:'bua',   x:552, y:52,  w:106, h:48, label:'ห้องนักศึกษา' },
-    { z:'bua',   x:440, y:106, w:218, h:50, label:'ห้องเก็บของ 1' },
+    /* โซนกุหลาบหิน — แถบซ้ายมือ */
+    { z:'kul',   x:68,   y:158, w:236, h:150, label:'ห้องพักเจ้าหน้าที่' },
+    { z:'kul',   x:158,  y:226, w:112, h:70,  label:'ห้องล็อกเกอร์', nest:1, fs:10 },
+    { z:'kul',   x:68,   y:334, w:236, h:112, label:'ห้องประชุม', fs:15 },
+    { z:'kul',   x:68,   y:456, w:112, h:114, label:'ห้องเก็บผ้า' },
+    { z:'kul',   x:190,  y:456, w:114, h:114, label:'ห้องเก็บของ\nสะอาด', fs:10.5 },
+    { z:'kul',   x:68,   y:584, w:236, h:524, ward:1 },
 
-    { z:'dao',   x:440, y:168, w:218, h:46, label:'ห้องพักเจ้าหน้าที่' },
-    { z:'dao',   x:440, y:220, w:106, h:52, label:'ห้องน้ำเจ้าหน้าที่' },
-    { z:'dao',   x:552, y:220, w:106, h:52, label:'ห้องเก็บผ้า' },
+    /* โซนทานตะวัน — โถงทางเดิน บันไดหนีไฟ ลิฟต์ ห้องน้ำ */
+    { z:'tan',   x:330,  y:150, w:214, h:150, label:'บันไดหนีไฟ', kind:'stair' },
+    { z:'tan',   x:604,  y:150, w:196, h:150, label:'โถงลิฟต์โดยสาร', kind:'lift' },
+    { z:'tan',   x:860,  y:68,  w:126, h:130, label:'ห้องน้ำชาย', kind:'wc' },
+    { z:'tan',   x:994,  y:68,  w:126, h:130, label:'ห้องน้ำหญิง', kind:'wc' },
+    { z:'tan',   x:860,  y:206, w:260, h:96,  label:'ห้องน้ำผู้พิการ', kind:'wc' },
+    { z:'tan',   x:1128, y:68,  w:136, h:234, label:'บันไดหนีไฟ', kind:'stair' },
+    { z:'tan',   x:1272, y:68,  w:136, h:234, label:'โถงลิฟต์บริการ', kind:'lift' },
+    { z:'tan',   x:854,  y:452, w:184, h:114, label:'โถงลิฟต์เตียง', kind:'lift' },
+    { z:'tan',   x:582,  y:584, w:248, h:524, ward:1 },
 
-    { z:'tan',   x:440, y:284, w:218, h:52, label:'เคาน์เตอร์พยาบาล' },
-    { z:'tan',   x:440, y:342, w:106, h:46, label:'ห้องยา' },
-    { z:'tan',   x:552, y:342, w:106, h:46, label:'ห้องเตรียมของสะอาด' },
+    /* โซนพวงแสด — ห้องระบบ เคาน์เตอร์พยาบาล */
+    { z:'puang', x:326,  y:432, w:70,  h:134, label:'ห้องหัวหน้า\nหอผู้ป่วย', fs:9.5 },
+    { z:'puang', x:404,  y:374, w:112, h:70,  label:'ห้องระบบ\nปรับอากาศ', fs:10 },
+    { z:'puang', x:524,  y:374, w:112, h:70,  label:'ห้องระบบ\nไฟฟ้า', fs:10 },
+    { z:'puang', x:644,  y:374, w:112, h:70,  label:'ห้องระบบ\nสื่อสาร', fs:10 },
+    { z:'puang', x:764,  y:374, w:72,  h:70,  label:'พื้นที่\nพักคอย', fs:9.5 },
+    { z:'puang', x:404,  y:452, w:280, h:114, label:'เคาน์เตอร์พยาบาล', fs:15 },
+    { z:'puang', x:764,  y:452, w:72,  h:114, label:'ห้องเตรียม\nการรักษา', fs:9.5 },
+    { z:'puang', x:324,  y:584, w:240, h:524, ward:1 },
 
-    { z:'puang', x:440, y:400, w:218, h:46, label:'ห้องประชุม' },
-    { z:'puang', x:440, y:452, w:106, h:52, label:'ห้องหัตถการ' },
-    { z:'puang', x:552, y:452, w:106, h:52, label:'ห้องเก็บเครื่องมือ' },
+    /* โซนดาวเรือง */
+    { z:'dao',   x:1056, y:374, w:136, h:88,  label:'ห้องเก็บของ\nสกปรก', fs:10 },
+    { z:'dao',   x:1056, y:470, w:136, h:96,  label:'ห้องเก็บของ' },
+    { z:'dao',   x:848,  y:584, w:192, h:524, ward:1 },
 
-    { z:'kul',   x:440, y:516, w:106, h:78, label:'ห้องเก็บของสกปรก' },
-    { z:'kul',   x:552, y:516, w:106, h:78, label:'ห้องซักล้าง' }
+    /* โซนดอกบัว — ฝั่งขวา */
+    { z:'bua',   x:1212, y:374, w:196, h:60,  label:'ห้องล้างสิ่งสกปรก', fs:11 },
+    { z:'bua',   x:1212, y:440, w:196, h:60,  label:'ห้องล้างของทั่วไป', fs:11 },
+    { z:'bua',   x:1212, y:506, w:196, h:60,  label:'ห้องปฏิบัติการ' },
+    { z:'bua',   x:1058, y:584, w:180, h:230, label:'พื้นที่พักคอย' },
+    { z:'bua',   x:1246, y:584, w:162, h:230, label:'ห้องซักล้าง' },
+    { z:'bua',   x:1058, y:822, w:350, h:286, label:'ห้องน้ำผู้ป่วย', kind:'wc', fs:17 }
   ],
-  corridor:{ z:'tan', x:670, y:52, w:62, h:542, label:'ทางเดินกลาง' },
-  facilities:[
-    { x:744, y:52,  w:212, h:88, label:'บันไดหนีไฟ 1', kind:'stair' },
-    { x:744, y:150, w:100, h:88, label:'ลิฟต์โดยสาร',  kind:'lift' },
-    { x:856, y:150, w:100, h:88, label:'ลิฟต์เตียง',    kind:'lift' },
-    { x:744, y:248, w:100, h:78, label:'ห้องน้ำชาย',    kind:'wc' },
-    { x:856, y:248, w:100, h:78, label:'ห้องน้ำหญิง',   kind:'wc' },
-    { x:744, y:336, w:212, h:66, label:'ห้องน้ำผู้พิการ', kind:'wc' },
-    { x:744, y:412, w:212, h:84, label:'ลิฟต์บริการ',   kind:'lift' },
-    { x:744, y:506, w:212, h:88, label:'บันไดหนีไฟ 2',  kind:'stair' }
-  ]
+
+  /* ป้ายชื่อโซนแบบกล่องขาว เหมือนในผังกระดาษ */
+  chips:[
+    { z:'kul',   x:186,  y:760 },
+    { z:'puang', x:444,  y:800 },
+    { z:'tan',   x:706,  y:820 },
+    { z:'tan',   x:700,  y:258 },
+    { z:'dao',   x:944,  y:760 },
+    { z:'bua',   x:1148, y:700 }
+  ],
+
+  /* ทางหนีไฟตามโถงทางเดิน */
+  runners:[ 400, 520, 700, 880, 1000, 1120 ],
+  runnerY: 326
 };
 
 /* ---------- 4. เกณฑ์ตรวจ 5ส (20 ข้อ ข้อละ 5 คะแนน = 100) ---------- */
@@ -569,7 +612,7 @@ function vHome(){
     <div class="card">
       <h3>แผนผังหอผู้ป่วย</h3>
       <p class="hint">แตะที่พื้นที่ใดก็ได้เพื่อดูผู้รับผิดชอบและคะแนนล่าสุดของโซนนั้น</p>
-      ${mapSVG(true)}
+      ${mapSVG()}
       ${legendHTML()}
     </div>
 
@@ -606,56 +649,79 @@ function emptyHTML(t,s){
 }
 
 /* ---------- แผนผัง SVG ---------- */
-function mapSVG(compact){
-  const box = (x,y,w,h,fill,stroke,label,sub,fs)=>`
-    <rect class="room-fill" x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/>
-    <text x="${x+w/2}" y="${y+h/2+(sub?-3:4)}" text-anchor="middle" font-size="${fs||11.5}" fill="#0F3529" font-weight="500">${esc(label)}</text>
-    ${sub?`<text x="${x+w/2}" y="${y+h/2+12}" text-anchor="middle" font-size="10" fill="#5C7A6C">${esc(sub)}</text>`:''}`;
+function tintFor(kind, zhex){
+  if(kind==='stair') return {f:'#B0503C', c:'#7E3626'};
+  if(kind==='lift')  return {f:'#6E7E9B', c:'#3D4A63'};
+  if(kind==='wc')    return {f:'#2C64C8', c:'#1B3E80'};
+  return {f:zhex, c:'#123024'};
+}
+function multiline(text, cx, cy, fs, fill, weight){
+  const lines = String(text).split('\n');
+  const start = cy - (lines.length-1)*(fs*0.62);
+  return lines.map((ln,i)=>`<text x="${cx}" y="${start + i*fs*1.24 + fs*0.34}" text-anchor="middle" font-size="${fs}" fill="${fill}" font-weight="${weight||500}">${esc(ln)}</text>`).join('');
+}
 
+function mapSVG(){
   let s = '';
-  // พื้นหลัง
-  s += `<rect x="30" y="38" width="940" height="568" rx="16" fill="#F7FBF8" stroke="#D6E7DC" stroke-width="2"/>`;
+  const o = MAP.outline;
 
-  // บล็อกโซนใหญ่
-  MAP.zoneBlocks.forEach(b=>{
-    const z = Z[b.z];
-    s += `<g class="room" data-zone="${b.z}" tabindex="0" role="button" aria-label="โซน${z.name}">
-      <rect class="room-fill" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="9" fill="${z.hex}18" stroke="${z.hex}" stroke-width="2"/>
-      <g transform="translate(${b.x+14},${b.y+b.h/2-16})">${flower(z.icon,z.hex,32)}</g>
-      <text x="${b.x+56}" y="${b.y+b.h/2-1}" font-size="16" font-weight="700" fill="${z.hex}">โซน${esc(z.name)}</text>
-      <text x="${b.x+56}" y="${b.y+b.h/2+15}" font-size="11" fill="#5C7A6C">${esc(b.label)}</text>
-    </g>`;
-  });
+  // พื้นหอผู้ป่วย
+  s += `<rect x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" rx="14" fill="#F4F9F6" stroke="#C8DCD1" stroke-width="2"/>`;
+  s += `<text x="620" y="700" text-anchor="middle" font-size="30" font-weight="700" fill="#0F3529" opacity=".16">หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย</text>`;
 
-  // ห้องบริการ
+  // ห้องต่าง ๆ
   MAP.rooms.forEach(r=>{
-    const z = Z[r.z];
-    s += `<g class="room" data-zone="${r.z}" tabindex="0" role="button" aria-label="${esc(r.label)} โซน${z.name}">
-      ${box(r.x,r.y,r.w,r.h, z.hex+'12', z.hex+'66', r.label, '', 10.5)}
-      <rect x="${r.x}" y="${r.y}" width="4" height="${r.h}" rx="2" fill="${z.hex}"/>
+    const z = Z[r.z], t = tintFor(r.kind, z.hex);
+    const isWard = !!r.ward;
+    const fill = isWard ? z.hex : t.f;
+    const op   = isWard ? .13 : (r.kind ? .14 : .10);
+    const stroke = r.kind ? t.f : z.hex;
+    const fs = r.fs || (isWard? 12 : 11);
+    s += `<g class="room" data-zone="${r.z}" tabindex="0" role="button" aria-label="${esc(r.label||('พื้นที่โซน'+z.name))} โซน${z.name}">
+      <rect class="room-fill" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="${isWard?8:6}"
+            fill="${fill}" fill-opacity="${op}" stroke="${stroke}" stroke-opacity="${r.kind?.55:.45}" stroke-width="${r.nest?1.6:1.4}"/>`;
+    if(r.label) s += multiline(r.label, r.x+r.w/2, r.y+r.h/2, fs, t.c, r.kind?600:500);
+    s += `</g>`;
+  });
+
+  // ไอคอนเฉพาะทาง
+  MAP.rooms.filter(r=>r.kind).forEach(r=>{
+    const cx = r.x+r.w/2, top = r.y+12;
+    if(r.kind==='stair')
+      s += `<path d="M${cx-26} ${top+30} h13 v-10 h13 v-10 h13" stroke="#B0503C" stroke-width="3.5" fill="none" stroke-linejoin="round" opacity=".8"/>`;
+    if(r.kind==='lift')
+      s += `<path d="M${cx-9} ${top+16} l0 14 m-5-5 l5 5 5-5 M${cx+9} ${top+30} l0-14 m-5 5 l5-5 5 5" stroke="#41506B" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".75"/>`;
+  });
+
+  // ทางหนีไฟในโถงทางเดิน
+  MAP.runners.forEach(x=>{
+    s += `<g opacity=".8" transform="translate(${x},${MAP.runnerY}) scale(.9)">
+      <circle cx="0" cy="-16" r="3.4" fill="#0F3529"/>
+      <path d="M-1 -12 l4 6 l5 3 M-1 -12 l-5 4 M-1 -12 l1 7 l-4 6 M0 -5 l5 6" stroke="#0F3529" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    </g>`;
+  });
+  s += `<path d="M340 ${MAP.runnerY+10} H1400" stroke="#0F3529" stroke-width="1.6" opacity=".28"/>`;
+  s += `<path d="M352 ${MAP.runnerY-2} l-10 12 l10 12 z" fill="#E06A26"/>`;
+  s += `<path d="M1396 ${MAP.runnerY-2} l10 12 l-10 12 z" fill="#E06A26"/>`;
+
+  // กรอบสีประจำโซน
+  MAP.frames.forEach(f=>{
+    const z = Z[f.z];
+    s += `<rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="10"
+           fill="none" stroke="${z.hex}" stroke-width="4" pointer-events="none"/>`;
+  });
+
+  // ป้ายชื่อโซน
+  MAP.chips.forEach(c=>{
+    const z = Z[c.z], w = 200, h = 46;
+    s += `<g class="room" data-zone="${c.z}" tabindex="0" role="button" aria-label="โซน${z.name}">
+      <rect x="${c.x-w/2}" y="${c.y-h/2}" width="${w}" height="${h}" rx="7" fill="#FFFFFF" stroke="${z.hex}" stroke-width="3.5"/>
+      <g transform="translate(${c.x-w/2+9},${c.y-13})">${flower(z.icon,z.hex,26)}</g>
+      <text x="${c.x+14}" y="${c.y+7}" text-anchor="middle" font-size="17" font-weight="700" fill="#123024">โซน : ${esc(z.name)}</text>
     </g>`;
   });
 
-  // ทางเดิน
-  const cz = Z[MAP.corridor.z], c = MAP.corridor;
-  s += `<g class="room" data-zone="${c.z}" tabindex="0" role="button" aria-label="ทางเดินกลาง โซน${cz.name}">
-    <rect class="room-fill" x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="8" fill="${cz.hex}14" stroke="${cz.hex}55" stroke-width="1.4" stroke-dasharray="6 4"/>
-    <text x="${c.x+c.w/2}" y="${c.y+c.h/2}" text-anchor="middle" font-size="12" fill="${cz.hex}" font-weight="600"
-      transform="rotate(-90 ${c.x+c.w/2} ${c.y+c.h/2})">ทางเดินกลาง · โซน${esc(cz.name)}</text>`;
-  [140,300,450].forEach(y=>{ s += `<path d="M${c.x+c.w/2-7} ${y} l0 26 m-7 -8 l7 8 7-8" stroke="${cz.hex}" stroke-width="1.6" fill="none" opacity=".55" stroke-linecap="round"/>`; });
-  s += `</g>`;
-
-  // สิ่งอำนวยความสะดวก (ส่วนกลาง)
-  MAP.facilities.forEach(f=>{
-    const tint = f.kind==='stair' ? '#FBEDE6' : f.kind==='lift' ? '#E9F0FA' : '#EEF5F1';
-    const bd   = f.kind==='stair' ? '#E0B49E' : f.kind==='lift' ? '#B7C9E2' : '#C6DCCE';
-    s += `<g>${box(f.x,f.y,f.w,f.h,tint,bd,f.label,'ส่วนกลาง',11)}</g>`;
-  });
-
-  // ทิศทางหนีไฟ
-  s += `<text x="500" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#0F3529">ผังหอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10</text>`;
-
-  return `<div class="map-wrap"><svg viewBox="0 0 1000 640" role="img" aria-label="แผนผังโซน 5ส ของหอผู้ป่วย">${s}</svg></div>`;
+  return `<div class="map-wrap"><svg viewBox="0 0 1480 1180" role="img" aria-label="แผนผังโซน 5ส หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10">${s}</svg></div>`;
 }
 function legendHTML(){
   return `<div class="legend">${ZONES.map(z=>{
@@ -668,8 +734,8 @@ function legendHTML(){
 function vMap(){
   const detail = ZONES.map(z=>{
     const mem = membersOf(z.id);
-    const rooms = MAP.rooms.filter(r=>r.z===z.id).map(r=>r.label);
-    const blk = MAP.zoneBlocks.find(b=>b.z===z.id);
+    const rooms = MAP.rooms.filter(r=>r.z===z.id && r.label).map(r=>r.label.replace(/\n/g,''));
+    const wards = MAP.rooms.filter(r=>r.z===z.id && r.ward).length;
     const avg = zoneAvg(z.id);
     return `<div class="card" id="zone-${z.id}" style="border-top:4px solid ${z.hex}">
       <div style="display:flex;gap:11px;align-items:center;margin-bottom:8px">
@@ -679,7 +745,7 @@ function vMap(){
           <p class="hint" style="margin:0">คะแนนเฉลี่ยเดือนนี้ ${avg===null?'ยังไม่ตรวจ':avg+' / 100'}</p>
         </div>
       </div>
-      <p style="font-size:13px;margin:0 0 10px"><b>พื้นที่รับผิดชอบ</b><br>${esc(blk?blk.label:'')}${rooms.length?' · '+esc(rooms.join(' · ')):''}${z.id===MAP.corridor.z?' · ทางเดินกลางและลิฟต์':''}</p>
+      <p style="font-size:13px;margin:0 0 10px"><b>พื้นที่รับผิดชอบ</b><br>${wards?'พื้นที่ผู้ป่วยในโซน · ':''}${rooms.length? esc(rooms.join(' · ')) : '<span style="color:var(--muted)">—</span>'}</p>
       <p style="font-size:13px;margin:0"><b>สมาชิก (${mem.length} คน)</b><br>
         ${mem.length? mem.map(m=>esc(m.name)).join(', ') : '<span style="color:var(--muted)">ยังไม่ได้กำหนด — ไปที่หน้า “สมาชิกทีมโซน” เพื่อจัดคนเข้าโซน</span>'}</p>
     </div>`;
@@ -801,6 +867,53 @@ function vRound(){
   </div>`;
 }
 
+
+/* ---------- รูปภาพกิจกรรม ---------- */
+state.pics = {};
+function picField(key, label){
+  const cur = state.pics[key];
+  return `<div class="field"><label>${esc(label)} <span class="sub">ถ่ายจากมือถือหรือเลือกไฟล์ · เก็บลง Google Drive</span></label>
+    <div class="pic">
+      <input type="file" accept="image/*" id="file_${key}" class="hide">
+      <button type="button" class="btn pic-add" data-pk="${key}">${cur?'เปลี่ยนรูป':'แนบรูป'}</button>
+      <div class="pic-prev" id="prev_${key}">${cur?`<img src="${cur.data}" alt=""><span>${esc(cur.name)}<br>${Math.round(cur.data.length/1400)} KB</span><button type="button" class="btn btn-sm" data-pdel="${key}">เอาออก</button>`:'<span>ยังไม่ได้แนบรูป</span>'}</div>
+    </div></div>`;
+}
+function readPic(file, key, cb){
+  const fr = new FileReader();
+  fr.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const max = 1280;
+      let w = img.width, h = img.height;
+      if(Math.max(w,h) > max){ const k = max/Math.max(w,h); w = Math.round(w*k); h = Math.round(h*k); }
+      const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      state.pics[key] = { data: cv.toDataURL('image/jpeg',0.82), mime:'image/jpeg', name:file.name };
+      cb();
+    };
+    img.onerror = ()=>{ state.pics[key] = { data: fr.result, mime:file.type, name:file.name }; cb(); };
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+async function uploadPic(key, who, when){
+  const p = state.pics[key];
+  if(!p) return { url:'', id:'' };
+  if(!CFG.API_URL) return { url:p.data, id:'' };      // โหมดทดลอง เก็บรูปไว้ในเครื่อง
+  const r = await api('uploadImage', {
+    data: p.data.split(',')[1], mime: p.mime,
+    name: [when, who, key].join('_').replace(/[^\wก-๙\-_.]/g,'') + '.jpg'
+  });
+  return { url:r.url, id:r.id };
+}
+function thumbHTML(url, id){
+  if(!url) return '';
+  const src = id ? 'https://drive.google.com/thumbnail?id='+id+'&sz=w200' : url;
+  if(!/^data:|^https?:/.test(src)) return '<span class="chip">มีรูป</span>';
+  return `<a href="${esc(url)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(src)}" alt="รูปกิจกรรม" loading="lazy"></a>`;
+}
+
 /* ---------- หน้า: One G-C-L & Ethics ---------- */
 function vGCL(){
   const tab = state.gclTab||'form';
@@ -823,27 +936,26 @@ function vGCL(){
         <select id="gEthic"><option value="">— ยังไม่ระบุ —</option>${OPT_ETHIC.map(o=>`<option>${esc(o)}</option>`).join('')}</select></div>
       <div class="field"><label for="gEthicEx">ยกตัวอย่างการปฏิบัติ</label>
         <textarea id="gEthicEx" placeholder="เช่น ผู้ป่วยปฏิเสธการรักษา ได้ให้ข้อมูลครบถ้วนและรายงานแพทย์เมื่อมาตรวจ"></textarea></div>
+      ${picField('ethic','รูปภาพประกอบ')}
     </fieldset>
 
     <fieldset><legend>One Green · ต้นไม้ประจำตัว</legend>
-      <div class="row">
-        <div class="field"><label for="gTree">ชื่อต้นไม้</label><input type="text" id="gTree" placeholder="เช่น กวักมรกต, เดหลี, กุหลาบหิน"></div>
-        <div class="field"><label for="gTreeImg">ลิงก์รูปต้นไม้ <span class="sub">วางลิงก์ Google Drive</span></label><input type="text" id="gTreeImg" placeholder="https://drive.google.com/..."></div>
-      </div>
+      <div class="field"><label for="gTree">ชื่อต้นไม้</label><input type="text" id="gTree" placeholder="เช่น กวักมรกต, เดหลี, กุหลาบหิน"></div>
+      ${picField('tree','รูปต้นไม้')}
     </fieldset>
 
     <fieldset><legend>One Cleaned · กิจกรรมความสะอาด</legend>
       <div class="field"><label for="gClean">ระบุกิจกรรม</label><input type="text" id="gClean" placeholder="เช่น ทำความสะอาดเครื่อง Infusion pump"></div>
       <div class="field"><label>สรุป One Cleaned</label>
         <div class="pill-group" id="gCleanSum">${OPT_CLEAN.map(o=>`<button type="button" data-v="${esc(o)}" aria-pressed="false">${esc(o)}</button>`).join('')}</div></div>
-      <div class="field"><label for="gCleanImg">ลิงก์รูปภาพ</label><input type="text" id="gCleanImg" placeholder="https://drive.google.com/..."></div>
+      ${picField('clean','รูปภาพ One Cleaned')}
     </fieldset>
 
     <fieldset><legend>One Lean · ลดความสูญเปล่า</legend>
       <div class="field"><label for="gLean">ระบุกิจกรรม</label><input type="text" id="gLean" placeholder="เช่น จัดเรียงคลังวัสดุและเขียนวันหมดอายุกำกับ"></div>
       <div class="field"><label>สรุป One Lean</label>
         <div class="pill-group" id="gLeanSum">${OPT_LEAN.map(o=>`<button type="button" data-v="${esc(o)}" aria-pressed="false">${esc(o)}</button>`).join('')}</div></div>
-      <div class="field"><label for="gLeanImg">ลิงก์รูปภาพ</label><input type="text" id="gLeanImg" placeholder="https://drive.google.com/..."></div>
+      ${picField('lean','รูปภาพ One Lean')}
     </fieldset>
 
     <button class="btn btn-primary" id="saveGCL">บันทึกกิจกรรม</button>
@@ -873,7 +985,7 @@ function vGCL(){
 
   const logHTML = list.length ? `<div class="card scroll">
     <h3>บันทึกทั้งหมดในเดือนนี้ (${list.length} รายการ)</h3>
-    <table class="tbl"><thead><tr><th>วันที่</th><th style="text-align:left">ชื่อ–สกุล</th><th>ต้นไม้</th><th style="text-align:left">One Cleaned</th><th style="text-align:left">One Lean</th><th>จริยธรรม</th><th></th></tr></thead>
+    <table class="tbl"><thead><tr><th>วันที่</th><th style="text-align:left">ชื่อ–สกุล</th><th>ต้นไม้</th><th style="text-align:left">One Cleaned</th><th style="text-align:left">One Lean</th><th>จริยธรรม</th><th>รูปกิจกรรม</th><th></th></tr></thead>
     <tbody>${list.slice().reverse().map(r=>`<tr>
       <td style="white-space:nowrap">${thDate(r.date)}</td>
       <td>${esc(r.name)}</td>
@@ -881,6 +993,7 @@ function vGCL(){
       <td>${esc(r.clean||'—')}${r.cleanSum?`<br><span class="chip">${esc(r.cleanSum)}</span>`:''}</td>
       <td>${esc(r.lean||'—')}${r.leanSum?`<br><span class="chip">${esc(r.leanSum)}</span>`:''}</td>
       <td style="font-size:12px">${esc((r.ethic||'').split('—')[0]||'—')}</td>
+      <td><div class="thumb-row">${[['ethicImg','ethicImgId'],['treeImg','treeImgId'],['cleanImg','cleanImgId'],['leanImg','leanImgId']].map(k=>thumbHTML(r[k[0]],r[k[1]])).join('')||'<span style="color:var(--muted)">—</span>'}</div></td>
       <td><button class="btn btn-sm" data-delg="${r.id}">ลบ</button></td>
     </tr>`).join('')}</tbody></table></div>`
     : `<div class="card">${emptyHTML('ยังไม่มีบันทึกในเดือนนี้','เริ่มจากแท็บ “บันทึกกิจกรรม”')}</div>`;
@@ -952,6 +1065,23 @@ function vReport(){
   <div class="grid g2" style="margin-bottom:16px">
     <div class="card"><h3>One Cleaned แยกตามหมวด</h3><p class="hint">จำนวนกิจกรรมที่บันทึก</p><div class="barchart">${cat(gcl,'cleanSum',OPT_CLEAN)}</div></div>
     <div class="card"><h3>One Lean แยกตามหมวด</h3><p class="hint">จำนวนกิจกรรมที่บันทึก</p><div class="barchart">${cat(gcl,'leanSum',OPT_LEAN)}</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3>คลังภาพกิจกรรมเดือนนี้</h3>
+    <p class="hint">รูปทั้งหมดเก็บอยู่ในโฟลเดอร์ OneGCL_Images_App บน Google Drive กดที่รูปเพื่อเปิดไฟล์ต้นฉบับ</p>
+    ${(function(){
+      const pics=[];
+      gcl.forEach(r=>[['ethicImg','ethicImgId','Ethics'],['treeImg','treeImgId','One Green'],['cleanImg','cleanImgId','One Cleaned'],['leanImg','leanImgId','One Lean']]
+        .forEach(k=>{ if(r[k[0]]) pics.push({url:r[k[0]],id:r[k[1]],cat:k[2],who:r.name,date:r.date}); }));
+      if(!pics.length) return emptyHTML('ยังไม่มีรูปในเดือนนี้','แนบรูปตอนบันทึกกิจกรรม รูปจะมาแสดงที่นี่');
+      return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:10px">'+
+        pics.slice(0,24).map(p=>`<div><a href="${esc(p.url)}" target="_blank" rel="noopener">
+          <img src="${p.id?'https://drive.google.com/thumbnail?id='+p.id+'&sz=w300':esc(p.url)}" alt="${esc(p.cat)}" loading="lazy"
+               style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:9px;border:1px solid var(--line)"></a>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35">${esc(p.cat)}<br>${esc(p.who.replace(/^นาง(สาว)?/,''))}</div></div>`).join('')+
+        '</div>'+(pics.length>24?`<p class="hint" style="margin-top:8px">แสดง 24 จาก ${pics.length} รูป</p>`:'');
+    })()}
   </div>
 
   <div class="grid g2">
@@ -1085,23 +1215,61 @@ function bind(){
       b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
     });
     const picked = id => { const b=document.querySelector('#'+id+' button[aria-pressed="true"]'); return b?b.dataset.v:''; };
+
+    document.querySelectorAll('.pic-add').forEach(b=>b.onclick=()=>document.getElementById('file_'+b.dataset.pk).click());
+    ['ethic','tree','clean','lean'].forEach(k=>{
+      const f = document.getElementById('file_'+k); if(!f) return;
+      f.onchange = ()=>{
+        const file = f.files && f.files[0]; if(!file) return;
+        if(!/^image\//.test(file.type)){ toast('เลือกได้เฉพาะไฟล์รูปภาพ'); return; }
+        readPic(file, k, ()=>{
+          const prev = document.getElementById('prev_'+k), p = state.pics[k];
+          prev.innerHTML = `<img src="${p.data}" alt=""><span>${esc(p.name)}<br>${Math.round(p.data.length/1400)} KB</span><button type="button" class="btn btn-sm" data-pdel="${k}">เอาออก</button>`;
+          document.querySelector('.pic-add[data-pk="'+k+'"]').textContent = 'เปลี่ยนรูป';
+          prev.querySelector('[data-pdel]').onclick = ()=>{
+            delete state.pics[k];
+            prev.innerHTML = '<span>ยังไม่ได้แนบรูป</span>';
+            document.querySelector('.pic-add[data-pk="'+k+'"]').textContent = 'แนบรูป';
+          };
+        });
+      };
+    });
+    document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{
+      const k=b.dataset.pdel; delete state.pics[k];
+      document.getElementById('prev_'+k).innerHTML='<span>ยังไม่ได้แนบรูป</span>';
+      document.querySelector('.pic-add[data-pk="'+k+'"]').textContent='แนบรูป';
+    });
     const sv = $('#saveGCL');
-    if(sv) sv.onclick=()=>{
+    if(sv) sv.onclick=async()=>{
       const date=$('#gDate').value||todayISO();
-      const rec = {
+      const who = $('#gName').value;
+      const base = {
         id: uid(), period: (date.slice(0,4)*1+543)+'-'+date.slice(5,7), date,
         week: weekOfMonth(date),
-        name: $('#gName').value, zone: $('#gZone').value,
+        name: who, zone: $('#gZone').value,
         ethic: $('#gEthic').value, ethicEx: $('#gEthicEx').value.trim(),
-        tree: $('#gTree').value.trim(), treeImg: $('#gTreeImg').value.trim(),
-        clean: $('#gClean').value.trim(), cleanSum: picked('gCleanSum'), cleanImg: $('#gCleanImg').value.trim(),
-        lean: $('#gLean').value.trim(),  leanSum: picked('gLeanSum'),   leanImg: $('#gLeanImg').value.trim(),
-        email:(state.db.members.find(m=>m.name===$('#gName').value)||{}).email||''
+        tree: $('#gTree').value.trim(),
+        clean: $('#gClean').value.trim(), cleanSum: picked('gCleanSum'),
+        lean: $('#gLean').value.trim(),  leanSum: picked('gLeanSum'),
+        email:(state.db.members.find(m=>m.name===who)||{}).email||''
       };
-      if(!rec.tree && !rec.clean && !rec.lean && !rec.ethic){ toast('กรอกอย่างน้อยหนึ่งกิจกรรมก่อนบันทึก'); return; }
-      state.db.onegcl.push(rec); persist();
-      toast('บันทึกกิจกรรมของ '+rec.name.replace(/^นาง(สาว)?/,'')+' แล้ว');
-      state.gclTab='log'; render();
+      const hasPic = Object.keys(state.pics).length;
+      if(!base.tree && !base.clean && !base.lean && !base.ethic && !hasPic){ toast('กรอกอย่างน้อยหนึ่งกิจกรรมก่อนบันทึก'); return; }
+
+      sv.disabled = true; sv.textContent = hasPic ? 'กำลังอัปโหลดรูป…' : 'กำลังบันทึก…';
+      try{
+        for(const k of ['ethic','tree','clean','lean']){
+          const r = await uploadPic(k, who, date);
+          base[k+'Img'] = r.url; base[k+'ImgId'] = r.id;
+        }
+        state.db.onegcl.push(base); persist();
+        state.pics = {};
+        toast('บันทึกกิจกรรมของ '+who.replace(/^นาง(สาว)?/,'')+' แล้ว'+(hasPic&&CFG.API_URL?' · รูปเก็บใน Google Drive':''));
+        state.gclTab='log'; render();
+      }catch(e){
+        toast('อัปโหลดรูปไม่สำเร็จ: '+e.message);
+        sv.disabled = false; sv.textContent = 'บันทึกกิจกรรม';
+      }
     };
     document.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{
       state.db.onegcl = state.db.onegcl.filter(r=>r.id!==b.dataset.delg); persist(); render();
