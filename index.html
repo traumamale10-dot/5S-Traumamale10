@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>สวน 5ส · หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10</title>
+<title>5ส · หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -221,7 +221,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
         <circle cx="24" cy="15" r="4.2" fill="#E6B400"/>
       </svg>
       <div>
-        <h1>สวน 5ส</h1>
+        <h1>5ส</h1>
         <p>ศัลยกรรมอุบัติเหตุชาย ชั้น 10<br>รพ.มหาราชนครราชสีมา</p>
       </div>
     </div>
@@ -242,6 +242,9 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
       <button data-page="onegcl">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21c5-2 8-6 8-11V5l-8-2-8 2v5c0 5 3 9 8 11z"/><path d="M9.5 12l1.8 1.8 3.7-4"/></svg>
         One G-C-L &amp; Ethics</button>
+      <button data-page="waste">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><path d="M12 11v6M9.5 13.5 12 11l2.5 2.5"/></svg>
+        ค่าขยะ &amp; รายรับ</button>
       <button data-page="report">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V9M10 20V4M16 20v-7M22 20H2"/></svg>
         สรุปรายเดือน</button>
@@ -278,14 +281,14 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 
 <script>
 /* ============================================================
-   สวน 5ส — หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10
+   ระบบ 5ส — หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10
    Front-end ไฟล์เดียว · เก็บข้อมูลที่ Google Sheet ผ่าน Apps Script
    ============================================================ */
 
 /* ---------- 1. ตั้งค่า ---------- */
 const CFG = {
   API_URL: '',                    // วาง Web app URL ของ Apps Script ที่หน้า "เชื่อมต่อ Google Sheet"
-  LS: 'garden5s.v1'
+  LS: 'ward5s.v1'
 };
 
 /* ---------- 2. ข้อมูลหลักของโซน ---------- */
@@ -453,7 +456,7 @@ const state = {
   month: now.getMonth()+1,
   year:  now.getFullYear()+543,
   user:  '',
-  db: { members:[], check5s:[], onegcl:[] }
+  db: { members:[], check5s:[], onegcl:[], waste:[] }
 };
 const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 
@@ -482,13 +485,14 @@ async function loadAll(){
   if(CFG.API_URL){
     try{
       const d = await api('getAll', {});
-      state.db = { members:d.members||[], check5s:d.check5s||[], onegcl:d.onegcl||[] };
+      state.db = { members:d.members||[], check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[] };
       if(!state.db.members.length) state.db.members = SEED_MEMBERS.slice();
       setConn(true); return;
     }catch(e){ setConn(false, e.message); }
   }
   const local = store.read();
-  state.db = local || { members: SEED_MEMBERS.slice(), check5s:[], onegcl:[] };
+  state.db = local || { members: SEED_MEMBERS.slice(), check5s:[], onegcl:[], waste:[] };
+  if(!state.db.waste) state.db.waste = [];
   if(!state.db.members.length) state.db.members = SEED_MEMBERS.slice();
 }
 function persist(){
@@ -525,6 +529,15 @@ function thDate(iso){
 const period = ()=> state.year+'-'+String(state.month).padStart(2,'0');
 const rows5s  = ()=> state.db.check5s.filter(r=>r.period===period());
 const rowsGCL = ()=> state.db.onegcl.filter(r=>r.period===period());
+const rowsWaste = ()=> (state.db.waste||[]).filter(r=>r.period===period());
+const money = n => (Number(n)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const WASTE_TYPES = ['กระดาษ','ขวดพลาสติกใส','พลาสติกรวม','กระป๋องอลูมิเนียม','ขวดแก้ว','เหล็ก/โลหะ','อื่น ๆ'];
+function wasteSum(list){
+  const t = list.reduce((a,r)=>a+(Number(r.amount)||0),0);
+  const p = list.filter(r=>r.status==='paid').reduce((a,r)=>a+(Number(r.amount)||0),0);
+  const kg = list.reduce((a,r)=>a+(Number(r.weight)||0),0);
+  return { total:t, paid:p, due:t-p, kg };
+}
 function zoneScore(zid, wk){
   const r = rows5s().find(x=>x.zone===zid && x.week===wk);
   return r ? r.total : null;
@@ -561,7 +574,7 @@ function render(){
     if(b.dataset.page===state.page) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
   });
   const v = $('#view');
-  v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, report:vReport, team:vTeam, setup:vSetup}[state.page]||vHome)();
+  v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, waste:vWaste, report:vReport, team:vTeam, setup:vSetup}[state.page]||vHome)();
   bind();
   window.scrollTo({top:0});
 }
@@ -1008,6 +1021,120 @@ function vGCL(){
   ${ tab==='form'?formHTML : tab==='status'?statusHTML : logHTML }`;
 }
 
+
+/* ---------- หน้า: ค่าขยะ & รายรับ ---------- */
+function vWaste(){
+  const ws = rowsWaste();
+  const sum = wasteSum(ws);
+  const dueAll = (state.db.waste||[]).filter(r=>r.status!=='paid');
+  const dueAllSum = dueAll.reduce((a,r)=>a+(Number(r.amount)||0),0);
+
+  const byType = WASTE_TYPES.map(t=>({ t, ...wasteSum(ws.filter(r=>r.type===t)) })).filter(x=>x.total>0);
+  const maxT = Math.max(1, ...byType.map(x=>x.total));
+  const byZone = ZONES.map(z=>({ z, ...wasteSum(ws.filter(r=>r.zone===z.id)) })).filter(x=>x.total>0);
+  const maxZ = Math.max(1, ...byZone.map(x=>x.total));
+
+  const rows = ws.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(r=>{
+    const z = Z[r.zone];
+    const paid = r.status==='paid';
+    return `<tr>
+      <td style="white-space:nowrap">${thDate(r.date)}</td>
+      <td>${z?`<span class="zone-tag"><i style="background:${z.hex}"></i>${esc(z.name)}</span>`:'<span style="color:var(--muted)">ส่วนกลาง</span>'}</td>
+      <td>${esc(r.type||'—')}</td>
+      <td class="num">${r.weight?Number(r.weight).toLocaleString('th-TH'):'—'}</td>
+      <td class="num">${r.price?money(r.price):'—'}</td>
+      <td class="num" style="font-weight:700">${money(r.amount)}</td>
+      <td>${esc(r.buyer||'—')}</td>
+      <td style="white-space:nowrap">${ paid
+        ? `<span class="chip">จ่ายแล้ว${r.paidAt?' · '+thDate(r.paidAt):''}</span>`
+        : `<span class="chip late">ค้างจ่าย</span>` }</td>
+      <td style="white-space:nowrap">${ paid
+        ? `<button class="btn btn-sm" data-wundo="${r.id}">ยกเลิก</button>`
+        : `<button class="btn btn-ok btn-sm" data-wpaid="${r.id}">รับเงินแล้ว</button>` }
+        <button class="btn btn-sm" data-wdel="${r.id}">ลบ</button></td>
+    </tr>`;
+  }).join('');
+
+  return `<h2 class="page-title">ค่าขยะ &amp; รายรับ</h2>
+  <p class="page-sub">บันทึกรายรับจากการคัดแยกและขายขยะรีไซเคิลของหอผู้ป่วย แยกยอดที่รับเงินแล้วกับยอดที่ยังค้างจ่าย พร้อมสรุปรายเดือนสำหรับรายงานทีม</p>
+
+  <div class="grid g5" style="margin-bottom:18px">
+    <div class="card"><h3>รายรับรวมเดือนนี้</h3>
+      <div style="font-size:30px;font-weight:700;line-height:1.15">${money(sum.total)}<span style="font-size:13px;color:var(--muted);font-weight:500"> บาท</span></div></div>
+    <div class="card" style="border-top:4px solid var(--ok)"><h3>รับเงินแล้ว</h3>
+      <div style="font-size:30px;font-weight:700;line-height:1.15;color:var(--ok)">${money(sum.paid)}<span style="font-size:13px;color:var(--muted);font-weight:500"> บาท</span></div>
+      <div class="bar"><i style="width:${sum.total?Math.round(sum.paid/sum.total*100):0}%;background:var(--ok)"></i></div></div>
+    <div class="card" style="border-top:4px solid var(--warn)"><h3>ค้างจ่ายเดือนนี้</h3>
+      <div style="font-size:30px;font-weight:700;line-height:1.15;color:${sum.due?'var(--warn)':'var(--muted)'}">${money(sum.due)}<span style="font-size:13px;color:var(--muted);font-weight:500"> บาท</span></div></div>
+    <div class="card"><h3>น้ำหนักรวม</h3>
+      <div style="font-size:30px;font-weight:700;line-height:1.15">${sum.kg.toLocaleString('th-TH')}<span style="font-size:13px;color:var(--muted);font-weight:500"> กก.</span></div></div>
+    <div class="card"><h3>ค้างจ่ายสะสมทุกเดือน</h3>
+      <div style="font-size:30px;font-weight:700;line-height:1.15;color:${dueAllSum?'var(--warn)':'var(--muted)'}">${money(dueAllSum)}<span style="font-size:13px;color:var(--muted);font-weight:500"> บาท</span></div>
+      <div class="meta" style="font-size:11.5px;color:var(--muted)">${dueAll.length} รายการ</div></div>
+  </div>
+
+  <div class="grid g2" style="margin-bottom:18px">
+    <div class="card">
+      <h3>บันทึกการขายขยะ</h3>
+      <p class="hint">ใส่น้ำหนักและราคาต่อกิโลกรัม ระบบคิดจำนวนเงินให้เอง หรือจะพิมพ์จำนวนเงินเองก็ได้</p>
+      <div class="row">
+        <div class="field"><label for="wDate">วันที่ขาย</label><input type="date" id="wDate" value="${todayISO()}"></div>
+        <div class="field"><label for="wZone">โซนที่รวบรวม</label>
+          <select id="wZone"><option value="">ส่วนกลาง / ทั้งหอผู้ป่วย</option>${ZONES.map(z=>`<option value="${z.id}">โซน${z.name}</option>`).join('')}</select></div>
+        <div class="field"><label for="wType">ประเภทขยะ</label>
+          <select id="wType">${WASTE_TYPES.map(t=>`<option>${esc(t)}</option>`).join('')}</select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="wWeight">น้ำหนัก (กก.)</label><input type="number" id="wWeight" min="0" step="0.1" placeholder="0"></div>
+        <div class="field"><label for="wPrice">ราคาต่อกิโลกรัม (บาท)</label><input type="number" id="wPrice" min="0" step="0.25" placeholder="0"></div>
+        <div class="field"><label for="wAmount">จำนวนเงิน (บาท)</label><input type="number" id="wAmount" min="0" step="0.01" placeholder="0"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="wBuyer">ผู้รับซื้อ / ร้าน</label><input type="text" id="wBuyer" placeholder="เช่น ร้านรับซื้อของเก่าหน้าโรงพยาบาล"></div>
+        <div class="field"><label for="wBy">ผู้บันทึก</label>
+          <select id="wBy">${state.db.members.map(m=>`<option ${m.name===state.user?'selected':''}>${esc(m.name)}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label>สถานะการรับเงิน</label>
+        <div class="pill-group" id="wStatus">
+          <button type="button" data-v="paid" aria-pressed="true">จ่ายแล้ว</button>
+          <button type="button" data-v="due" aria-pressed="false">ค้างจ่าย</button>
+        </div></div>
+      <div class="field"><label for="wNote">หมายเหตุ</label><input type="text" id="wNote" placeholder="เช่น นัดรับเงินสิ้นเดือน"></div>
+      <button class="btn btn-primary" id="saveWaste">บันทึกรายรับ</button>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <h3>รายรับแยกตามประเภทขยะ</h3>
+        <p class="hint">เดือน${TH_MONTHS[state.month-1]} ${state.year}</p>
+        ${ byType.length ? `<div class="barchart">${byType.map(x=>`<div class="bc-row"><span>${esc(x.t)}</span>
+            <div class="bc-track"><div class="bc-fill" style="width:${Math.round(x.total/maxT*100)}%"></div></div><b>${money(x.total)}</b></div>`).join('')}</div>`
+          : emptyHTML('ยังไม่มีรายรับในเดือนนี้','บันทึกการขายขยะครั้งแรกจากแบบฟอร์มด้านซ้าย') }
+      </div>
+      <div class="card">
+        <h3>รายรับแยกตามโซน</h3>
+        <p class="hint">ดูว่าโซนไหนคัดแยกขยะได้มากที่สุด</p>
+        ${ byZone.length ? `<div class="barchart">${byZone.map(x=>`<div class="bc-row"><span>โซน${esc(x.z.name)}</span>
+            <div class="bc-track"><div class="bc-fill" style="width:${Math.round(x.total/maxZ*100)}%;background:${x.z.hex}"></div></div><b>${money(x.total)}</b></div>`).join('')}</div>`
+          : emptyHTML('ยังไม่มีข้อมูลรายโซน','เลือกโซนตอนบันทึกเพื่อดูสรุปนี้') }
+      </div>
+    </div>
+  </div>
+
+  <div class="card scroll">
+    <h3>รายการทั้งหมดในเดือนนี้ (${ws.length} รายการ)</h3>
+    <p class="hint">กดปุ่มรับเงินแล้วเมื่อได้รับเงินจริง ยอดจะย้ายจากช่องค้างจ่ายไปช่องรับเงินแล้วทันที</p>
+    ${ ws.length ? `<table class="tbl">
+      <thead><tr><th>วันที่</th><th>โซน</th><th>ประเภท</th><th>น้ำหนัก (กก.)</th><th>ราคา/กก.</th><th>จำนวนเงิน</th><th>ผู้รับซื้อ</th><th>สถานะ</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><th colspan="5" style="text-align:right">รวม</th>
+        <th class="num">${money(sum.total)}</th><th colspan="3" style="text-align:left">รับแล้ว ${money(sum.paid)} · ค้าง ${money(sum.due)} บาท</th></tr></tfoot>
+    </table>
+    <div style="margin-top:12px"><button class="btn btn-sm" onclick="window.print()">พิมพ์รายงาน</button></div>`
+    : emptyHTML('ยังไม่มีรายการในเดือนนี้','เริ่มบันทึกจากแบบฟอร์มด้านบน') }
+  </div>`;
+}
+
 /* ---------- หน้า: สรุปรายเดือน ---------- */
 function vReport(){
   const rs = rows5s(), gcl = rowsGCL();
@@ -1065,6 +1192,22 @@ function vReport(){
   <div class="grid g2" style="margin-bottom:16px">
     <div class="card"><h3>One Cleaned แยกตามหมวด</h3><p class="hint">จำนวนกิจกรรมที่บันทึก</p><div class="barchart">${cat(gcl,'cleanSum',OPT_CLEAN)}</div></div>
     <div class="card"><h3>One Lean แยกตามหมวด</h3><p class="hint">จำนวนกิจกรรมที่บันทึก</p><div class="barchart">${cat(gcl,'leanSum',OPT_LEAN)}</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3>รายรับจากค่าขยะ</h3>
+    <p class="hint">ผลลัพธ์ที่จับต้องได้จากการคัดแยกขยะตามแนวทาง One Lean</p>
+    ${(function(){
+      const w = wasteSum(rowsWaste());
+      if(!w.total) return emptyHTML('ยังไม่มีรายรับในเดือนนี้','บันทึกได้ที่เมนูค่าขยะ & รายรับ');
+      const pct = Math.round(w.paid/w.total*100);
+      return `<div class="grid g3" style="gap:12px">
+        <div><div style="font-size:28px;font-weight:700;line-height:1.15">${money(w.total)}<span style="font-size:12px;color:var(--muted);font-weight:500"> บาท</span></div><div class="hint">รายรับรวม · ${w.kg.toLocaleString('th-TH')} กก.</div></div>
+        <div><div style="font-size:28px;font-weight:700;line-height:1.15;color:var(--ok)">${money(w.paid)}<span style="font-size:12px;color:var(--muted);font-weight:500"> บาท</span></div><div class="hint">รับเงินแล้ว ${pct}%</div></div>
+        <div><div style="font-size:28px;font-weight:700;line-height:1.15;color:${w.due?'var(--warn)':'var(--muted)'}">${money(w.due)}<span style="font-size:12px;color:var(--muted);font-weight:500"> บาท</span></div><div class="hint">ยังค้างจ่าย</div></div>
+      </div>
+      <div class="bar" style="height:9px;margin-top:10px"><i style="width:${pct}%;background:var(--ok)"></i></div>`;
+    })()}
   </div>
 
   <div class="card" style="margin-bottom:16px">
@@ -1145,7 +1288,8 @@ function vSetup(){
       <li>วางโค้ดจากไฟล์ <b>Code.gs</b> ที่แนบมาลงไป แล้วแก้ค่า SHEET_ID ให้เป็นรหัสของสเปรดชีต</li>
       <li>กด Deploy → New deployment → เลือก Web app → Execute as: Me → Who has access: Anyone</li>
       <li>คัดลอก Web app URL มาวางในช่องด้านบน แล้วกดบันทึกและเชื่อมต่อ</li>
-      <li>ระบบจะสร้างชีตย่อย <b>Members</b>, <b>Check5S</b> และ <b>OneGCL_App</b> ให้อัตโนมัติในครั้งแรก</li>
+      <li>ระบบจะสร้างชีตย่อย <b>Members</b>, <b>Check5S</b>, <b>OneGCL_App</b> และ <b>Waste</b> ให้อัตโนมัติในครั้งแรก</li>
+      <li>รูปกิจกรรมทั้งหมดจะถูกเก็บในโฟลเดอร์ <b>OneGCL_Images_App</b> ที่อยู่ข้างสเปรดชีต</li>
     </ol>
     <p class="hint" style="margin-top:10px">ชีต OneGCLnew เดิมยังใช้งานได้ตามปกติ โค้ดจะอ่านข้อมูลเก่ามาแสดงด้วยโดยไม่แก้ไขแถวเดิม</p>
     <div style="margin-top:12px"><button class="btn" id="resetLocal">ล้างข้อมูลในเครื่อง</button></div>
@@ -1161,6 +1305,9 @@ function bind(){
     el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); }});
   });
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ state.page=b.dataset.go; render(); });
+  document.querySelectorAll('.pill-group button').forEach(b=>b.onclick=()=>{
+    b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
+  });
 
   // ปิดรายการติดตาม
   document.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{
@@ -1211,9 +1358,6 @@ function bind(){
   // One G-C-L
   if(state.page==='onegcl'){
     document.querySelectorAll('#gclTabs button').forEach(b=>b.onclick=()=>{ state.gclTab=b.dataset.t; render(); });
-    document.querySelectorAll('.pill-group button').forEach(b=>b.onclick=()=>{
-      b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
-    });
     const picked = id => { const b=document.querySelector('#'+id+' button[aria-pressed="true"]'); return b?b.dataset.v:''; };
 
     document.querySelectorAll('.pic-add').forEach(b=>b.onclick=()=>document.getElementById('file_'+b.dataset.pk).click());
@@ -1276,6 +1420,47 @@ function bind(){
     });
   }
 
+  // ค่าขยะ
+  if(state.page==='waste'){
+    const calc = ()=>{
+      const w = parseFloat($('#wWeight').value)||0, pr = parseFloat($('#wPrice').value)||0;
+      if(w && pr) $('#wAmount').value = (w*pr).toFixed(2);
+    };
+    $('#wWeight').oninput = calc; $('#wPrice').oninput = calc;
+
+    $('#saveWaste').onclick=()=>{
+      const date = $('#wDate').value||todayISO();
+      const amount = parseFloat($('#wAmount').value)||0;
+      if(!amount){ toast('ใส่จำนวนเงิน หรือใส่น้ำหนักกับราคาต่อกิโลกรัม'); return; }
+      const st = document.querySelector('#wStatus button[aria-pressed="true"]');
+      const paid = st && st.dataset.v==='paid';
+      state.db.waste = state.db.waste || [];
+      state.db.waste.push({
+        id: uid(), period:(date.slice(0,4)*1+543)+'-'+date.slice(5,7), date,
+        zone: $('#wZone').value, type: $('#wType').value,
+        weight: parseFloat($('#wWeight').value)||0,
+        price: parseFloat($('#wPrice').value)||0,
+        amount, buyer: $('#wBuyer').value.trim(), by: $('#wBy').value,
+        note: $('#wNote').value.trim(),
+        status: paid?'paid':'due', paidAt: paid?date:''
+      });
+      persist(); toast('บันทึกรายรับ '+money(amount)+' บาทแล้ว'); render();
+    };
+
+    document.querySelectorAll('[data-wpaid]').forEach(b=>b.onclick=()=>{
+      const r = state.db.waste.find(x=>x.id===b.dataset.wpaid);
+      if(r){ r.status='paid'; r.paidAt=todayISO(); persist(); toast('บันทึกว่ารับเงินแล้ว'); render(); }
+    });
+    document.querySelectorAll('[data-wundo]').forEach(b=>b.onclick=()=>{
+      const r = state.db.waste.find(x=>x.id===b.dataset.wundo);
+      if(r){ r.status='due'; r.paidAt=''; persist(); render(); }
+    });
+    document.querySelectorAll('[data-wdel]').forEach(b=>b.onclick=()=>{
+      if(!confirm('ลบรายการนี้?')) return;
+      state.db.waste = state.db.waste.filter(x=>x.id!==b.dataset.wdel); persist(); render();
+    });
+  }
+
   // สมาชิกทีม
   if(state.page==='team'){
     document.querySelectorAll('[data-mid]').forEach(el=>{
@@ -1303,7 +1488,7 @@ function bind(){
     };
     $('#resetLocal').onclick=()=>{
       if(!confirm('ล้างข้อมูลที่เก็บในเครื่องทั้งหมด? ข้อมูลบน Google Sheet จะไม่ถูกลบ')) return;
-      state.db={members:SEED_MEMBERS.slice(),check5s:[],onegcl:[]}; persist(); render(); toast('ล้างข้อมูลในเครื่องแล้ว');
+      state.db={members:SEED_MEMBERS.slice(),check5s:[],onegcl:[],waste:[]}; persist(); render(); toast('ล้างข้อมูลในเครื่องแล้ว');
     };
   }
 }
