@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สวน 5ส · หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F3529;        /* ป่าลึก - ตัวอักษรหลัก */
+  --canopy:#175943;     /* เรือนยอด */
+  --leaf:#2E9E6B;       /* ใบอ่อน */
+  --sprout:#7FD3A3;
+  --mist:#EDF6F0;       /* พื้นหลัง */
+  --paper:#FFFFFF;
+  --line:#D6E7DC;
+  --muted:#5C7A6C;
+  --warn:#C4562F;
+  --warn-bg:#FDF0E9;
+  --ok:#1E8A5C;
+
+  --z-bua:#E0699F;      /* ดอกบัว */
+  --z-dao:#F08A1D;      /* ดาวเรือง */
+  --z-tan:#E6B400;      /* ทานตะวัน */
+  --z-puang:#DD5326;    /* พวงแสด */
+  --z-kul:#C9345F;      /* กุหลาบหิน */
+
+  --r:14px;
+  --shadow:0 1px 2px rgba(15,53,41,.06), 0 8px 24px -12px rgba(15,53,41,.22);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"IBM Plex Sans Thai","Sarabun","Leelawadee UI",system-ui,sans-serif;
+  background:var(--mist); color:var(--ink);
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+a{color:var(--canopy)}
+:focus-visible{outline:3px solid var(--leaf);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- โครงหน้า ---------- */
+.shell{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.side{
+  background:linear-gradient(170deg,#0F3529 0%,#175943 58%,#22795A 100%);
+  color:#DFF1E6;padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.brand{display:flex;gap:11px;align-items:center;margin-bottom:26px}
+.brand-mark{width:42px;height:42px;flex:none}
+.brand h1{font-size:16px;margin:0;font-weight:700;color:#fff;letter-spacing:-.2px}
+.brand p{margin:1px 0 0;font-size:11.5px;color:#9FCFB6;line-height:1.35}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav button{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:transparent;border:0;border-radius:10px;padding:10px 12px;
+  color:#C8E6D6;cursor:pointer;font-weight:500;transition:background .15s,color .15s
+}
+.nav button:hover{background:rgba(255,255,255,.09);color:#fff}
+.nav button[aria-current="page"]{background:#fff;color:var(--canopy);font-weight:600}
+.nav svg{width:19px;height:19px;flex:none}
+.side-foot{margin-top:26px;padding-top:16px;border-top:1px solid rgba(255,255,255,.14);font-size:11.5px;color:#8FC3AA}
+.side-foot b{color:#CFE9DA;font-weight:600}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+
+.main{min-width:0;padding:0 0 60px}
+.topbar{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  padding:14px 30px;background:rgba(237,246,240,.9);backdrop-filter:blur(8px);
+  position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line)
+}
+.period{display:flex;gap:8px;align-items:center}
+.period label{font-size:12.5px;color:var(--muted);font-weight:500}
+select,input[type=text],input[type=date],input[type=number],textarea{
+  background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:7px 10px
+}
+textarea{width:100%;resize:vertical;min-height:64px;line-height:1.55}
+.wrap{padding:24px 30px;max-width:1240px}
+h2.page-title{font-size:25px;margin:0 0 4px;letter-spacing:-.4px}
+.page-sub{color:var(--muted);margin:0 0 20px;font-size:13.5px;max-width:70ch}
+
+/* ---------- ฮีโร่ ---------- */
+.hero{
+  position:relative;overflow:hidden;border-radius:20px;color:#fff;padding:26px 28px;
+  background:linear-gradient(115deg,#0F3529 0%,#1B6A4E 46%,#39A877 100%);
+  box-shadow:var(--shadow);margin-bottom:20px
+}
+.hero-deco{position:absolute;right:-30px;top:-40px;width:340px;opacity:.5;pointer-events:none}
+.hero h2{margin:0 0 6px;font-size:27px;letter-spacing:-.5px;line-height:1.25}
+.hero p{margin:0;color:#BFE6CF;font-size:13.5px;max-width:52ch}
+.hero-stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:20px;position:relative}
+.hs b{display:block;font-size:29px;font-weight:700;line-height:1.1}
+.hs span{font-size:12px;color:#A9DCC1}
+
+/* ---------- การ์ด ---------- */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 3px;font-size:16px}
+.card .hint{margin:0 0 14px;color:var(--muted);font-size:12.5px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1.45fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:1080px){.g2,.g3{grid-template-columns:1fr}.g5{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- การ์ดโซน ---------- */
+.zone-card{
+  background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--zc);
+  border-radius:var(--r);padding:14px;box-shadow:var(--shadow);cursor:pointer;text-align:left;width:100%
+}
+.zone-card:hover{border-color:var(--zc)}
+.zone-card .zn{display:flex;align-items:center;gap:8px;font-weight:600}
+.zone-card .zn svg{width:26px;height:26px;flex:none}
+.zone-card .score{font-size:30px;font-weight:700;line-height:1.1;margin-top:8px}
+.zone-card .meta{font-size:11.5px;color:var(--muted)}
+.bar{height:6px;border-radius:99px;background:#EAF2ED;overflow:hidden;margin-top:9px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--zc)}
+
+/* ---------- แผนผัง ---------- */
+.map-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.map-wrap svg{width:100%;height:auto;display:block}
+.room{cursor:pointer}
+.room:hover .room-fill{filter:brightness(.94)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.legend button{
+  display:flex;gap:7px;align-items:center;background:var(--paper);border:1px solid var(--line);
+  border-radius:99px;padding:5px 13px 5px 8px;cursor:pointer;font-size:12.5px;font-weight:500
+}
+.legend button[data-on="1"]{border-color:var(--lc);background:var(--lcbg)}
+.legend i{width:11px;height:11px;border-radius:3px;background:var(--lc);display:block}
+
+/* ---------- ตาราง ---------- */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+.tbl thead th{background:#F2F9F5;font-weight:600;color:var(--canopy);text-align:center}
+.tbl td.num{text-align:center;font-weight:600;width:62px}
+.scroll{overflow-x:auto}
+.zone-tag{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.zone-tag i{width:10px;height:10px;border-radius:3px;display:block}
+
+/* ---------- แถบแจ้งเตือน ---------- */
+.alert{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:11px;background:var(--warn-bg);border:1px solid #F2CDB9;margin-bottom:9px}
+.alert.done{background:#EEF8F2;border-color:#CBE6D6}
+.alert .txt{flex:1;min-width:0}
+.alert .txt b{font-size:13.5px}
+.alert .txt p{margin:2px 0 0;font-size:13px;color:#4A3226}
+.alert.done .txt p{color:var(--muted);text-decoration:line-through}
+.alert .when{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+/* ---------- ปุ่ม ---------- */
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:8px 14px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--leaf)}
+.btn-primary{background:var(--canopy);border-color:var(--canopy);color:#fff;font-weight:600}
+.btn-primary:hover{background:#0F3529}
+.btn-ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:600;white-space:nowrap}
+.btn-sm{padding:5px 11px;font-size:12.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---------- ฟอร์ม ---------- */
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:600;font-size:13px;margin-bottom:5px}
+.field .sub{font-weight:400;color:var(--muted);font-size:12px}
+.field select,.field input[type=text],.field input[type=date]{width:100%}
+.row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+fieldset{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 16px;background:#FBFDFC}
+legend{font-weight:600;padding:0 8px;color:var(--canopy)}
+.s-item{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line)}
+.s-item:last-child{border-bottom:0}
+.s-item span{flex:1;font-size:13.5px}
+.rate{display:flex;gap:4px;flex:none}
+.rate button{width:32px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted)}
+.rate button[aria-pressed="true"]{background:var(--canopy);border-color:var(--canopy);color:#fff}
+.pill-group{display:flex;gap:6px;flex-wrap:wrap}
+.pill-group button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 13px;cursor:pointer;font-size:13px}
+.pill-group button[aria-pressed="true"]{background:var(--canopy);border-color:var(--canopy);color:#fff;font-weight:600}
+
+/* ---------- เบ็ดเตล็ด ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:99px;cursor:pointer;font-weight:500;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--canopy);color:#fff;font-weight:600}
+.empty{text-align:center;padding:34px 18px;color:var(--muted)}
+.empty svg{width:56px;height:56px;opacity:.35;margin-bottom:8px}
+.chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:600;background:#EAF4EE;color:var(--canopy)}
+.chip.late{background:var(--warn-bg);color:var(--warn)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:11px;box-shadow:var(--shadow);z-index:99;font-weight:500}
+.hide{display:none!important}
+.barchart{display:flex;flex-direction:column;gap:9px}
+.bc-row{display:grid;grid-template-columns:150px 1fr 44px;gap:10px;align-items:center;font-size:13px}
+.bc-track{height:20px;background:#EFF6F2;border-radius:6px;overflow:hidden}
+.bc-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--leaf),var(--canopy))}
+.bc-row b{text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto}
+  .nav{flex-direction:row;flex-wrap:wrap}
+  .nav button{width:auto}
+  .wrap,.topbar{padding-left:16px;padding-right:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ============ แถบข้าง ============ -->
+  <aside class="side">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <circle cx="24" cy="24" r="23" fill="#0F3529" stroke="#4FC08D" stroke-width="1.5"/>
+        <path d="M24 34c0-7 4-12 10-13-1 7-4 11-10 13z" fill="#7FD3A3"/>
+        <path d="M24 34c0-7-4-12-10-13 1 7 4 11 10 13z" fill="#4FC08D"/>
+        <path d="M24 34V19" stroke="#7FD3A3" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="24" cy="15" r="4.2" fill="#E6B400"/>
+      </svg>
+      <div>
+        <h1>สวน 5ส</h1>
+        <p>ศัลยกรรมอุบัติเหตุชาย ชั้น 10<br>รพ.มหาราชนครราชสีมา</p>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button data-page="home" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+        ภาพรวมหอผู้ป่วย</button>
+      <button data-page="map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3 3 5.5v16L9 19l6 2.5 6-2.5v-16L15 5.5 9 3z"/><path d="M9 3v16M15 5.5v16"/></svg>
+        แผนผังโซน</button>
+      <button data-page="check5s">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l2.5 2.5L16 8"/><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M8 2v4M16 2v4"/></svg>
+        ตรวจ 5ส รายสัปดาห์</button>
+      <button data-page="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M15 9v11"/></svg>
+        ตาราง Round 5ส</button>
+      <button data-page="onegcl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21c5-2 8-6 8-11V5l-8-2-8 2v5c0 5 3 9 8 11z"/><path d="M9.5 12l1.8 1.8 3.7-4"/></svg>
+        One G-C-L &amp; Ethics</button>
+      <button data-page="report">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V9M10 20V4M16 20v-7M22 20H2"/></svg>
+        สรุปรายเดือน</button>
+      <button data-page="team">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M17 5.5a3.2 3.2 0 0 1 0 6M18.5 20c0-2.6-.9-4.3-2.2-5.4"/></svg>
+        สมาชิกทีมโซน</button>
+      <button data-page="setup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 2.6 7a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 7 2.6h.1A1.7 1.7 0 0 0 8.3 1V1a2 2 0 1 1 4 0" transform="translate(1.5 1.5) scale(.86)"/></svg>
+        เชื่อมต่อ Google Sheet</button>
+    </nav>
+
+    <div class="side-foot">
+      <div id="connState"><span class="dot" style="background:#E6B400"></span>โหมดทดลอง (เก็บในเครื่อง)</div>
+      <div style="margin-top:8px">ผู้ใช้งาน: <b id="whoami">—</b></div>
+    </div>
+  </aside>
+
+  <!-- ============ เนื้อหา ============ -->
+  <main class="main">
+    <div class="topbar">
+      <div class="period">
+        <label for="selMonth">รอบเดือน</label>
+        <select id="selMonth"></select>
+        <select id="selYear"></select>
+      </div>
+      <div class="period">
+        <label for="selUser">ผู้บันทึก</label>
+        <select id="selUser"></select>
+      </div>
+    </div>
+    <div class="wrap" id="view"></div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   สวน 5ส — หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10
+   Front-end ไฟล์เดียว · เก็บข้อมูลที่ Google Sheet ผ่าน Apps Script
+   ============================================================ */
+
+/* ---------- 1. ตั้งค่า ---------- */
+const CFG = {
+  API_URL: '',                    // วาง Web app URL ของ Apps Script ที่หน้า "เชื่อมต่อ Google Sheet"
+  LS: 'garden5s.v1'
+};
+
+/* ---------- 2. ข้อมูลหลักของโซน ---------- */
+const ZONES = [
+  { id:'bua',   name:'ดอกบัว',    color:'var(--z-bua)',   hex:'#E0699F', icon:'lotus' },
+  { id:'dao',   name:'ดาวเรือง',  color:'var(--z-dao)',   hex:'#F08A1D', icon:'marigold' },
+  { id:'tan',   name:'ทานตะวัน',  color:'var(--z-tan)',   hex:'#E6B400', icon:'sunflower' },
+  { id:'puang', name:'พวงแสด',    color:'var(--z-puang)', hex:'#DD5326', icon:'trumpet' },
+  { id:'kul',   name:'กุหลาบหิน', color:'var(--z-kul)',   hex:'#C9345F', icon:'kalanchoe' }
+];
+const Z = Object.fromEntries(ZONES.map(z=>[z.id,z]));
+
+/* ---------- 3. แผนผังหอผู้ป่วย (viewBox 1000 x 640) ---------- */
+/* แก้ไขตำแหน่ง/ชื่อห้องได้ที่นี่ให้ตรงผังจริง */
+const MAP = {
+  zoneBlocks:[
+    { z:'bua',   x:44,  y:52,  w:384, h:104, label:'ห้องผู้ป่วยรวม ก1–ก4' },
+    { z:'dao',   x:44,  y:168, w:384, h:104, label:'ห้องผู้ป่วยรวม ข1–ข4' },
+    { z:'tan',   x:44,  y:284, w:384, h:104, label:'ห้องผู้ป่วยรวม ค1–ค4' },
+    { z:'puang', x:44,  y:400, w:384, h:104, label:'ห้องผู้ป่วยรวม ง1–ง4' },
+    { z:'kul',   x:44,  y:516, w:384, h:78,  label:'ห้องแยก / ห้องพิเศษ' }
+  ],
+  rooms:[
+    { z:'bua',   x:440, y:52,  w:106, h:48, label:'ห้องพักแพทย์' },
+    { z:'bua',   x:552, y:52,  w:106, h:48, label:'ห้องนักศึกษา' },
+    { z:'bua',   x:440, y:106, w:218, h:50, label:'ห้องเก็บของ 1' },
+
+    { z:'dao',   x:440, y:168, w:218, h:46, label:'ห้องพักเจ้าหน้าที่' },
+    { z:'dao',   x:440, y:220, w:106, h:52, label:'ห้องน้ำเจ้าหน้าที่' },
+    { z:'dao',   x:552, y:220, w:106, h:52, label:'ห้องเก็บผ้า' },
+
+    { z:'tan',   x:440, y:284, w:218, h:52, label:'เคาน์เตอร์พยาบาล' },
+    { z:'tan',   x:440, y:342, w:106, h:46, label:'ห้องยา' },
+    { z:'tan',   x:552, y:342, w:106, h:46, label:'ห้องเตรียมของสะอาด' },
+
+    { z:'puang', x:440, y:400, w:218, h:46, label:'ห้องประชุม' },
+    { z:'puang', x:440, y:452, w:106, h:52, label:'ห้องหัตถการ' },
+    { z:'puang', x:552, y:452, w:106, h:52, label:'ห้องเก็บเครื่องมือ' },
+
+    { z:'kul',   x:440, y:516, w:106, h:78, label:'ห้องเก็บของสกปรก' },
+    { z:'kul',   x:552, y:516, w:106, h:78, label:'ห้องซักล้าง' }
+  ],
+  corridor:{ z:'tan', x:670, y:52, w:62, h:542, label:'ทางเดินกลาง' },
+  facilities:[
+    { x:744, y:52,  w:212, h:88, label:'บันไดหนีไฟ 1', kind:'stair' },
+    { x:744, y:150, w:100, h:88, label:'ลิฟต์โดยสาร',  kind:'lift' },
+    { x:856, y:150, w:100, h:88, label:'ลิฟต์เตียง',    kind:'lift' },
+    { x:744, y:248, w:100, h:78, label:'ห้องน้ำชาย',    kind:'wc' },
+    { x:856, y:248, w:100, h:78, label:'ห้องน้ำหญิง',   kind:'wc' },
+    { x:744, y:336, w:212, h:66, label:'ห้องน้ำผู้พิการ', kind:'wc' },
+    { x:744, y:412, w:212, h:84, label:'ลิฟต์บริการ',   kind:'lift' },
+    { x:744, y:506, w:212, h:88, label:'บันไดหนีไฟ 2',  kind:'stair' }
+  ]
+};
+
+/* ---------- 4. เกณฑ์ตรวจ 5ส (20 ข้อ ข้อละ 5 คะแนน = 100) ---------- */
+const S5 = [
+  { key:'s1', title:'ส1 สะสาง', desc:'แยกของจำเป็น–ไม่จำเป็นออกจากกัน', items:[
+    'ไม่มีของที่ไม่ใช้งานตกค้างในพื้นที่',
+    'อุปกรณ์ชำรุดถูกแยกและติดป้ายรอส่งซ่อม',
+    'เวชภัณฑ์/น้ำยาหมดอายุถูกคัดออกครบถ้วน',
+    'ของส่วนตัวเก็บในล็อกเกอร์ ไม่วางบนพื้นที่ทำงาน' ]},
+  { key:'s2', title:'ส2 สะดวก', desc:'ของทุกชิ้นมีที่อยู่ หยิบใช้–คืนได้ทันที', items:[
+    'มีป้ายชี้บ่งตำแหน่งจัดเก็บชัดเจน',
+    'ของวางตรงตำแหน่งที่กำหนดทุกชิ้น',
+    'ทางเดินและทางหนีไฟไม่มีสิ่งกีดขวาง',
+    'อุปกรณ์ฉุกเฉินอยู่จุดเดิม เข้าถึงได้ใน 30 วินาที' ]},
+  { key:'s3', title:'ส3 สะอาด', desc:'สะอาดพร้อมใช้ และปลอดภัยต่อการติดเชื้อ', items:[
+    'พื้น ผนัง ใต้เตียง และซอกมุมสะอาด ไม่มีฝุ่น',
+    'ครุภัณฑ์ทางการแพทย์เช็ดสะอาด พร้อมใช้',
+    'ถังขยะแยกประเภทถูกต้อง ปิดมิดชิด ไม่เกิน 3 ใน 4',
+    'จุดล้างมือ/แอลกอฮอล์เจลพร้อมใช้ทุกจุด' ]},
+  { key:'s4', title:'ส4 สร้างมาตรฐาน', desc:'มีมาตรฐานที่มองเห็นได้และทำตามได้', items:[
+    'ติดมาตรฐานพื้นที่และภาพถ่ายเปรียบเทียบไว้ในโซน',
+    'มีชื่อผู้รับผิดชอบโซนติดแสดงเป็นปัจจุบัน',
+    'บันทึกการตรวจสอบเป็นปัจจุบัน ไม่ขาดสัปดาห์',
+    'ป้าย/สติกเกอร์อยู่ในสภาพดี อ่านออกชัดเจน' ]},
+  { key:'s5', title:'ส5 สร้างวินัย', desc:'ทำต่อเนื่องจนเป็นนิสัยของทีม', items:[
+    'เจ้าหน้าที่ในโซนแต่งกายถูกระเบียบ',
+    'ปฏิบัติตามมาตรฐานสม่ำเสมอทุกเวร',
+    'เข้าร่วมกิจกรรม 5ส และ Big Cleaning ตามกำหนด',
+    'แก้ไขข้อเสนอแนะจากการตรวจครั้งก่อนแล้ว' ]}
+];
+const MAX5S = S5.reduce((a,g)=>a+g.items.length*5,0);
+
+/* ---------- 5. ตัวเลือกของ One G-C-L & Ethics (ตามชีต OneGCLnew) ---------- */
+const OPT_CLEAN = ['สถานที่ภายในหอผู้ป่วย','ครุภัณฑ์ทางการแพทย์','อุปกรณ์/ของใช้ส่วนตัว'];
+const OPT_LEAN  = ['ลดระยะเวลางาน','ลดการใช้กระดาษ','นำกลับใช้ซ้ำ','ประหยัดพลังงาน','FIFO'];
+const OPT_ETHIC = [
+  '1.1 การเคารพเอกสิทธิ์ — เคารพการตัดสินใจของผู้ป่วย ให้ข้อมูลครบถ้วน',
+  '1.2 การบอกความจริง — ให้ข้อมูลตรงไปตรงมาตามขอบเขตวิชาชีพ',
+  '2.1 การทำหน้าที่แทน — เป็นกระบอกเสียงและพิทักษ์สิทธิ์ผู้ป่วย',
+  '2.2 การรักษาความลับ — ไม่เปิดเผยข้อมูลผู้ป่วยต่อผู้ไม่เกี่ยวข้อง',
+  '3.1 การทำประโยชน์ — ให้การพยาบาลที่เกิดผลดีสูงสุดต่อผู้ป่วย',
+  '3.2 การไม่ทำอันตราย — ป้องกันภาวะแทรกซ้อนและความเสี่ยง',
+  '4.1 ความยุติธรรม — ให้บริการเท่าเทียม ไม่เลือกปฏิบัติ',
+  '4.2 ความซื่อสัตย์และรักษาสัญญา — ทำตามที่ให้ไว้กับผู้ป่วยและญาติ'
+];
+
+/* ---------- 6. รายชื่อทีมตั้งต้น (จากชีต OneGCLnew) ---------- */
+const SEED_MEMBERS = [
+  ['นางอัญญารัตน์ เจียมธนานุรักษ์','anyarat.nok@gmail.com','หัวหน้าหอผู้ป่วย'],
+  ['นางสาวจันจิรา ศรีตะ','trauma952@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางคำพุด โสตรุดร','sotarudon.k@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวอรอุมา รักไร่กลาง','onuma1114900@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวนวลตา พันธุ์กาง','nuantata@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวสุพรรณี สำลีอ่อน','supanneeple817@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวพุทธชาติ สุมาลี','numberone.put@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวสรวงสุดา ตู้จันทึก','1997ploysuangsuda@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวอริสรา ป้องงูเหลือม','arisarapongngulueam@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวฐิตินันท์ อินทร์ช้าง','titinanja@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวอุ้มบุญ ชื่นนอก','aoombun2001@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวพิศา จันทะค่อม','pisajantakhom@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวอัญชลี ภักดีเกษม','kaepakdeekasaim16@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวชนาภา ทบสนธิ์','chanapa042356@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวศิริรัตน์ โพยนอก','siriratbam.2910@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวกนกพร เพิกขุนทด','aooakp12@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวสุรีรัตน์ พลธรรม','sureerat1988.p@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวสาคร แสวงชู','sakron2731@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวจารุวรรณ สุทธิประภา','jaruwan3425@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวสุนันทา ผาสุขโสม','phasuk24390@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาวเบญจมาศ รัตนารักษ์','benjamart23@gmail.com','พยาบาลวิชาชีพ'],
+  ['นางสาววริศรา ย่อกลาง','warisara383@gmail.com','พยาบาลวิชาชีพ']
+].map((m,i)=>({ id:'m'+(i+1), name:m[0], email:m[1], role:m[2], zone:'' }));
+
+/* ---------- 7. สถานะแอป ---------- */
+const now = new Date();
+const state = {
+  page:'home',
+  month: now.getMonth()+1,
+  year:  now.getFullYear()+543,
+  user:  '',
+  db: { members:[], check5s:[], onegcl:[] }
+};
+const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+/* ---------- 8. ที่เก็บข้อมูล ---------- */
+const store = {
+  read(){ try{ return JSON.parse(localStorage.getItem(CFG.LS)||'null'); }catch(e){ return null; } },
+  write(d){ try{ localStorage.setItem(CFG.LS, JSON.stringify(d)); }catch(e){} },
+  readCfg(){ try{ return localStorage.getItem(CFG.LS+'.api')||''; }catch(e){ return ''; } },
+  writeCfg(v){ try{ localStorage.setItem(CFG.LS+'.api', v); }catch(e){} }
+};
+
+async function api(action, payload){
+  if(!CFG.API_URL) throw new Error('offline');
+  const res = await fetch(CFG.API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action, payload })
+  });
+  const json = await res.json();
+  if(!json.ok) throw new Error(json.error||'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
+  return json.data;
+}
+
+async function loadAll(){
+  CFG.API_URL = store.readCfg();
+  if(CFG.API_URL){
+    try{
+      const d = await api('getAll', {});
+      state.db = { members:d.members||[], check5s:d.check5s||[], onegcl:d.onegcl||[] };
+      if(!state.db.members.length) state.db.members = SEED_MEMBERS.slice();
+      setConn(true); return;
+    }catch(e){ setConn(false, e.message); }
+  }
+  const local = store.read();
+  state.db = local || { members: SEED_MEMBERS.slice(), check5s:[], onegcl:[] };
+  if(!state.db.members.length) state.db.members = SEED_MEMBERS.slice();
+}
+function persist(){
+  store.write(state.db);
+  if(CFG.API_URL) api('saveAll', state.db).catch(e=>toast('บันทึกขึ้น Sheet ไม่สำเร็จ: '+e.message));
+}
+function setConn(ok, msg){
+  const el = document.getElementById('connState');
+  el.innerHTML = ok
+    ? '<span class="dot" style="background:#4FC08D"></span>เชื่อมต่อ Google Sheet แล้ว'
+    : '<span class="dot" style="background:#E6B400"></span>โหมดทดลอง (เก็บในเครื่อง)';
+  if(msg && CFG.API_URL) el.title = msg;
+}
+
+/* ---------- 9. ตัวช่วย ---------- */
+const $ = s=>document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),2600);
+}
+function weekOfMonth(dateStr){
+  const d = new Date(dateStr); if(isNaN(d)) return 1;
+  return Math.min(4, Math.ceil(d.getDate()/7));
+}
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function thDate(iso){
+  if(!iso) return '—';
+  const d = new Date(iso); if(isNaN(d)) return iso;
+  return d.getDate()+' '+TH_MONTHS[d.getMonth()].slice(0,3)+' '+(d.getFullYear()+543);
+}
+const period = ()=> state.year+'-'+String(state.month).padStart(2,'0');
+const rows5s  = ()=> state.db.check5s.filter(r=>r.period===period());
+const rowsGCL = ()=> state.db.onegcl.filter(r=>r.period===period());
+function zoneScore(zid, wk){
+  const r = rows5s().find(x=>x.zone===zid && x.week===wk);
+  return r ? r.total : null;
+}
+function zoneAvg(zid){
+  const arr = rows5s().filter(x=>x.zone===zid).map(x=>x.total);
+  return arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : null;
+}
+function membersOf(zid){ return state.db.members.filter(m=>m.zone===zid); }
+function follows(){
+  const out=[];
+  state.db.check5s.forEach(r=>{
+    if(r.improve && r.improve.trim()) out.push({rid:r.id, zone:r.zone, week:r.week, period:r.period, text:r.improve, status:r.followStatus||'open', date:r.date, by:r.inspector});
+  });
+  return out.sort((a,b)=> (a.status===b.status?0:a.status==='open'?-1:1) || b.date.localeCompare(a.date));
+}
+
+/* ไอคอนดอกไม้ประจำโซน */
+function flower(kind, color, size){
+  const s = size||26;
+  const petals = {lotus:8, marigold:12, sunflower:14, trumpet:5, kalanchoe:6}[kind]||8;
+  let p='';
+  for(let i=0;i<petals;i++){
+    const a = i*360/petals;
+    p += `<ellipse cx="24" cy="11" rx="4.4" ry="8.6" fill="${color}" opacity="${kind==='lotus'?0.82:0.9}" transform="rotate(${a} 24 24)"/>`;
+  }
+  const core = kind==='sunflower' ? '#5A3A18' : kind==='lotus' ? '#F6E27A' : '#F6C64B';
+  return `<svg viewBox="0 0 48 48" width="${s}" height="${s}" aria-hidden="true">${p}<circle cx="24" cy="24" r="6.2" fill="${core}"/></svg>`;
+}
+
+/* ---------- 10. เรนเดอร์ ---------- */
+function render(){
+  document.querySelectorAll('#nav button').forEach(b=>{
+    if(b.dataset.page===state.page) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
+  });
+  const v = $('#view');
+  v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, report:vReport, team:vTeam, setup:vSetup}[state.page]||vHome)();
+  bind();
+  window.scrollTo({top:0});
+}
+
+/* ---------- หน้า: ภาพรวม ---------- */
+function vHome(){
+  const rs = rows5s();
+  const avg = rs.length ? Math.round(rs.reduce((a,b)=>a+b.total,0)/rs.length) : 0;
+  const open = follows().filter(f=>f.status==='open' && f.period===period()).length;
+  const gcl = rowsGCL();
+  const submitters = new Set(gcl.map(r=>r.name)).size;
+  const totalM = state.db.members.length;
+
+  const zoneCards = ZONES.map(z=>{
+    const s = zoneAvg(z.id);
+    const mem = membersOf(z.id);
+    return `<button class="zone-card" data-zone="${z.id}" style="--zc:${z.hex}">
+      <div class="zn">${flower(z.icon,z.hex,26)}<span>โซน${z.name}</span></div>
+      <div class="score">${s===null?'—':s}<span style="font-size:13px;font-weight:500;color:var(--muted)"> /100</span></div>
+      <div class="bar"><i style="width:${s||0}%"></i></div>
+      <div class="meta">${mem.length? esc(mem.length+' คน · '+(mem[0].name.replace(/^นาง(สาว)?/,''))+(mem.length>1?' และคณะ':'')) : 'ยังไม่ได้กำหนดสมาชิก'}</div>
+    </button>`;
+  }).join('');
+
+  const fl = follows().filter(f=>f.period===period()).slice(0,6);
+
+  return `
+  <section class="hero">
+    <svg class="hero-deco" viewBox="0 0 300 300" fill="none" aria-hidden="true">
+      <path d="M150 280c0-80 40-140 120-150-10 80-45 130-120 150z" fill="#7FD3A3" opacity=".55"/>
+      <path d="M150 280c0-80-40-140-120-150 10 80 45 130 120 150z" fill="#4FC08D" opacity=".4"/>
+      <path d="M150 285V120" stroke="#BFE6CF" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+      <circle cx="150" cy="92" r="30" fill="#E6B400" opacity=".55"/>
+    </svg>
+    <h2>ภาพรวม 5ส ประจำเดือน${TH_MONTHS[state.month-1]} ${state.year}</h2>
+    <p>ห้าโซนดอกไม้ดูแลพื้นที่ของตนเองทุกสัปดาห์ พร้อมกิจกรรม One Green · One Clean · One Lean และจริยธรรมรายบุคคล</p>
+    <div class="hero-stats">
+      <div class="hs"><b>${avg||'—'}</b><span>คะแนนเฉลี่ยทุกโซน (เต็ม 100)</span></div>
+      <div class="hs"><b>${rs.length}<span style="font-size:14px;color:#A9DCC1"> / 20</span></b><span>ครั้งที่ตรวจแล้วในเดือนนี้</span></div>
+      <div class="hs"><b>${open}</b><span>เรื่องที่รอติดตามแก้ไข</span></div>
+      <div class="hs"><b>${submitters}<span style="font-size:14px;color:#A9DCC1"> / ${totalM}</span></b><span>ส่ง One G-C-L แล้ว</span></div>
+    </div>
+  </section>
+
+  <div class="grid g5" style="margin-bottom:18px">${zoneCards}</div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>แผนผังหอผู้ป่วย</h3>
+      <p class="hint">แตะที่พื้นที่ใดก็ได้เพื่อดูผู้รับผิดชอบและคะแนนล่าสุดของโซนนั้น</p>
+      ${mapSVG(true)}
+      ${legendHTML()}
+    </div>
+
+    <div class="card">
+      <h3>เรื่องที่ต้องติดตาม</h3>
+      <p class="hint">มาจากช่อง “สิ่งที่ต้องปรับปรุง” ของการตรวจแต่ละสัปดาห์</p>
+      ${ fl.length ? fl.map(f=>alertHTML(f)).join('') : emptyHTML('ยังไม่มีเรื่องค้างในเดือนนี้','เมื่อการตรวจพบสิ่งที่ต้องปรับปรุง รายการจะขึ้นที่นี่') }
+      ${ fl.length ? `<button class="btn btn-sm" data-go="round" style="margin-top:6px">ดูตาราง Round ทั้งเดือน</button>` : '' }
+    </div>
+  </div>`;
+}
+
+function alertHTML(f){
+  const z = Z[f.zone]||{name:'—',hex:'#999'};
+  const done = f.status==='done';
+  return `<div class="alert ${done?'done':''}">
+    <span style="flex:none">${flower(z.icon||'lotus', z.hex, 22)}</span>
+    <div class="txt">
+      <b>โซน${esc(z.name)} · สัปดาห์ที่ ${f.week}</b>
+      <p>${esc(f.text)}</p>
+      <div class="when">ตรวจ ${thDate(f.date)}${f.by?' · โดย '+esc(f.by):''}</div>
+    </div>
+    ${ done
+      ? '<span class="chip">แก้ไขแล้ว</span>'
+      : `<button class="btn btn-ok btn-sm" data-done="${f.rid}">จัดการเรียบร้อย</button>` }
+  </div>`;
+}
+function emptyHTML(t,s){
+  return `<div class="empty">
+    <svg viewBox="0 0 48 48" fill="none" stroke="var(--canopy)" stroke-width="1.6"><path d="M24 42c0-12 6-20 18-22-2 12-7 19-18 22z"/><path d="M24 42c0-12-6-20-18-22 2 12 7 19 18 22z"/><path d="M24 42V16"/></svg>
+    <div style="font-weight:600;color:var(--ink)">${esc(t)}</div>
+    <div style="font-size:13px">${esc(s)}</div>
+  </div>`;
+}
+
+/* ---------- แผนผัง SVG ---------- */
+function mapSVG(compact){
+  const box = (x,y,w,h,fill,stroke,label,sub,fs)=>`
+    <rect class="room-fill" x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/>
+    <text x="${x+w/2}" y="${y+h/2+(sub?-3:4)}" text-anchor="middle" font-size="${fs||11.5}" fill="#0F3529" font-weight="500">${esc(label)}</text>
+    ${sub?`<text x="${x+w/2}" y="${y+h/2+12}" text-anchor="middle" font-size="10" fill="#5C7A6C">${esc(sub)}</text>`:''}`;
+
+  let s = '';
+  // พื้นหลัง
+  s += `<rect x="30" y="38" width="940" height="568" rx="16" fill="#F7FBF8" stroke="#D6E7DC" stroke-width="2"/>`;
+
+  // บล็อกโซนใหญ่
+  MAP.zoneBlocks.forEach(b=>{
+    const z = Z[b.z];
+    s += `<g class="room" data-zone="${b.z}" tabindex="0" role="button" aria-label="โซน${z.name}">
+      <rect class="room-fill" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="9" fill="${z.hex}18" stroke="${z.hex}" stroke-width="2"/>
+      <g transform="translate(${b.x+14},${b.y+b.h/2-16})">${flower(z.icon,z.hex,32)}</g>
+      <text x="${b.x+56}" y="${b.y+b.h/2-1}" font-size="16" font-weight="700" fill="${z.hex}">โซน${esc(z.name)}</text>
+      <text x="${b.x+56}" y="${b.y+b.h/2+15}" font-size="11" fill="#5C7A6C">${esc(b.label)}</text>
+    </g>`;
+  });
+
+  // ห้องบริการ
+  MAP.rooms.forEach(r=>{
+    const z = Z[r.z];
+    s += `<g class="room" data-zone="${r.z}" tabindex="0" role="button" aria-label="${esc(r.label)} โซน${z.name}">
+      ${box(r.x,r.y,r.w,r.h, z.hex+'12', z.hex+'66', r.label, '', 10.5)}
+      <rect x="${r.x}" y="${r.y}" width="4" height="${r.h}" rx="2" fill="${z.hex}"/>
+    </g>`;
+  });
+
+  // ทางเดิน
+  const cz = Z[MAP.corridor.z], c = MAP.corridor;
+  s += `<g class="room" data-zone="${c.z}" tabindex="0" role="button" aria-label="ทางเดินกลาง โซน${cz.name}">
+    <rect class="room-fill" x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="8" fill="${cz.hex}14" stroke="${cz.hex}55" stroke-width="1.4" stroke-dasharray="6 4"/>
+    <text x="${c.x+c.w/2}" y="${c.y+c.h/2}" text-anchor="middle" font-size="12" fill="${cz.hex}" font-weight="600"
+      transform="rotate(-90 ${c.x+c.w/2} ${c.y+c.h/2})">ทางเดินกลาง · โซน${esc(cz.name)}</text>`;
+  [140,300,450].forEach(y=>{ s += `<path d="M${c.x+c.w/2-7} ${y} l0 26 m-7 -8 l7 8 7-8" stroke="${cz.hex}" stroke-width="1.6" fill="none" opacity=".55" stroke-linecap="round"/>`; });
+  s += `</g>`;
+
+  // สิ่งอำนวยความสะดวก (ส่วนกลาง)
+  MAP.facilities.forEach(f=>{
+    const tint = f.kind==='stair' ? '#FBEDE6' : f.kind==='lift' ? '#E9F0FA' : '#EEF5F1';
+    const bd   = f.kind==='stair' ? '#E0B49E' : f.kind==='lift' ? '#B7C9E2' : '#C6DCCE';
+    s += `<g>${box(f.x,f.y,f.w,f.h,tint,bd,f.label,'ส่วนกลาง',11)}</g>`;
+  });
+
+  // ทิศทางหนีไฟ
+  s += `<text x="500" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#0F3529">ผังหอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10</text>`;
+
+  return `<div class="map-wrap"><svg viewBox="0 0 1000 640" role="img" aria-label="แผนผังโซน 5ส ของหอผู้ป่วย">${s}</svg></div>`;
+}
+function legendHTML(){
+  return `<div class="legend">${ZONES.map(z=>{
+    const s = zoneAvg(z.id);
+    return `<button data-zone="${z.id}" style="--lc:${z.hex};--lcbg:${z.hex}12"><i></i>โซน${z.name} ${s===null?'':'· '+s}</button>`;
+  }).join('')}</div>`;
+}
+
+/* ---------- หน้า: แผนผังโซน ---------- */
+function vMap(){
+  const detail = ZONES.map(z=>{
+    const mem = membersOf(z.id);
+    const rooms = MAP.rooms.filter(r=>r.z===z.id).map(r=>r.label);
+    const blk = MAP.zoneBlocks.find(b=>b.z===z.id);
+    const avg = zoneAvg(z.id);
+    return `<div class="card" id="zone-${z.id}" style="border-top:4px solid ${z.hex}">
+      <div style="display:flex;gap:11px;align-items:center;margin-bottom:8px">
+        ${flower(z.icon,z.hex,34)}
+        <div>
+          <h3 style="color:${z.hex}">โซน${z.name}</h3>
+          <p class="hint" style="margin:0">คะแนนเฉลี่ยเดือนนี้ ${avg===null?'ยังไม่ตรวจ':avg+' / 100'}</p>
+        </div>
+      </div>
+      <p style="font-size:13px;margin:0 0 10px"><b>พื้นที่รับผิดชอบ</b><br>${esc(blk?blk.label:'')}${rooms.length?' · '+esc(rooms.join(' · ')):''}${z.id===MAP.corridor.z?' · ทางเดินกลางและลิฟต์':''}</p>
+      <p style="font-size:13px;margin:0"><b>สมาชิก (${mem.length} คน)</b><br>
+        ${mem.length? mem.map(m=>esc(m.name)).join(', ') : '<span style="color:var(--muted)">ยังไม่ได้กำหนด — ไปที่หน้า “สมาชิกทีมโซน” เพื่อจัดคนเข้าโซน</span>'}</p>
+    </div>`;
+  }).join('');
+
+  return `<h2 class="page-title">แผนผังโซน</h2>
+  <p class="page-sub">แบ่งพื้นที่หอผู้ป่วยเป็นห้าโซนตามชื่อดอกไม้ แต่ละโซนมีทีมดูแลของตนเอง ตำแหน่งห้องแก้ไขได้ในโค้ดส่วน MAP</p>
+  ${mapSVG()}
+  ${legendHTML()}
+  <div class="grid g3" style="margin-top:18px">${detail}</div>`;
+}
+
+/* ---------- หน้า: ตรวจ 5ส ---------- */
+function vCheck(){
+  const wk = state.form5s?.week || Math.min(4, Math.ceil(now.getDate()/7));
+  const zid = state.form5s?.zone || ZONES[0].id;
+  const existing = rows5s().find(r=>r.zone===zid && r.week===wk);
+  const sc = state.form5s?.scores || (existing?existing.scores:{}) || {};
+
+  const groups = S5.map(g=>{
+    const items = g.items.map((t,i)=>{
+      const key = g.key+'_'+i;
+      const val = sc[key];
+      const btns = [0,1,2,3,4,5].map(n=>`<button type="button" class="rate-b" data-k="${key}" data-v="${n}" aria-pressed="${val===n}">${n}</button>`).join('');
+      return `<div class="s-item"><span>${esc(t)}</span><div class="rate">${btns}</div></div>`;
+    }).join('');
+    return `<fieldset><legend>${esc(g.title)} <span style="font-weight:400;color:var(--muted);font-size:12.5px">— ${esc(g.desc)}</span></legend>${items}</fieldset>`;
+  }).join('');
+
+  const total = calcTotal(sc);
+
+  return `<h2 class="page-title">ตรวจ 5ส รายสัปดาห์</h2>
+  <p class="page-sub">ให้คะแนนข้อละ 0–5 คะแนน รวม 20 ข้อ เต็ม 100 คะแนน สิ่งที่บันทึกในช่อง “สิ่งที่ต้องปรับปรุง” จะถูกส่งไปเป็นรายการติดตามบนหน้าภาพรวมทันที</p>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="row">
+      <div class="field"><label for="f5zone">โซนที่ตรวจ</label>
+        <select id="f5zone">${ZONES.map(z=>`<option value="${z.id}" ${z.id===zid?'selected':''}>โซน${z.name}</option>`).join('')}</select></div>
+      <div class="field"><label for="f5week">สัปดาห์ที่</label>
+        <select id="f5week">${[1,2,3,4].map(n=>`<option value="${n}" ${n===wk?'selected':''}>สัปดาห์ที่ ${n}</option>`).join('')}</select></div>
+      <div class="field"><label for="f5date">วันที่ตรวจ</label>
+        <input type="date" id="f5date" value="${existing?existing.date:todayISO()}"></div>
+      <div class="field"><label for="f5by">ผู้ตรวจ</label>
+        <select id="f5by">${state.db.members.map(m=>`<option ${((existing&&existing.inspector)||state.user)===m.name?'selected':''}>${esc(m.name)}</option>`).join('')}</select></div>
+    </div>
+    ${existing?`<div class="chip" style="background:#EAF4EE">มีบันทึกของสัปดาห์นี้อยู่แล้ว — บันทึกซ้ำจะเป็นการแก้ไข</div>`:''}
+  </div>
+
+  <div class="grid g2">
+    <div>${groups}</div>
+    <div>
+      <div class="card" style="position:sticky;top:78px">
+        <h3>คะแนนรวม</h3>
+        <div style="font-size:46px;font-weight:700;line-height:1;color:${scoreColor(total)}" id="totalNum">${total}<span style="font-size:16px;color:var(--muted);font-weight:500"> / 100</span></div>
+        <div class="bar" style="--zc:${scoreColor(total)};height:9px"><i id="totalBar" style="width:${total}%;background:${scoreColor(total)}"></i></div>
+        <p class="hint" style="margin-top:8px" id="totalWord">${scoreWord(total)}</p>
+
+        <div class="field"><label for="f5praise">สิ่งที่ชื่นชม <span class="sub">สิ่งที่ทีมทำได้ดีและควรทำต่อ</span></label>
+          <textarea id="f5praise" placeholder="เช่น จัดเรียงรถทำแผลตาม FIFO ครบทุกชั้น">${existing?esc(existing.praise||''):''}</textarea></div>
+
+        <div class="field"><label for="f5improve">สิ่งที่ต้องปรับปรุง <span class="sub">กรอกแล้วจะกลายเป็นรายการติดตาม</span></label>
+          <textarea id="f5improve" placeholder="เช่น กล่องเวชภัณฑ์ในห้องเก็บของ 1 ยังไม่เขียนวันหมดอายุกำกับ">${existing?esc(existing.improve||''):''}</textarea></div>
+
+        <button class="btn btn-primary" id="save5s" style="width:100%">บันทึกผลการตรวจ</button>
+      </div>
+    </div>
+  </div>`;
+}
+function calcTotal(sc){ return Object.values(sc).reduce((a,b)=>a+(Number(b)||0),0); }
+function scoreColor(t){ return t>=90?'#1E8A5C':t>=75?'#2E9E6B':t>=60?'#D79A16':'#C4562F'; }
+function scoreWord(t){
+  if(!t) return 'ยังไม่ได้ให้คะแนน';
+  return t>=90?'ดีเยี่ยม — รักษามาตรฐานนี้ไว้':t>=75?'ดี — มีบางจุดที่ปรับได้อีก':t>=60?'พอใช้ — ควรกำหนดผู้รับผิดชอบแก้ไขรายข้อ':'ต้องปรับปรุงเร่งด่วน — ทบทวนร่วมกันทั้งโซน';
+}
+
+/* ---------- หน้า: ตาราง Round ---------- */
+function vRound(){
+  const rows = ZONES.map(z=>{
+    const cells = [1,2,3,4].map(w=>{
+      const r = rows5s().find(x=>x.zone===z.id && x.week===w);
+      const note = r ? [r.praise?'ชื่นชม: '+r.praise:'', r.improve?'ปรับปรุง: '+r.improve:''].filter(Boolean).join('\n') : '';
+      return `<td class="num" style="color:${r?scoreColor(r.total):'var(--muted)'}">${r?r.total:'—'}</td>
+              <td style="white-space:pre-line;font-size:12.5px">${r?esc(note)||'<span style="color:var(--muted)">ไม่มีบันทึก</span>':'<span style="color:var(--muted)">ยังไม่ตรวจ</span>'}</td>`;
+    }).join('');
+    const avg = zoneAvg(z.id);
+    return `<tr>
+      <th style="background:${z.hex}12;text-align:left;white-space:nowrap">
+        <span class="zone-tag"><i style="background:${z.hex}"></i>${esc(z.name)}</span></th>
+      ${cells}
+      <td class="num" style="background:#F7FBF8;color:${avg?scoreColor(avg):'var(--muted)'}">${avg===null?'—':avg}</td>
+    </tr>`;
+  }).join('');
+
+  const fl = follows().filter(f=>f.period===period());
+
+  return `<h2 class="page-title">ตาราง Round 5ส ประจำเดือน${TH_MONTHS[state.month-1]} ${state.year}</h2>
+  <p class="page-sub">รูปแบบเดียวกับแบบฟอร์มกระดาษเดิม พิมพ์หน้านี้ออกเก็บเข้าแฟ้มได้เลย</p>
+
+  <div class="card scroll" style="margin-bottom:18px">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th rowspan="2" style="width:110px">โซน</th>
+          <th colspan="2">สัปดาห์ที่ 1</th><th colspan="2">สัปดาห์ที่ 2</th>
+          <th colspan="2">สัปดาห์ที่ 3</th><th colspan="2">สัปดาห์ที่ 4</th>
+          <th rowspan="2" style="width:70px">สรุปผล</th>
+        </tr>
+        <tr>${'<th>คะแนน</th><th>สิ่งที่ต้องปรับปรุง / ชื่นชม</th>'.repeat(4)}</tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:12px"><button class="btn btn-sm" onclick="window.print()">พิมพ์ตาราง</button></div>
+  </div>
+
+  <div class="card">
+    <h3>รายการติดตามทั้งหมดของเดือนนี้</h3>
+    <p class="hint">กดปุ่มเมื่อแก้ไขเรียบร้อยแล้ว ระบบจะบันทึกสถานะไว้ในชีต</p>
+    ${ fl.length ? fl.map(f=>alertHTML(f)).join('') : emptyHTML('ไม่มีเรื่องค้าง','ทุกโซนผ่านการตรวจโดยไม่มีข้อปรับปรุง') }
+  </div>`;
+}
+
+/* ---------- หน้า: One G-C-L & Ethics ---------- */
+function vGCL(){
+  const tab = state.gclTab||'form';
+  const list = rowsGCL();
+
+  const formHTML = `
+  <div class="card">
+    <h3>บันทึกกิจกรรมประจำสัปดาห์</h3>
+    <p class="hint">โครงสร้างข้อมูลตรงกับชีต OneGCLnew ทุกช่อง บันทึกแล้วจะเพิ่มเป็นแถวใหม่ต่อท้าย</p>
+    <div class="row">
+      <div class="field"><label for="gDate">วันที่</label><input type="date" id="gDate" value="${todayISO()}"></div>
+      <div class="field"><label for="gName">ชื่อ–สกุล</label>
+        <select id="gName">${state.db.members.map(m=>`<option ${m.name===state.user?'selected':''}>${esc(m.name)}</option>`).join('')}</select></div>
+      <div class="field"><label for="gZone">โซน</label>
+        <select id="gZone"><option value="">— ไม่ระบุ —</option>${ZONES.map(z=>`<option value="${z.id}">โซน${z.name}</option>`).join('')}</select></div>
+    </div>
+
+    <fieldset><legend>Ethics · จริยธรรม</legend>
+      <div class="field"><label for="gEthic">ข้อจริยธรรมที่ปฏิบัติ</label>
+        <select id="gEthic"><option value="">— ยังไม่ระบุ —</option>${OPT_ETHIC.map(o=>`<option>${esc(o)}</option>`).join('')}</select></div>
+      <div class="field"><label for="gEthicEx">ยกตัวอย่างการปฏิบัติ</label>
+        <textarea id="gEthicEx" placeholder="เช่น ผู้ป่วยปฏิเสธการรักษา ได้ให้ข้อมูลครบถ้วนและรายงานแพทย์เมื่อมาตรวจ"></textarea></div>
+    </fieldset>
+
+    <fieldset><legend>One Green · ต้นไม้ประจำตัว</legend>
+      <div class="row">
+        <div class="field"><label for="gTree">ชื่อต้นไม้</label><input type="text" id="gTree" placeholder="เช่น กวักมรกต, เดหลี, กุหลาบหิน"></div>
+        <div class="field"><label for="gTreeImg">ลิงก์รูปต้นไม้ <span class="sub">วางลิงก์ Google Drive</span></label><input type="text" id="gTreeImg" placeholder="https://drive.google.com/..."></div>
+      </div>
+    </fieldset>
+
+    <fieldset><legend>One Cleaned · กิจกรรมความสะอาด</legend>
+      <div class="field"><label for="gClean">ระบุกิจกรรม</label><input type="text" id="gClean" placeholder="เช่น ทำความสะอาดเครื่อง Infusion pump"></div>
+      <div class="field"><label>สรุป One Cleaned</label>
+        <div class="pill-group" id="gCleanSum">${OPT_CLEAN.map(o=>`<button type="button" data-v="${esc(o)}" aria-pressed="false">${esc(o)}</button>`).join('')}</div></div>
+      <div class="field"><label for="gCleanImg">ลิงก์รูปภาพ</label><input type="text" id="gCleanImg" placeholder="https://drive.google.com/..."></div>
+    </fieldset>
+
+    <fieldset><legend>One Lean · ลดความสูญเปล่า</legend>
+      <div class="field"><label for="gLean">ระบุกิจกรรม</label><input type="text" id="gLean" placeholder="เช่น จัดเรียงคลังวัสดุและเขียนวันหมดอายุกำกับ"></div>
+      <div class="field"><label>สรุป One Lean</label>
+        <div class="pill-group" id="gLeanSum">${OPT_LEAN.map(o=>`<button type="button" data-v="${esc(o)}" aria-pressed="false">${esc(o)}</button>`).join('')}</div></div>
+      <div class="field"><label for="gLeanImg">ลิงก์รูปภาพ</label><input type="text" id="gLeanImg" placeholder="https://drive.google.com/..."></div>
+    </fieldset>
+
+    <button class="btn btn-primary" id="saveGCL">บันทึกกิจกรรม</button>
+  </div>`;
+
+  const statusHTML = (()=>{
+    const byName = {};
+    list.forEach(r=>{ (byName[r.name]=byName[r.name]||[]).push(r); });
+    const rows = state.db.members.map(m=>{
+      const rs = byName[m.name]||[];
+      const wk = [1,2,3,4].map(w=>{
+        const hit = rs.find(r=>r.week===w);
+        return `<td class="num">${hit?'<span style="color:var(--ok);font-size:16px">●</span>':'<span style="color:#DCE7E1;font-size:16px">○</span>'}</td>`;
+      }).join('');
+      const z = Z[m.zone];
+      return `<tr><td>${esc(m.name)}</td>
+        <td>${z?`<span class="zone-tag"><i style="background:${z.hex}"></i>${esc(z.name)}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+        ${wk}
+        <td class="num">${rs.length?`<span class="chip">${rs.length} ครั้ง</span>`:'<span class="chip late">ยังไม่ส่ง</span>'}</td></tr>`;
+    }).join('');
+    return `<div class="card scroll">
+      <h3>สถานะการส่งรายบุคคล</h3>
+      <p class="hint">วงกลมทึบคือส่งแล้วในสัปดาห์นั้น</p>
+      <table class="tbl"><thead><tr><th style="text-align:left">ชื่อ–สกุล</th><th>โซน</th><th>ส1</th><th>ส2</th><th>ส3</th><th>ส4</th><th>รวม</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+  })();
+
+  const logHTML = list.length ? `<div class="card scroll">
+    <h3>บันทึกทั้งหมดในเดือนนี้ (${list.length} รายการ)</h3>
+    <table class="tbl"><thead><tr><th>วันที่</th><th style="text-align:left">ชื่อ–สกุล</th><th>ต้นไม้</th><th style="text-align:left">One Cleaned</th><th style="text-align:left">One Lean</th><th>จริยธรรม</th><th></th></tr></thead>
+    <tbody>${list.slice().reverse().map(r=>`<tr>
+      <td style="white-space:nowrap">${thDate(r.date)}</td>
+      <td>${esc(r.name)}</td>
+      <td>${esc(r.tree||'—')}</td>
+      <td>${esc(r.clean||'—')}${r.cleanSum?`<br><span class="chip">${esc(r.cleanSum)}</span>`:''}</td>
+      <td>${esc(r.lean||'—')}${r.leanSum?`<br><span class="chip">${esc(r.leanSum)}</span>`:''}</td>
+      <td style="font-size:12px">${esc((r.ethic||'').split('—')[0]||'—')}</td>
+      <td><button class="btn btn-sm" data-delg="${r.id}">ลบ</button></td>
+    </tr>`).join('')}</tbody></table></div>`
+    : `<div class="card">${emptyHTML('ยังไม่มีบันทึกในเดือนนี้','เริ่มจากแท็บ “บันทึกกิจกรรม”')}</div>`;
+
+  return `<h2 class="page-title">One Green · One Clean · One Lean &amp; Ethics</h2>
+  <p class="page-sub">กิจกรรมรายบุคคลที่ทำต่อเนื่องทุกสัปดาห์ ควบคู่กับการตรวจ 5ส ของโซน</p>
+  <div class="tabs" id="gclTabs">
+    <button data-t="form"   aria-selected="${tab==='form'}">บันทึกกิจกรรม</button>
+    <button data-t="status" aria-selected="${tab==='status'}">สถานะรายบุคคล</button>
+    <button data-t="log"    aria-selected="${tab==='log'}">บันทึกทั้งหมด</button>
+  </div>
+  ${ tab==='form'?formHTML : tab==='status'?statusHTML : logHTML }`;
+}
+
+/* ---------- หน้า: สรุปรายเดือน ---------- */
+function vReport(){
+  const rs = rows5s(), gcl = rowsGCL();
+  const avg = rs.length?Math.round(rs.reduce((a,b)=>a+b.total,0)/rs.length):0;
+
+  const zoneBars = ZONES.map(z=>{
+    const s = zoneAvg(z.id)||0;
+    return `<div class="bc-row"><span>โซน${esc(z.name)}</span>
+      <div class="bc-track"><div class="bc-fill" style="width:${s}%;background:${z.hex}"></div></div><b>${s||'—'}</b></div>`;
+  }).join('');
+
+  const weekBars = [1,2,3,4].map(w=>{
+    const arr = rs.filter(r=>r.week===w);
+    const a = arr.length?Math.round(arr.reduce((x,y)=>x+y.total,0)/arr.length):0;
+    return `<div class="bc-row"><span>สัปดาห์ที่ ${w}</span>
+      <div class="bc-track"><div class="bc-fill" style="width:${a}%"></div></div><b>${a||'—'}</b></div>`;
+  }).join('');
+
+  const cat = (list, key, opts)=>{
+    const max = Math.max(1, ...opts.map(o=>list.filter(r=>r[key]===o).length));
+    return opts.map(o=>{
+      const n = list.filter(r=>r[key]===o).length;
+      return `<div class="bc-row"><span>${esc(o)}</span>
+        <div class="bc-track"><div class="bc-fill" style="width:${Math.round(n/max*100)}%"></div></div><b>${n}</b></div>`;
+    }).join('');
+  };
+
+  const trees = {};
+  gcl.forEach(r=>{ if(r.tree) trees[r.tree]=(trees[r.tree]||0)+1; });
+  const topTrees = Object.entries(trees).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  const missing = state.db.members.filter(m=>!gcl.some(r=>r.name===m.name));
+  const openF = follows().filter(f=>f.status==='open' && f.period===period());
+
+  return `<h2 class="page-title">สรุปผลเดือน${TH_MONTHS[state.month-1]} ${state.year}</h2>
+  <p class="page-sub">ใช้เป็นข้อมูลประกอบการประชุมทีมและรายงาน CQI ประจำเดือน</p>
+
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card"><h3>คะแนน 5ส เฉลี่ย</h3>
+      <div style="font-size:42px;font-weight:700;color:${scoreColor(avg)};line-height:1.1">${avg||'—'}<span style="font-size:15px;color:var(--muted);font-weight:500"> / 100</span></div>
+      <p class="hint" style="margin:2px 0 0">${scoreWord(avg)}</p></div>
+    <div class="card"><h3>ความครบถ้วนของการตรวจ</h3>
+      <div style="font-size:42px;font-weight:700;line-height:1.1">${rs.length}<span style="font-size:15px;color:var(--muted);font-weight:500"> / 20 ครั้ง</span></div>
+      <p class="hint" style="margin:2px 0 0">5 โซน × 4 สัปดาห์</p></div>
+    <div class="card"><h3>เรื่องที่ยังค้าง</h3>
+      <div style="font-size:42px;font-weight:700;line-height:1.1;color:${openF.length?'var(--warn)':'var(--ok)'}">${openF.length}</div>
+      <p class="hint" style="margin:2px 0 0">${openF.length?'ยังรอการแก้ไขและติดตาม':'ปิดครบทุกเรื่องแล้ว'}</p></div>
+  </div>
+
+  <div class="grid g2" style="margin-bottom:16px">
+    <div class="card"><h3>คะแนนเฉลี่ยรายโซน</h3><p class="hint">เต็ม 100 คะแนน</p><div class="barchart">${zoneBars}</div></div>
+    <div class="card"><h3>แนวโน้มรายสัปดาห์</h3><p class="hint">ค่าเฉลี่ยของทุกโซนในแต่ละสัปดาห์</p><div class="barchart">${weekBars}</div></div>
+  </div>
+
+  <div class="grid g2" style="margin-bottom:16px">
+    <div class="card"><h3>One Cleaned แยกตามหมวด</h3><p class="hint">จำนวนกิจกรรมที่บันทึก</p><div class="barchart">${cat(gcl,'cleanSum',OPT_CLEAN)}</div></div>
+    <div class="card"><h3>One Lean แยกตามหมวด</h3><p class="hint">จำนวนกิจกรรมที่บันทึก</p><div class="barchart">${cat(gcl,'leanSum',OPT_LEAN)}</div></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card"><h3>ต้นไม้ที่ดูแลมากที่สุด</h3><p class="hint">One Green ประจำเดือน</p>
+      ${ topTrees.length ? `<div class="barchart">${topTrees.map(([t,n])=>`<div class="bc-row"><span>${esc(t)}</span><div class="bc-track"><div class="bc-fill" style="width:${Math.round(n/topTrees[0][1]*100)}%"></div></div><b>${n}</b></div>`).join('')}</div>` : emptyHTML('ยังไม่มีข้อมูล','บันทึก One Green เพื่อดูสรุปที่นี่') }</div>
+    <div class="card"><h3>ผู้ที่ยังไม่ได้ส่งกิจกรรม</h3><p class="hint">เดือน${TH_MONTHS[state.month-1]} ${state.year}</p>
+      ${ missing.length ? `<p style="font-size:13.5px;line-height:1.9">${missing.map(m=>`<span class="chip late" style="margin:0 4px 4px 0;display:inline-block">${esc(m.name)}</span>`).join('')}</p>` : emptyHTML('ส่งครบทุกคน','ทีมทำได้ตามเป้าหมายของเดือนนี้') }</div>
+  </div>`;
+}
+
+/* ---------- หน้า: สมาชิกทีม ---------- */
+function vTeam(){
+  const rows = state.db.members.map(m=>`<tr>
+    <td><input type="text" data-mid="${m.id}" data-f="name" value="${esc(m.name)}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td><input type="text" data-mid="${m.id}" data-f="role" value="${esc(m.role||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td><select data-mid="${m.id}" data-f="zone" style="width:100%">
+      <option value="">— ยังไม่กำหนด —</option>
+      ${ZONES.map(z=>`<option value="${z.id}" ${m.zone===z.id?'selected':''}>โซน${z.name}</option>`).join('')}
+    </select></td>
+    <td><input type="text" data-mid="${m.id}" data-f="email" value="${esc(m.email||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td><button class="btn btn-sm" data-delm="${m.id}">ลบ</button></td>
+  </tr>`).join('');
+
+  const counts = ZONES.map(z=>`<span class="chip" style="background:${z.hex}18;color:${z.hex};margin-right:6px">โซน${z.name} ${membersOf(z.id).length} คน</span>`).join('');
+  const none = state.db.members.filter(m=>!m.zone).length;
+
+  return `<h2 class="page-title">สมาชิกทีมโซน</h2>
+  <p class="page-sub">เลือกโซนให้แต่ละคนจากช่องโซน ระบบจะนำไปแสดงบนแผนผังและใช้ติดตามการส่งกิจกรรมโดยอัตโนมัติ</p>
+  <div style="margin-bottom:12px">${counts}${none?`<span class="chip late">ยังไม่กำหนดโซน ${none} คน</span>`:''}</div>
+  <div class="card scroll">
+    <table class="tbl">
+      <thead><tr><th style="text-align:left;width:26%">ชื่อ–สกุล</th><th style="text-align:left;width:18%">ตำแหน่ง</th><th style="text-align:left;width:20%">โซนที่รับผิดชอบ</th><th style="text-align:left">อีเมล</th><th style="width:60px"></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn" id="addMember">เพิ่มสมาชิก</button>
+      <button class="btn btn-primary" id="saveTeam">บันทึกรายชื่อ</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- หน้า: ตั้งค่า ---------- */
+function vSetup(){
+  return `<h2 class="page-title">เชื่อมต่อ Google Sheet</h2>
+  <p class="page-sub">ตอนนี้แอปทำงานได้ทันทีโดยเก็บข้อมูลไว้ในเครื่อง เมื่อวาง Web app URL ของ Apps Script แล้ว ข้อมูลทั้งหมดจะบันทึกลง Google Sheet และใช้ร่วมกันทั้งทีม</p>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="field"><label for="apiUrl">Web app URL</label>
+      <input type="text" id="apiUrl" value="${esc(store.readCfg())}" placeholder="https://script.google.com/macros/s/.../exec"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" id="saveApi">บันทึกและเชื่อมต่อ</button>
+      <button class="btn" id="testApi">ทดสอบการเชื่อมต่อ</button>
+      <button class="btn" id="pushLocal">ส่งข้อมูลในเครื่องขึ้น Sheet</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>ขั้นตอนติดตั้งฝั่ง Google</h3>
+    <ol style="font-size:13.5px;line-height:1.85;padding-left:20px;margin:8px 0">
+      <li>เปิดสเปรดชีตที่ใช้อยู่ (ไฟล์เดียวกับชีต OneGCLnew) แล้วไปที่ ส่วนขยาย → Apps Script</li>
+      <li>วางโค้ดจากไฟล์ <b>Code.gs</b> ที่แนบมาลงไป แล้วแก้ค่า SHEET_ID ให้เป็นรหัสของสเปรดชีต</li>
+      <li>กด Deploy → New deployment → เลือก Web app → Execute as: Me → Who has access: Anyone</li>
+      <li>คัดลอก Web app URL มาวางในช่องด้านบน แล้วกดบันทึกและเชื่อมต่อ</li>
+      <li>ระบบจะสร้างชีตย่อย <b>Members</b>, <b>Check5S</b> และ <b>OneGCL_App</b> ให้อัตโนมัติในครั้งแรก</li>
+    </ol>
+    <p class="hint" style="margin-top:10px">ชีต OneGCLnew เดิมยังใช้งานได้ตามปกติ โค้ดจะอ่านข้อมูลเก่ามาแสดงด้วยโดยไม่แก้ไขแถวเดิม</p>
+    <div style="margin-top:12px"><button class="btn" id="resetLocal">ล้างข้อมูลในเครื่อง</button></div>
+  </div>`;
+}
+
+/* ---------- 11. ผูกเหตุการณ์ ---------- */
+function bind(){
+  // แผนผัง / ป้ายสี → ไปหน้ารายละเอียดโซน
+  document.querySelectorAll('[data-zone]').forEach(el=>{
+    const go = ()=>{ state.page='map'; render(); setTimeout(()=>{ const t=document.getElementById('zone-'+el.dataset.zone); if(t){t.scrollIntoView({block:'center'}); t.style.boxShadow='0 0 0 3px '+Z[el.dataset.zone].hex+'55';} },60); };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); }});
+  });
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ state.page=b.dataset.go; render(); });
+
+  // ปิดรายการติดตาม
+  document.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{
+    const r = state.db.check5s.find(x=>x.id===b.dataset.done);
+    if(r){ r.followStatus='done'; r.followDoneAt=todayISO(); r.followDoneBy=state.user; persist(); toast('บันทึกว่าแก้ไขเรียบร้อยแล้ว'); render(); }
+  });
+
+  // ฟอร์มตรวจ 5ส
+  if(state.page==='check5s'){
+    state.form5s = state.form5s||{};
+    const sync = ()=>{ state.form5s.zone=$('#f5zone').value; state.form5s.week=Number($('#f5week').value); state.form5s.scores=null; render(); };
+    $('#f5zone').onchange=sync; $('#f5week').onchange=sync;
+
+    const cur = ()=> state.form5s.scores || (rows5s().find(r=>r.zone===$('#f5zone').value && r.week===Number($('#f5week').value))?.scores) || {};
+    document.querySelectorAll('.rate-b').forEach(b=>b.onclick=()=>{
+      const sc = Object.assign({}, cur()); sc[b.dataset.k]=Number(b.dataset.v);
+      state.form5s.scores = sc;
+      document.querySelectorAll(`.rate-b[data-k="${b.dataset.k}"]`).forEach(x=>x.setAttribute('aria-pressed', x===b));
+      const t = calcTotal(sc);
+      $('#totalNum').innerHTML = t+'<span style="font-size:16px;color:var(--muted);font-weight:500"> / 100</span>';
+      $('#totalNum').style.color = scoreColor(t);
+      $('#totalBar').style.width = t+'%'; $('#totalBar').style.background = scoreColor(t);
+      $('#totalWord').textContent = scoreWord(t);
+    });
+
+    $('#save5s').onclick=()=>{
+      const zone=$('#f5zone').value, week=Number($('#f5week').value);
+      const sc = state.form5s.scores || cur();
+      if(!Object.keys(sc).length){ toast('ยังไม่ได้ให้คะแนนข้อใดเลย'); return; }
+      const date=$('#f5date').value||todayISO();
+      const p = date.slice(0,4)*1+543+'-'+date.slice(5,7);
+      const rec = {
+        id: uid(), period: p, date, zone, week,
+        inspector: $('#f5by').value,
+        scores: sc, total: calcTotal(sc),
+        praise: $('#f5praise').value.trim(),
+        improve: $('#f5improve').value.trim(),
+        followStatus: $('#f5improve').value.trim() ? 'open' : ''
+      };
+      const idx = state.db.check5s.findIndex(r=>r.period===p && r.zone===zone && r.week===week);
+      if(idx>=0){ rec.id = state.db.check5s[idx].id; rec.followStatus = state.db.check5s[idx].followStatus==='done'&&rec.improve===state.db.check5s[idx].improve ? 'done':rec.followStatus; state.db.check5s[idx]=rec; }
+      else state.db.check5s.push(rec);
+      state.form5s = {zone, week};
+      persist(); toast('บันทึกผลการตรวจแล้ว · '+rec.total+' คะแนน'); render();
+    };
+  }
+
+  // One G-C-L
+  if(state.page==='onegcl'){
+    document.querySelectorAll('#gclTabs button').forEach(b=>b.onclick=()=>{ state.gclTab=b.dataset.t; render(); });
+    document.querySelectorAll('.pill-group button').forEach(b=>b.onclick=()=>{
+      b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
+    });
+    const picked = id => { const b=document.querySelector('#'+id+' button[aria-pressed="true"]'); return b?b.dataset.v:''; };
+    const sv = $('#saveGCL');
+    if(sv) sv.onclick=()=>{
+      const date=$('#gDate').value||todayISO();
+      const rec = {
+        id: uid(), period: (date.slice(0,4)*1+543)+'-'+date.slice(5,7), date,
+        week: weekOfMonth(date),
+        name: $('#gName').value, zone: $('#gZone').value,
+        ethic: $('#gEthic').value, ethicEx: $('#gEthicEx').value.trim(),
+        tree: $('#gTree').value.trim(), treeImg: $('#gTreeImg').value.trim(),
+        clean: $('#gClean').value.trim(), cleanSum: picked('gCleanSum'), cleanImg: $('#gCleanImg').value.trim(),
+        lean: $('#gLean').value.trim(),  leanSum: picked('gLeanSum'),   leanImg: $('#gLeanImg').value.trim(),
+        email:(state.db.members.find(m=>m.name===$('#gName').value)||{}).email||''
+      };
+      if(!rec.tree && !rec.clean && !rec.lean && !rec.ethic){ toast('กรอกอย่างน้อยหนึ่งกิจกรรมก่อนบันทึก'); return; }
+      state.db.onegcl.push(rec); persist();
+      toast('บันทึกกิจกรรมของ '+rec.name.replace(/^นาง(สาว)?/,'')+' แล้ว');
+      state.gclTab='log'; render();
+    };
+    document.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{
+      state.db.onegcl = state.db.onegcl.filter(r=>r.id!==b.dataset.delg); persist(); render();
+    });
+  }
+
+  // สมาชิกทีม
+  if(state.page==='team'){
+    document.querySelectorAll('[data-mid]').forEach(el=>{
+      const h = ()=>{ const m=state.db.members.find(x=>x.id===el.dataset.mid); if(m){ m[el.dataset.f]=el.value; if(el.dataset.f==='zone'){ persist(); render(); } } };
+      el.addEventListener('change', h);
+    });
+    $('#addMember').onclick=()=>{ state.db.members.push({id:uid(),name:'',email:'',role:'พยาบาลวิชาชีพ',zone:''}); persist(); render(); };
+    $('#saveTeam').onclick=()=>{ persist(); toast('บันทึกรายชื่อทีมแล้ว'); fillUsers(); };
+    document.querySelectorAll('[data-delm]').forEach(b=>b.onclick=()=>{
+      state.db.members = state.db.members.filter(m=>m.id!==b.dataset.delm); persist(); render();
+    });
+  }
+
+  // ตั้งค่า
+  if(state.page==='setup'){
+    $('#saveApi').onclick=async()=>{ store.writeCfg($('#apiUrl').value.trim()); await loadAll(); toast(CFG.API_URL?'เชื่อมต่อแล้ว':'กลับสู่โหมดทดลอง'); render(); };
+    $('#testApi').onclick=async()=>{
+      const u=$('#apiUrl').value.trim(); if(!u){ toast('ยังไม่ได้ใส่ URL'); return; }
+      const old=CFG.API_URL; CFG.API_URL=u;
+      try{ await api('ping',{}); toast('เชื่อมต่อสำเร็จ'); }catch(e){ toast('เชื่อมต่อไม่สำเร็จ: '+e.message); CFG.API_URL=old; }
+    };
+    $('#pushLocal').onclick=async()=>{
+      if(!CFG.API_URL){ toast('เชื่อมต่อ URL ก่อน'); return; }
+      try{ await api('saveAll', state.db); toast('ส่งข้อมูลขึ้น Sheet แล้ว'); }catch(e){ toast('ส่งไม่สำเร็จ: '+e.message); }
+    };
+    $('#resetLocal').onclick=()=>{
+      if(!confirm('ล้างข้อมูลที่เก็บในเครื่องทั้งหมด? ข้อมูลบน Google Sheet จะไม่ถูกลบ')) return;
+      state.db={members:SEED_MEMBERS.slice(),check5s:[],onegcl:[]}; persist(); render(); toast('ล้างข้อมูลในเครื่องแล้ว');
+    };
+  }
+}
+
+/* ---------- 12. แถบบน ---------- */
+function fillTop(){
+  const m=$('#selMonth'), y=$('#selYear');
+  m.innerHTML = TH_MONTHS.map((n,i)=>`<option value="${i+1}" ${i+1===state.month?'selected':''}>${n}</option>`).join('');
+  const base = now.getFullYear()+543;
+  y.innerHTML = [base-1,base,base+1].map(v=>`<option value="${v}" ${v===state.year?'selected':''}>พ.ศ. ${v}</option>`).join('');
+  m.onchange=()=>{ state.month=Number(m.value); render(); };
+  y.onchange=()=>{ state.year=Number(y.value); render(); };
+}
+function fillUsers(){
+  const u=$('#selUser');
+  u.innerHTML = state.db.members.map(m=>`<option ${m.name===state.user?'selected':''}>${esc(m.name)}</option>`).join('');
+  if(!state.user && state.db.members[0]) state.user = state.db.members[0].name;
+  $('#whoami').textContent = state.user.replace(/^นาง(สาว)?/,'');
+  u.onchange=()=>{ state.user=u.value; $('#whoami').textContent=state.user.replace(/^นาง(สาว)?/,''); };
+}
+
+document.getElementById('nav').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-page]'); if(!b) return;
+  state.page = b.dataset.page; render();
+});
+
+(async function init(){
+  await loadAll();
+  fillTop(); fillUsers(); render();
+})();
+</script>
+</body>
+</html>
