@@ -176,6 +176,17 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 .pill-group{display:flex;gap:6px;flex-wrap:wrap}
 .pill-group button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 13px;cursor:pointer;font-size:13px}
 .pill-group button[aria-pressed="true"]{background:var(--canopy);border-color:var(--canopy);color:#fff;font-weight:600}
+.zpicks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.zpick{display:flex;flex-direction:column;align-items:center;gap:3px;padding:11px 6px;cursor:pointer;
+  border:1.5px solid var(--line);border-top:4px solid var(--zc);border-radius:12px;background:var(--paper);text-align:center}
+.zpick:hover{border-color:var(--zc)}
+.zpick[aria-pressed="true"]{background:var(--zcbg);border-color:var(--zc);box-shadow:0 0 0 2px var(--zc) inset}
+.zpick b{font-size:13px;font-weight:600;line-height:1.25}
+.zpick .st{font-size:11.5px;color:var(--muted);font-weight:600}
+.zpick .st.done{color:var(--ok)}
+.zpick svg{width:24px;height:24px}
+@media(max-width:900px){.zpicks{grid-template-columns:repeat(3,1fr)}.zpick b{font-size:12.5px}}
+@media(max-width:420px){.zpicks{grid-template-columns:repeat(2,1fr)}}
 
 /* ---------- เบ็ดเตล็ด ---------- */
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:10px}
@@ -1206,7 +1217,11 @@ function vMap(){
 function vCheck(){
   const wk = state.form5s?.week || Math.min(4, Math.ceil(now.getDate()/7));
   const zid = state.form5s?.zone || ZONES[0].id;
-  const existing = rows5s().find(r=>r.zone===zid && r.week===wk);
+  const wkRecs = rows5s().filter(r=>r.week===wk);
+  const doneZones = new Set(wkRecs.map(r=>r.zone)).size;
+  const existing = wkRecs.find(r=>r.zone===zid);
+  const nextZone = ZONES.find(z=>!wkRecs.some(r=>r.zone===z.id) && z.id!==zid);
+  const lastRec = wkRecs.filter(r=>r.zone!==zid).slice(-1)[0];
   const sc = state.form5s?.scores || (existing?existing.scores:{}) || {};
 
   const groups = S5.map(g=>{
@@ -1225,9 +1240,20 @@ function vCheck(){
   <p class="page-sub">ให้คะแนนข้อละ 0–5 คะแนน รวม 20 ข้อ เต็ม 100 คะแนน สิ่งที่บันทึกในช่อง “สิ่งที่ต้องปรับปรุง” จะถูกส่งไปเป็นรายการติดตามบนหน้าภาพรวมทันที</p>
 
   <div class="card" style="margin-bottom:16px">
+    <h3>รอบตรวจสัปดาห์ที่ ${wk}</h3>
+    <p class="hint">ตรวจได้หลายโซนในสัปดาห์เดียวกัน แตะที่โซนเพื่อสลับไปให้คะแนนโซนนั้น · ตรวจแล้ว ${doneZones} จาก ${ZONES.length} โซน</p>
+    <div class="zpicks" style="margin-bottom:14px">${ZONES.map(z=>{
+      const r = wkRecs.find(x=>x.zone===z.id);
+      return `<button type="button" class="zpick" data-zpick="${z.id}" aria-pressed="${z.id===zid}"
+        style="--zc:${z.hex};--zcbg:${z.hex}14">
+        ${flower(z.icon,z.hex,24)}
+        <b>${esc(z.name)}</b>
+        <span class="st ${r?'done':''}">${r?'✓ '+r.total+' คะแนน':'ยังไม่ตรวจ'}</span>
+      </button>`;
+    }).join('')}</div>
+    <div class="bar" style="height:7px;margin-bottom:14px"><i style="width:${Math.round(doneZones/ZONES.length*100)}%;background:var(--leaf)"></i></div>
+    <div class="hide"><select id="f5zone">${ZONES.map(z=>`<option value="${z.id}" ${z.id===zid?'selected':''}>โซน${z.name}</option>`).join('')}</select></div>
     <div class="row">
-      <div class="field"><label for="f5zone">โซนที่ตรวจ</label>
-        <select id="f5zone">${ZONES.map(z=>`<option value="${z.id}" ${z.id===zid?'selected':''}>โซน${z.name}</option>`).join('')}</select></div>
       <div class="field"><label for="f5week">สัปดาห์ที่</label>
         <select id="f5week">${[1,2,3,4].map(n=>`<option value="${n}" ${n===wk?'selected':''}>สัปดาห์ที่ ${n}</option>`).join('')}</select></div>
       <div class="field"><label for="f5date">วันที่ตรวจ</label>
@@ -1254,6 +1280,8 @@ function vCheck(){
           <textarea id="f5improve" placeholder="เช่น กล่องเวชภัณฑ์ในห้องเก็บของ 1 ยังไม่เขียนวันหมดอายุกำกับ">${existing?esc(existing.improve||''):''}</textarea></div>
 
         <button class="btn btn-primary" id="save5s" style="width:100%">บันทึกผลการตรวจ</button>
+        ${ nextZone ? `<button class="btn" id="saveNext" style="width:100%;margin-top:8px">บันทึกแล้วตรวจโซน${esc(nextZone.name)}ต่อ</button>` : '' }
+        ${ (!existing && lastRec) ? `<button class="btn" id="copyPrev" style="width:100%;margin-top:8px">ใช้คะแนนจากโซน${esc((Z[lastRec.zone]||{}).name||'')}เป็นค่าตั้งต้น</button>` : '' }
         ${ existing ? `<button class="btn" id="imgCheck" style="width:100%;margin-top:8px">บันทึกภาพสรุปการตรวจ</button>` : '' }
         ${ existing ? `<p class="hint" style="margin:8px 0 0">ภาพจะเปิดหน้าต่างแชร์ของเครื่อง เลือกบันทึกรูปภาพหรือส่งเข้าไลน์กลุ่มได้ทันที</p>` : '' }
       </div>
@@ -1850,7 +1878,12 @@ function bind(){
   if(state.page==='check5s'){
     state.form5s = state.form5s||{};
     const sync = ()=>{ state.form5s.zone=$('#f5zone').value; state.form5s.week=Number($('#f5week').value); state.form5s.scores=null; render(); };
-    $('#f5zone').onchange=sync; $('#f5week').onchange=sync;
+    $('#f5week').onchange=sync;
+
+    // สลับโซนภายในรอบสัปดาห์เดียวกัน
+    document.querySelectorAll('[data-zpick]').forEach(b=>b.onclick=()=>{
+      state.form5s.zone = b.dataset.zpick; state.form5s.scores = null; render();
+    });
 
     const cur = ()=> state.form5s.scores || (rows5s().find(r=>r.zone===$('#f5zone').value && r.week===Number($('#f5week').value))?.scores) || {};
     document.querySelectorAll('.rate-b').forEach(b=>b.onclick=()=>{
@@ -1876,7 +1909,7 @@ function bind(){
       ic.disabled = false; ic.textContent = 'บันทึกภาพสรุปการตรวจ';
     };
 
-    $('#save5s').onclick=()=>{
+    const doSave = (goNext)=>{
       const zone=$('#f5zone').value, week=Number($('#f5week').value);
       const sc = state.form5s.scores || cur();
       if(!Object.keys(sc).length){ toast('ยังไม่ได้ให้คะแนนข้อใดเลย'); return; }
@@ -1893,8 +1926,27 @@ function bind(){
       const idx = state.db.check5s.findIndex(r=>r.period===p && r.zone===zone && r.week===week);
       if(idx>=0){ rec.id = state.db.check5s[idx].id; rec.followStatus = state.db.check5s[idx].followStatus==='done'&&rec.improve===state.db.check5s[idx].improve ? 'done':rec.followStatus; state.db.check5s[idx]=rec; }
       else state.db.check5s.push(rec);
-      state.form5s = {zone, week};
-      persist(); toast('บันทึกผลการตรวจแล้ว · '+rec.total+' คะแนน'); render();
+      persist();
+
+      const done = rows5s().filter(r=>r.week===week);
+      const nz = goNext ? ZONES.find(z=>!done.some(r=>r.zone===z.id)) : null;
+      state.form5s = { zone: nz ? nz.id : zone, week };
+      toast(nz ? `บันทึกโซน${(Z[zone]||{}).name} แล้ว ${rec.total} คะแนน · ต่อที่โซน${nz.name}`
+               : (goNext ? `บันทึกแล้ว ${rec.total} คะแนน · ตรวจครบทุกโซนของสัปดาห์ที่ ${week} แล้ว`
+                         : `บันทึกผลการตรวจแล้ว · ${rec.total} คะแนน`));
+      render();
+    };
+    $('#save5s').onclick = ()=>doSave(false);
+    const sn = $('#saveNext'); if(sn) sn.onclick = ()=>doSave(true);
+
+    const cp = $('#copyPrev');
+    if(cp) cp.onclick = ()=>{
+      const week = Number($('#f5week').value), zone = $('#f5zone').value;
+      const last = rows5s().filter(r=>r.week===week && r.zone!==zone).slice(-1)[0];
+      if(!last){ toast('ยังไม่มีโซนที่ตรวจไว้ในสัปดาห์นี้'); return; }
+      state.form5s = { zone, week, scores: Object.assign({}, last.scores) };
+      toast('คัดลอกคะแนนจากโซน'+((Z[last.zone]||{}).name||'')+'มาแล้ว ปรับให้ตรงกับโซนนี้ก่อนบันทึก');
+      render();
     };
   }
 
