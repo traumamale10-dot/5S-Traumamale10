@@ -194,6 +194,21 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 .thumb{width:46px;height:46px;object-fit:cover;border-radius:7px;border:1px solid var(--line);display:block}
 .thumb-row{display:flex;gap:5px}
 .uploading{opacity:.6;pointer-events:none}
+.img-modal{position:fixed;inset:0;background:rgba(10,38,28,.72);z-index:90;display:grid;place-items:center;padding:18px;overflow:auto}
+.img-box{background:#fff;border-radius:16px;padding:14px;max-width:520px;width:100%;box-shadow:var(--shadow)}
+.img-box img{width:100%;border-radius:10px;border:1px solid var(--line);display:block}
+.img-box p{font-size:13px;color:var(--muted);margin:10px 2px}
+.img-act{display:flex;gap:8px}
+.img-act .btn{flex:1;text-align:center;text-decoration:none}
+.modal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:18px;
+  background:rgba(10,38,28,.62);backdrop-filter:blur(3px);overflow:auto}
+.modal-box{background:var(--paper);border-radius:16px;padding:16px;max-width:560px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);margin:auto}
+.modal-box img{width:100%;border-radius:10px;border:1px solid var(--line);display:block}
+.modal-box h3{margin:0 0 4px}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.modal-actions .btn{flex:1;min-width:130px;text-align:center}
+@media(max-width:900px){.modal{padding:12px;align-items:start}.modal-box{padding:13px}}
 .barchart{display:flex;flex-direction:column;gap:9px}
 .bc-row{display:grid;grid-template-columns:150px 1fr 44px;gap:10px;align-items:center;font-size:13px}
 .bc-track{height:20px;background:#EFF6F2;border-radius:6px;overflow:hidden}
@@ -669,7 +684,7 @@ function membersOf(zid){ return state.db.members.filter(m=>m.zone===zid); }
 function follows(){
   const out=[];
   state.db.check5s.forEach(r=>{
-    if(r.improve && r.improve.trim()) out.push({rid:r.id, zone:r.zone, week:r.week, period:r.period, text:r.improve, status:r.followStatus||'open', date:r.date, by:r.inspector});
+    if(r.improve && r.improve.trim()) out.push({rid:r.id, zone:r.zone, week:r.week, period:r.period, text:r.improve, status:r.followStatus||'open', date:r.date, by:r.inspector, doneAt:r.followDoneAt, doneBy:r.followDoneBy});
   });
   return out.sort((a,b)=> (a.status===b.status?0:a.status==='open'?-1:1) || b.date.localeCompare(a.date));
 }
@@ -685,6 +700,211 @@ function flower(kind, color, size){
   }
   const core = kind==='sunflower' ? '#5A3A18' : kind==='lotus' ? '#F6E27A' : '#F6C64B';
   return `<svg viewBox="0 0 48 48" width="${s}" height="${s}" aria-hidden="true">${p}<circle cx="24" cy="24" r="6.2" fill="${core}"/></svg>`;
+}
+
+
+/* ---------- สร้างภาพสรุปเป็นไฟล์ PNG (ใช้ได้ทั้ง iOS และ Android) ---------- */
+const IMG_FONT = "'IBM Plex Sans Thai','Sarabun','Leelawadee UI',sans-serif";
+
+/* ตัดบรรทัดภาษาไทย โดยไม่ให้สระบนล่างหรือวรรณยุกต์ขึ้นต้นบรรทัด
+   และไม่ให้สระหน้า (เ แ โ ใ ไ) ค้างอยู่ท้ายบรรทัด */
+const TH_NO_START = /[\u0E30-\u0E3A\u0E45-\u0E4E]/;
+const TH_NO_END   = /[\u0E40-\u0E44]/;
+function wrapThai(ctx, text, maxW){
+  const out = []; let line = '';
+  for(const ch of String(text||'')){
+    if(ch === '\n'){ out.push(line); line=''; continue; }
+    const t = line + ch;
+    if(ctx.measureText(t).width > maxW && line){
+      let cut = line.length;
+      while(cut > 1 && (TH_NO_START.test(t[cut]||'') || TH_NO_END.test(line[cut-1]||''))) cut--;
+      out.push(line.slice(0, cut));
+      line = line.slice(cut) + ch;
+    } else line = t;
+  }
+  if(line) out.push(line);
+  return out.length ? out : [''];
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function imgHeader(ctx, W, title, sub){
+  const g = ctx.createLinearGradient(0,0,W,300);
+  g.addColorStop(0,'#0F3529'); g.addColorStop(.55,'#1B6A4E'); g.addColorStop(1,'#39A877');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,230);
+  ctx.fillStyle = 'rgba(127,211,163,.28)';
+  ctx.beginPath(); ctx.arc(W-90, 40, 150, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
+  ctx.font = `700 46px ${IMG_FONT}`; ctx.fillText(title, 56, 106);
+  ctx.font = `400 26px ${IMG_FONT}`; ctx.fillStyle = '#BFE6CF';
+  ctx.fillText('หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10 · รพ.มหาราชนครราชสีมา', 56, 150);
+  ctx.fillText(sub, 56, 190);
+}
+function imgFooter(ctx, W, H, note){
+  ctx.fillStyle = '#5C7A6C'; ctx.textAlign = 'left';
+  ctx.font = `400 22px ${IMG_FONT}`;
+  ctx.fillText(note, 56, H - 38);
+}
+
+/* ภาพสรุปการตรวจหนึ่งครั้ง */
+async function imageCheck(rec){
+  if(document.fonts && document.fonts.ready) { try{ await document.fonts.ready; }catch(e){} }
+  const W = 1080, pad = 56, innerW = W - pad*2;
+  const z = Z[rec.zone] || {name:'—', hex:'#2E9E6B'};
+  const m = document.createElement('canvas').getContext('2d');
+
+  m.font = `400 26px ${IMG_FONT}`;
+  const praise  = rec.praise  ? wrapThai(m, rec.praise,  innerW - 56) : [];
+  const improve = rec.improve ? wrapThai(m, rec.improve, innerW - 56) : [];
+
+  let H = 230 + 40 + 190 + 40 + (5*74 + 40)
+        + (praise.length  ? 74 + praise.length*38  : 0)
+        + (improve.length ? 74 + improve.length*38 + 46 : 0) + 96;
+
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#EDF6F0'; ctx.fillRect(0,0,W,H);
+
+  imgHeader(ctx, W, 'สรุปการตรวจ 5ส',
+    `โซน${z.name} · สัปดาห์ที่ ${rec.week} · เดือน${TH_MONTHS[Number(String(rec.period).slice(-2))-1]} ${String(rec.period).slice(0,4)}`);
+
+  let y = 270;
+
+  // กล่องคะแนนรวม
+  ctx.fillStyle = '#fff'; roundRect(ctx, pad, y, innerW, 190, 22); ctx.fill();
+  ctx.fillStyle = z.hex;  roundRect(ctx, pad, y, 12, 190, 6); ctx.fill();
+  ctx.textAlign = 'left'; ctx.fillStyle = '#5C7A6C'; ctx.font = `500 26px ${IMG_FONT}`;
+  ctx.fillText('คะแนนรวม', pad+44, y+56);
+  ctx.fillStyle = scoreColor(rec.total); ctx.font = `700 96px ${IMG_FONT}`;
+  const tw = ctx.measureText(String(rec.total)).width;
+  ctx.fillText(String(rec.total), pad+44, y+150);
+  ctx.fillStyle = '#5C7A6C'; ctx.font = `500 30px ${IMG_FONT}`;
+  ctx.fillText('/ 100', pad+44+tw+18, y+150);
+  ctx.textAlign = 'right'; ctx.fillStyle = '#123024'; ctx.font = `600 28px ${IMG_FONT}`;
+  ctx.fillText(scoreWord(rec.total), W-pad-40, y+150);
+  y += 230;
+
+  // คะแนนรายหมวด
+  S5.forEach(g=>{
+    const got = g.items.reduce((a,_,i)=>a+(Number(rec.scores[g.key+'_'+i])||0),0);
+    const full = g.items.length*5, pct = Math.round(got/full*100);
+    ctx.textAlign='left'; ctx.fillStyle='#123024'; ctx.font=`600 28px ${IMG_FONT}`;
+    ctx.fillText(g.title, pad, y+28);
+    ctx.textAlign='right'; ctx.fillStyle='#5C7A6C'; ctx.font=`500 26px ${IMG_FONT}`;
+    ctx.fillText(got+' / '+full, W-pad, y+28);
+    ctx.fillStyle='#DCEBE2'; roundRect(ctx, pad, y+42, innerW, 18, 9); ctx.fill();
+    ctx.fillStyle=scoreColor(pct); roundRect(ctx, pad, y+42, Math.max(18, innerW*pct/100), 18, 9); ctx.fill();
+    y += 74;
+  });
+  y += 26;
+
+  const block = (title, lines, bg, bd, tc) => {
+    const h = 62 + lines.length*38;
+    ctx.fillStyle = bg; roundRect(ctx, pad, y, innerW, h, 18); ctx.fill();
+    ctx.strokeStyle = bd; ctx.lineWidth = 2; roundRect(ctx, pad, y, innerW, h, 18); ctx.stroke();
+    ctx.textAlign='left'; ctx.fillStyle = tc; ctx.font=`700 26px ${IMG_FONT}`;
+    ctx.fillText(title, pad+28, y+40);
+    ctx.fillStyle='#123024'; ctx.font=`400 26px ${IMG_FONT}`;
+    lines.forEach((ln,i)=>ctx.fillText(ln, pad+28, y+78+i*38));
+    y += h + 22;
+  };
+  if(praise.length)  block('สิ่งที่ชื่นชม', praise, '#EEF8F2', '#CBE6D6', '#1E8A5C');
+  if(improve.length){
+    block('สิ่งที่ต้องปรับปรุงและติดตามต่อ', improve, '#FDF0E9', '#F2CDB9', '#C4562F');
+    ctx.fillStyle = rec.followStatus==='done' ? '#1E8A5C' : '#C4562F';
+    ctx.font = `700 26px ${IMG_FONT}`; ctx.textAlign='left';
+    ctx.fillText(rec.followStatus==='done' ? '● ได้รับการแก้ไขแล้ว' : '● รอการแก้ไข', pad+28, y+6);
+    y += 46;
+  }
+
+  imgFooter(ctx, W, H, `ผู้ตรวจ ${rec.inspector||'—'} · วันที่ตรวจ ${thDate(rec.date)}`);
+  return cv;
+}
+
+/* ภาพสรุปทั้งเดือน ทุกโซน */
+async function imageMonth(){
+  if(document.fonts && document.fonts.ready) { try{ await document.fonts.ready; }catch(e){} }
+  const W = 1080, pad = 56, innerW = W - pad*2;
+  const H = 230 + 40 + 70 + ZONES.length*118 + 150;
+  const cv = document.createElement('canvas'); cv.width=W; cv.height=H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#EDF6F0'; ctx.fillRect(0,0,W,H);
+
+  imgHeader(ctx, W, 'สรุปผลการตรวจ 5ส ประจำเดือน',
+    `เดือน${TH_MONTHS[state.month-1]} พ.ศ. ${state.year}`);
+
+  let y = 276;
+  ctx.textAlign='left'; ctx.fillStyle='#5C7A6C'; ctx.font=`600 24px ${IMG_FONT}`;
+  ctx.fillText('โซน', pad, y);
+  ctx.textAlign='center';
+  [1,2,3,4].forEach((w,i)=>ctx.fillText('ส'+w, pad+430+i*112, y));
+  ctx.fillText('เฉลี่ย', W-pad-58, y);
+  y += 30;
+
+  ZONES.forEach(z=>{
+    ctx.fillStyle='#fff'; roundRect(ctx, pad, y, innerW, 100, 16); ctx.fill();
+    ctx.fillStyle=z.hex; roundRect(ctx, pad, y, 10, 100, 5); ctx.fill();
+    ctx.textAlign='left'; ctx.fillStyle='#123024'; ctx.font=`700 30px ${IMG_FONT}`;
+    ctx.fillText('โซน'+z.name, pad+34, y+44);
+    const avg = zoneAvg(z.id);
+    ctx.fillStyle='#DCEBE2'; roundRect(ctx, pad+34, y+62, 330, 14, 7); ctx.fill();
+    if(avg){ ctx.fillStyle=z.hex; roundRect(ctx, pad+34, y+62, Math.max(14,330*avg/100), 14, 7); ctx.fill(); }
+    ctx.textAlign='center'; ctx.font=`600 30px ${IMG_FONT}`;
+    [1,2,3,4].forEach((w,i)=>{
+      const sc = zoneScore(z.id, w);
+      ctx.fillStyle = sc===null ? '#B9CCC2' : scoreColor(sc);
+      ctx.fillText(sc===null?'—':String(sc), pad+430+i*112, y+62);
+    });
+    ctx.fillStyle = avg===null?'#B9CCC2':scoreColor(avg); ctx.font=`700 38px ${IMG_FONT}`;
+    ctx.fillText(avg===null?'—':String(avg), W-pad-58, y+66);
+    y += 118;
+  });
+
+  const rs = rows5s();
+  const avgAll = rs.length ? Math.round(rs.reduce((a,b)=>a+b.total,0)/rs.length) : 0;
+  const open = follows().filter(f=>f.status==='open' && f.period===period()).length;
+  ctx.textAlign='left'; ctx.fillStyle='#123024'; ctx.font=`600 28px ${IMG_FONT}`;
+  ctx.fillText(`คะแนนเฉลี่ยทุกโซน ${avgAll||'—'} / 100 · ตรวจแล้ว ${rs.length} จาก 20 ครั้ง · รอการแก้ไข ${open} เรื่อง`, pad, y+40);
+  imgFooter(ctx, W, H, 'ออกรายงานเมื่อ '+thDate(todayISO()));
+  return cv;
+}
+
+/* บันทึกหรือแชร์ไฟล์ภาพ รองรับทั้ง iOS และ Android */
+async function saveImage(canvas, filename){
+  const blob = await new Promise(r=>canvas.toBlob(r,'image/png',0.95));
+  if(!blob){ toast('สร้างภาพไม่สำเร็จ'); return; }
+  const file = new File([blob], filename, { type:'image/png' });
+
+  if(navigator.canShare && navigator.canShare({ files:[file] })){
+    try{ await navigator.share({ files:[file], title:filename }); return; }
+    catch(err){ if(err && err.name==='AbortError') return; }
+  }
+  showImageModal(canvas.toDataURL('image/png'), filename, blob);
+}
+
+function showImageModal(dataUrl, filename, blob){
+  document.querySelectorAll('.img-modal').forEach(e=>e.remove());
+  const wrap = document.createElement('div');
+  wrap.className = 'img-modal';
+  wrap.innerHTML = `<div class="img-box">
+      <img src="${dataUrl}" alt="ภาพสรุป">
+      <p>กดค้างที่ภาพแล้วเลือก <b>บันทึกรูปภาพ</b> หรือกดปุ่มดาวน์โหลดด้านล่าง</p>
+      <div class="img-act">
+        <a class="btn btn-primary" id="imgDl" download="${filename}" href="${dataUrl}">ดาวน์โหลดรูป</a>
+        <button class="btn" id="imgClose">ปิด</button>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelector('#imgClose').onclick = ()=>wrap.remove();
+  wrap.onclick = e=>{ if(e.target===wrap) wrap.remove(); };
+  if(blob){
+    const url = URL.createObjectURL(blob);
+    wrap.querySelector('#imgDl').href = url;
+    setTimeout(()=>URL.revokeObjectURL(url), 120000);
+  }
 }
 
 /* ---------- 10. เรนเดอร์ ---------- */
@@ -769,8 +989,10 @@ function alertHTML(f){
       <div class="when">ตรวจ ${thDate(f.date)}${f.by?' · โดย '+esc(f.by):''}</div>
     </div>
     ${ done
-      ? '<span class="chip">แก้ไขแล้ว</span>'
-      : `<button class="btn btn-ok btn-sm" data-done="${f.rid}">จัดการเรียบร้อย</button>` }
+      ? `<div style="text-align:right"><span class="chip">ได้รับการแก้ไขแล้ว</span>
+          <div class="when" style="margin-top:4px">${f.doneAt?thDate(f.doneAt):''}${f.doneBy?' · '+esc(f.doneBy.replace(/^นาง(สาว)?/,'')):''}</div>
+          <button class="btn btn-sm" data-undone="${f.rid}" style="margin-top:6px">ย้อนกลับ</button></div>`
+      : `<button class="btn btn-ok btn-sm" data-done="${f.rid}">ได้รับการแก้ไขแล้ว</button>` }
   </div>`;
 }
 function emptyHTML(t,s){
@@ -943,7 +1165,17 @@ function vCheck(){
           <textarea id="f5improve" placeholder="เช่น กล่องเวชภัณฑ์ในห้องเก็บของ 1 ยังไม่เขียนวันหมดอายุกำกับ">${existing?esc(existing.improve||''):''}</textarea></div>
 
         <button class="btn btn-primary" id="save5s" style="width:100%">บันทึกผลการตรวจ</button>
+        ${ existing ? `<button class="btn" id="imgCheck" style="width:100%;margin-top:8px">บันทึกภาพสรุปการตรวจ</button>` : '' }
+        ${ existing ? `<p class="hint" style="margin:8px 0 0">ภาพจะเปิดหน้าต่างแชร์ของเครื่อง เลือกบันทึกรูปภาพหรือส่งเข้าไลน์กลุ่มได้ทันที</p>` : '' }
       </div>
+
+      ${ existing && existing.improve ? `<div class="card" style="margin-top:16px;border-top:4px solid ${existing.followStatus==='done'?'var(--ok)':'var(--warn)'}">
+        <h3>สิ่งที่ต้องติดตามต่อ</h3>
+        <p class="hint">จากการตรวจสัปดาห์ที่ ${existing.week} เมื่อ ${thDate(existing.date)}</p>
+        ${alertHTML({rid:existing.id, zone:existing.zone, week:existing.week, period:existing.period,
+                     text:existing.improve, status:existing.followStatus||'open',
+                     date:existing.date, by:existing.inspector})}
+      </div>` : '' }
     </div>
   </div>`;
 }
@@ -990,12 +1222,15 @@ function vRound(){
       </thead>
       <tbody>${rows}</tbody>
     </table>
-    <div style="margin-top:12px"><button class="btn btn-sm" onclick="window.print()">พิมพ์ตาราง</button></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" id="imgMonth">บันทึกภาพสรุปทั้งเดือน</button>
+      <button class="btn btn-sm" onclick="window.print()">พิมพ์ตาราง</button>
+    </div>
   </div>
 
   <div class="card">
     <h3>รายการติดตามทั้งหมดของเดือนนี้</h3>
-    <p class="hint">กดปุ่มเมื่อแก้ไขเรียบร้อยแล้ว ระบบจะบันทึกสถานะไว้ในชีต</p>
+    <p class="hint">กดปุ่มได้รับการแก้ไขแล้วเมื่อดำเนินการเสร็จ ระบบจะบันทึกวันที่และชื่อผู้ปิดเรื่องลงชีต</p>
     ${ fl.length ? fl.map(f=>alertHTML(f)).join('') : emptyHTML('ไม่มีเรื่องค้าง','ทุกโซนผ่านการตรวจโดยไม่มีข้อปรับปรุง') }
   </div>`;
 }
@@ -1482,7 +1717,11 @@ function bind(){
   // ปิดรายการติดตาม
   document.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{
     const r = state.db.check5s.find(x=>x.id===b.dataset.done);
-    if(r){ r.followStatus='done'; r.followDoneAt=todayISO(); r.followDoneBy=state.user; persist(); toast('บันทึกว่าแก้ไขเรียบร้อยแล้ว'); render(); }
+    if(r){ r.followStatus='done'; r.followDoneAt=todayISO(); r.followDoneBy=state.user; persist(); toast('บันทึกว่าได้รับการแก้ไขแล้ว'); render(); }
+  });
+  document.querySelectorAll('[data-undone]').forEach(b=>b.onclick=()=>{
+    const r = state.db.check5s.find(x=>x.id===b.dataset.undone);
+    if(r){ r.followStatus='open'; r.followDoneAt=''; r.followDoneBy=''; persist(); toast('กลับไปเป็นรอติดตาม'); render(); }
   });
 
   // ฟอร์มตรวจ 5ส
@@ -1502,6 +1741,18 @@ function bind(){
       $('#totalBar').style.width = t+'%'; $('#totalBar').style.background = scoreColor(t);
       $('#totalWord').textContent = scoreWord(t);
     });
+
+    const ic = $('#imgCheck');
+    if(ic) ic.onclick = async()=>{
+      const rec = rows5s().find(r=>r.zone===$('#f5zone').value && r.week===Number($('#f5week').value));
+      if(!rec){ toast('ยังไม่มีผลการตรวจของสัปดาห์นี้'); return; }
+      ic.disabled = true; ic.textContent = 'กำลังสร้างภาพ…';
+      try{
+        const cv = await imageCheck(rec);
+        await saveImage(cv, `5ส_${(Z[rec.zone]||{}).name||''}_ส${rec.week}_${rec.date}.png`);
+      }catch(e){ toast('สร้างภาพไม่สำเร็จ: '+e.message); }
+      ic.disabled = false; ic.textContent = 'บันทึกภาพสรุปการตรวจ';
+    };
 
     $('#save5s').onclick=()=>{
       const zone=$('#f5zone').value, week=Number($('#f5week').value);
@@ -1588,6 +1839,20 @@ function bind(){
     document.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{
       state.db.onegcl = state.db.onegcl.filter(r=>r.id!==b.dataset.delg); persist(); render();
     });
+  }
+
+  // ตาราง Round
+  if(state.page==='round'){
+    const im = $('#imgMonth');
+    if(im) im.onclick = async()=>{
+      if(!rows5s().length){ toast('เดือนนี้ยังไม่มีผลการตรวจ'); return; }
+      im.disabled = true; im.textContent = 'กำลังสร้างภาพ…';
+      try{
+        const cv = await imageMonth();
+        await saveImage(cv, `สรุป5ส_${TH_MONTHS[state.month-1]}${state.year}.png`);
+      }catch(e){ toast('สร้างภาพไม่สำเร็จ: '+e.message); }
+      im.disabled = false; im.textContent = 'บันทึกภาพสรุปทั้งเดือน';
+    };
   }
 
   // ค่าขยะ
