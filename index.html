@@ -186,6 +186,20 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 .chip.late{background:var(--warn-bg);color:var(--warn)}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:11px;box-shadow:var(--shadow);z-index:99;font-weight:500}
 .hide{display:none!important}
+.conn-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);
+  background:var(--paper);border-radius:99px;padding:6px 13px;font-size:12.5px;font-weight:600;
+  cursor:pointer;color:var(--muted);white-space:nowrap}
+.conn-pill i{width:9px;height:9px;border-radius:50%;background:#E6B400;display:block;flex:none}
+.conn-pill.ok{border-color:#BFE3CE;background:#EEF8F2;color:var(--ok)}
+.conn-pill.ok i{background:#1E8A5C}
+.conn-pill.bad{border-color:#F2CDB9;background:var(--warn-bg);color:var(--warn)}
+.conn-pill.bad i{background:#C4562F}
+.conn-pill.busy i{animation:connPulse 1s ease-in-out infinite}
+@keyframes connPulse{50%{opacity:.25}}
+.mdot{width:11px;height:11px;border-radius:50%;background:#E6B400;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+.mdot.ok{background:#7FD3A3}
+.mdot.bad{background:#FF8A65}
+.side-foot .sync{display:block;margin-top:4px;color:#7FB79A;font-size:11px}
 .pic{border:1.5px dashed #C3DCCD;border-radius:11px;padding:11px;background:#fff;display:flex;gap:11px;align-items:center;flex-wrap:wrap}
 .pic .btn{white-space:nowrap}
 .pic-prev{display:flex;gap:8px;align-items:center}
@@ -243,6 +257,8 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
   .nav svg{width:21px;height:21px}
 
   .topbar{padding:10px 14px;gap:8px;position:static;backdrop-filter:none}
+  .topbar .period{flex-wrap:wrap}
+  #connPill{width:100%;justify-content:center;padding:9px 13px}
   .topbar .period{flex:1;min-width:0}
   .topbar .period label{display:none}
   .topbar select{flex:1;min-width:0}
@@ -357,9 +373,6 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
       <button data-page="team">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M17 5.5a3.2 3.2 0 0 1 0 6M18.5 20c0-2.6-.9-4.3-2.2-5.4"/></svg>
         สมาชิกทีมโซน</button>
-      <button data-page="setup">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 2.6 7a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 7 2.6h.1A1.7 1.7 0 0 0 8.3 1V1a2 2 0 1 1 4 0" transform="translate(1.5 1.5) scale(.86)"/></svg>
-        เชื่อมต่อ Google Sheet</button>
     </nav>
 
     <div class="side-foot">
@@ -375,6 +388,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
       <h2 id="mTitle">ภาพรวมหอผู้ป่วย</h2>
+      <span class="mdot" id="mDot" title="สถานะการเชื่อมต่อ"></span>
       <svg class="mlogo" viewBox="0 0 48 48" fill="none" aria-hidden="true">
         <circle cx="24" cy="24" r="22" fill="rgba(255,255,255,.14)"/>
         <path d="M24 34c0-7 4-12 10-13-1 7-4 11-10 13z" fill="#7FD3A3"/>
@@ -392,6 +406,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
       <div class="period">
         <label for="selUser">ผู้บันทึก</label>
         <select id="selUser"></select>
+        <button class="conn-pill busy" id="connPill" title="กดเพื่อเชื่อมต่ออีกครั้ง"><i></i><span>กำลังเชื่อมต่อ…</span></button>
       </div>
     </div>
     <div class="wrap" id="view"></div>
@@ -551,7 +566,7 @@ const OPT_ETHIC = [
 /* ---------- 7. สถานะแอป ---------- */
 const now = new Date();
 const state = {
-  page:'home', lastError:'',
+  page:'home', lastError:'', lastSync:'',
   month: now.getMonth()+1,
   year:  now.getFullYear()+543,
   user:  '',
@@ -609,12 +624,13 @@ async function unwrap(res){
 
 async function loadAll(){
   CFG.API_URL = store.readCfg() || DEFAULT_API;
+  setConn(null);
   if(CFG.API_URL){
     try{
       const d = await api('getAll', {});
       state.db = { members:(d.members||[]).filter(m=>String(m.name||'').trim()), check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[] };
       store.write(state.db);
-      state.lastError = ''; setConn(true); return;
+      state.lastError = ''; state.lastSync = nowTime(); setConn(true); return;
     }catch(e){ state.lastError = e.message; setConn(false, e.message); }
   }
   const local = store.read();
@@ -624,14 +640,40 @@ async function loadAll(){
 }
 function persist(){
   store.write(state.db);
-  if(CFG.API_URL) api('saveAll', state.db).catch(e=>toast('บันทึกขึ้น Sheet ไม่สำเร็จ: '+e.message));
+  if(CFG.API_URL) api('saveAll', state.db)
+    .then(()=>{ state.lastError=''; state.lastSync = nowTime(); setConn(true); })
+    .catch(e=>{ state.lastError = e.message; setConn(false, e.message); toast('บันทึกขึ้น Sheet ไม่สำเร็จ: '+e.message); });
 }
 function setConn(ok, msg){
+  const label = ok===null ? 'กำลังเชื่อมต่อ…'
+              : ok ? 'เชื่อมต่อแล้ว' : 'เชื่อมต่อไม่ได้';
+  const cls   = ok===null ? 'busy' : ok ? 'ok' : 'bad';
+
+  const pill = document.getElementById('connPill');
+  if(pill){
+    pill.className = 'conn-pill ' + cls;
+    pill.querySelector('span').textContent = label;
+    pill.title = ok ? ('อ่านข้อมูลจาก Google Sheet ได้ตามปกติ' + (state.lastSync?' · ปรับล่าสุด '+state.lastSync:''))
+               : ok===null ? 'กำลังติดต่อ Google Sheet' : ('กดเพื่อลองใหม่ · ' + (msg||''));
+  }
+
+  const dot = document.getElementById('mDot');
+  if(dot){ dot.className = 'mdot ' + (ok===null?'':cls); dot.title = label; }
+
   const el = document.getElementById('connState');
-  el.innerHTML = ok
-    ? '<span class="dot" style="background:#4FC08D"></span>ข้อมูลจาก Google Sheet'
-    : '<span class="dot" style="background:#E6B400"></span>โหมดทดลอง (เก็บในเครื่อง)';
-  if(msg && CFG.API_URL) el.title = msg;
+  if(el){
+    el.innerHTML = ok===null
+      ? '<span class="dot" style="background:#E6B400"></span>กำลังเชื่อมต่อ…'
+      : ok
+        ? '<span class="dot" style="background:#4FC08D"></span>เชื่อมต่อ Google Sheet แล้ว' +
+          (state.lastSync ? '<span class="sync">ปรับข้อมูลล่าสุด '+state.lastSync+'</span>' : '')
+        : '<span class="dot" style="background:#FF8A65"></span>เชื่อมต่อไม่ได้ · เก็บในเครื่องชั่วคราว' +
+          (msg ? '<span class="sync">'+esc(msg).slice(0,90)+'</span>' : '');
+  }
+}
+function nowTime(){
+  const d = new Date();
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' น.';
 }
 
 /* ---------- 9. ตัวช่วย ---------- */
@@ -914,7 +956,7 @@ function render(){
   });
   const mt = $('#mTitle'); if(mt) mt.textContent = PAGE_TITLE[state.page] || '5ส';
   const v = $('#view');
-  v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, waste:vWaste, report:vReport, team:vTeam, setup:vSetup}[state.page]||vHome)();
+  v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, waste:vWaste, report:vReport, team:vTeam}[state.page]||vHome)();
   bind();
   window.scrollTo({top:0});
 }
@@ -941,7 +983,15 @@ function vHome(){
 
   const fl = follows().filter(f=>f.period===period()).slice(0,6);
 
-  return `
+  const warn = state.lastError ? `<div class="alert" style="margin-bottom:16px">
+      <span style="flex:none;font-size:20px">⚠️</span>
+      <div class="txt"><b>ยังเชื่อมต่อ Google Sheet ไม่ได้</b>
+        <p>${esc(state.lastError)}</p>
+        <div class="when">ข้อมูลที่บันทึกตอนนี้จะเก็บไว้ในเครื่องก่อน แล้วส่งขึ้นชีตเมื่อเชื่อมต่อได้</div></div>
+      <button class="btn btn-sm" id="retryConn">ลองเชื่อมต่ออีกครั้ง</button>
+    </div>` : '';
+
+  return `${warn}
   <section class="hero">
     <svg class="hero-deco" viewBox="0 0 300 300" fill="none" aria-hidden="true">
       <path d="M150 280c0-80 40-140 120-150-10 80-45 130-120 150z" fill="#7FD3A3" opacity=".55"/>
@@ -1617,7 +1667,7 @@ function vTeam(){
     <h3>ที่มาของรายชื่อ</h3>
     <p class="hint">${ CFG.API_URL
       ? 'อ่านและเขียนกับชีต Members บน Google Sheet โดยตรง การแก้ไขในหน้านี้จะถูกส่งขึ้นชีตทันที'
-      : 'ยังไม่ได้เชื่อมต่อ ไปวาง Web app URL ที่เมนูเชื่อมต่อ Google Sheet ก่อน แล้วกลับมากดดึงรายชื่อ' }</p>
+      : 'ยังเชื่อมต่อชีตไม่ได้ ตรวจการ Deploy ฝั่ง Apps Script ให้เป็น Web app · Execute as: Me · Who has access: Anyone' }</p>
     <p style="font-size:13.5px;margin:0 0 12px">
       มีในระบบ <b>${state.db.members.length} คน</b>
       ${ dupes.length ? ` <span class="chip late">ชื่อซ้ำ ${dupes.length} รายการ</span>` : '' }
@@ -1632,6 +1682,7 @@ function vTeam(){
       ${ state.db.members.length ? `<button class="btn" id="mSort">จัดเรียงและออกรหัสใหม่</button>` : '' }
     </div>
     <p class="hint" style="margin:10px 0 0">ถ้าชีต Members ยังว่าง ให้เปิด Apps Script แล้วรันฟังก์ชัน <b>refreshMembersFromLegacy</b> หนึ่งครั้ง ระบบจะดึงชื่อและอีเมลจากชีต OneGCLnew มาลงให้เอง</p>
+    <div style="margin-top:10px"><button class="btn btn-sm" id="clearLocal">ล้างข้อมูลที่ค้างในเครื่อง</button></div>
   </div>
 
   <div style="margin-bottom:12px">${counts}${none?`<span class="chip late">ยังไม่กำหนดโซน ${none} คน</span>`:''}</div>
@@ -1644,59 +1695,6 @@ function vTeam(){
     <div style="margin-top:12px;display:flex;gap:8px">
       <button class="btn" id="addMember">เพิ่มสมาชิก</button>
       <button class="btn btn-primary" id="saveTeam">บันทึกรายชื่อ</button>
-    </div>
-  </div>`;
-}
-
-/* ---------- หน้า: ตั้งค่า ---------- */
-function vSetup(){
-  return `<h2 class="page-title">เชื่อมต่อ Google Sheet</h2>
-  <p class="page-sub">ตอนนี้แอปทำงานได้ทันทีโดยเก็บข้อมูลไว้ในเครื่อง เมื่อวาง Web app URL ของ Apps Script แล้ว ข้อมูลทั้งหมดจะบันทึกลง Google Sheet และใช้ร่วมกันทั้งทีม</p>
-
-  <div class="card" style="margin-bottom:16px">
-    <div class="field"><label for="apiUrl">Web app URL</label>
-      <input type="text" id="apiUrl" value="${esc(store.readCfg()||DEFAULT_API)}" placeholder="https://script.google.com/macros/s/.../exec">
-      <p class="hint" style="margin:6px 0 0">${ store.readCfg() ? 'กำลังใช้ URL ที่ตั้งไว้ในเบราว์เซอร์นี้' : 'กำลังใช้ URL ค่าเริ่มต้นที่ฝังไว้ในไฟล์' }</p></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-primary" id="saveApi">บันทึกและเชื่อมต่อ</button>
-      <button class="btn" id="testApi">ทดสอบการเชื่อมต่อ</button>
-      <button class="btn" id="pushLocal">ส่งข้อมูลในเครื่องขึ้น Sheet</button>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:16px">
-    <h3>สถานะการเชื่อมต่อ</h3>
-    <p style="font-size:13.5px;margin:6px 0 10px">
-      ${ CFG.API_URL
-        ? (state.lastError
-            ? `<span class="chip late">ต่อไม่ติด</span> ${esc(state.lastError)}`
-            : `<span class="chip">ต่อติดแล้ว</span> อ่านข้อมูลจากชีตได้ ${state.db.members.length} รายชื่อ`)
-        : '<span class="chip late">ยังไม่ได้ตั้ง URL</span>' }
-    </p>
-    <p style="font-size:12.5px;word-break:break-all;color:var(--muted);margin:0 0 10px">
-      URL ที่ใช้อยู่: ${esc(CFG.API_URL||'—')}</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary" id="reloadNow">ดึงข้อมูลจากชีตอีกครั้ง</button>
-      ${ CFG.API_URL ? `<a class="btn" href="${esc(CFG.API_URL)}" target="_blank" rel="noopener">เปิด URL นี้ในแท็บใหม่</a>` : '' }
-    </div>
-    <p class="hint" style="margin:10px 0 0">ถ้าเปิดในแท็บใหม่แล้วเห็นข้อความขึ้นต้นด้วย <code>{"ok":true</code> แปลว่าฝั่ง Google ทำงานปกติ ถ้าเห็นหน้าให้เข้าสู่ระบบหรือหน้าไม่พบ ให้ Deploy ใหม่ตามขั้นตอนด้านล่าง</p>
-  </div>
-
-  <div class="card">
-    <h3>ขั้นตอนติดตั้งฝั่ง Google</h3>
-    <ol style="font-size:13.5px;line-height:1.85;padding-left:20px;margin:8px 0">
-      <li>เปิดสเปรดชีตที่มีชีต OneGCLnew แล้วไปที่ ส่วนขยาย → Apps Script</li>
-      <li>วางโค้ดจากไฟล์ <b>Code.gs</b> ทับของเดิมทั้งหมด แล้วกดบันทึก</li>
-      <li>รันฟังก์ชัน <b>setupOnce</b> หนึ่งครั้ง กดอนุญาตสิทธิ์ให้ครบทุกหน้าจอ ระบบจะสร้างชีต Members, Check5S, OneGCL_App, Waste และดึงรายชื่อจาก OneGCLnew มาลงให้</li>
-      <li>กด <b>Deploy → New deployment</b> เลือกชนิดเป็น <b>Web app</b></li>
-      <li>ตั้ง <b>Execute as: Me</b> และ <b>Who has access: Anyone</b> ข้อนี้สำคัญที่สุด ถ้าตั้งเป็น Anyone with Google account จะดึงข้อมูลไม่ได้</li>
-      <li>คัดลอก Web app URL ที่ลงท้ายด้วย <b>/exec</b> มาวางในช่องด้านบน แล้วกดบันทึกและเชื่อมต่อ</li>
-    </ol>
-    <p class="hint" style="margin-top:10px">แก้โค้ดทีหลังต้องกด Deploy → Manage deployments → ไอคอนดินสอ → Version: New version → Deploy ทุกครั้ง มิฉะนั้น URL เดิมจะยังรันโค้ดเวอร์ชันเก่า</p>
-    <p class="hint" style="margin-top:6px">ชีต OneGCLnew เดิมยังใช้งานได้ตามปกติ โค้ดอ่านข้อมูลเก่ามาแสดงโดยไม่แก้ไขแถวเดิม รายชื่อสมาชิกอ่านจากชีต Members เท่านั้น ไม่มีรายชื่อฝังอยู่ในไฟล์เว็บ</p>
-    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn" id="clearMembers">ล้างรายชื่อที่ค้างในเครื่อง</button>
-      <button class="btn" id="resetLocal">ล้างข้อมูลในเครื่องทั้งหมด</button>
     </div>
   </div>`;
 }
@@ -1723,6 +1721,13 @@ function bind(){
     const r = state.db.check5s.find(x=>x.id===b.dataset.undone);
     if(r){ r.followStatus='open'; r.followDoneAt=''; r.followDoneBy=''; persist(); toast('กลับไปเป็นรอติดตาม'); render(); }
   });
+
+  const rc = $('#retryConn');
+  if(rc) rc.onclick = async()=>{
+    rc.disabled = true; rc.textContent = 'กำลังเชื่อมต่อ…';
+    await loadAll(); fillUsers(); render();
+    toast(state.lastError ? ('ยังต่อไม่ได้: '+state.lastError) : ('เชื่อมต่อแล้ว · '+state.db.members.length+' รายชื่อ'));
+  };
 
   // ฟอร์มตรวจ 5ส
   if(state.page==='check5s'){
@@ -1906,6 +1911,12 @@ function bind(){
 
     const btn = (id, fn) => { const b=$('#'+id); if(b) b.onclick=fn; };
 
+    btn('clearLocal', ()=>{
+      if(!confirm('ล้างข้อมูลที่เก็บไว้ในเบราว์เซอร์นี้? ข้อมูลบน Google Sheet ไม่ถูกลบ')) return;
+      state.db = { members:[], check5s:[], onegcl:[], waste:[] };
+      store.write(state.db); loadAll().then(()=>{ fillUsers(); render(); toast('ล้างแล้ว ดึงข้อมูลใหม่จากชีต'); });
+    });
+
     btn('mPull', async()=>{
       if(!confirm('ดึงรายชื่อจากชีต Members มาแทนรายชื่อในหน้านี้ทั้งหมด?')) return;
       try{
@@ -1955,33 +1966,6 @@ function bind(){
     });
   }
 
-  // ตั้งค่า
-  if(state.page==='setup'){
-    $('#saveApi').onclick=async()=>{ store.writeCfg($('#apiUrl').value.trim()); await loadAll(); fillUsers(); toast(CFG.API_URL?'เชื่อมต่อแล้ว · ดึงข้อมูล '+state.db.members.length+' รายชื่อ':'กลับสู่โหมดทดลอง'); render(); };
-    $('#testApi').onclick=async()=>{
-      const u=$('#apiUrl').value.trim(); if(!u){ toast('ยังไม่ได้ใส่ URL'); return; }
-      const old=CFG.API_URL; CFG.API_URL=u;
-      try{ const r = await api('ping',{}); toast('เชื่อมต่อสำเร็จ · เวลาเซิร์ฟเวอร์ '+String(r.time).slice(11,19)); }
-      catch(e){ toast('เชื่อมต่อไม่สำเร็จ: '+e.message+' — ตรวจว่า Deploy เป็น Web app และตั้ง Who has access เป็น Anyone'); CFG.API_URL=old; }
-    };
-    $('#pushLocal').onclick=async()=>{
-      if(!CFG.API_URL){ toast('เชื่อมต่อ URL ก่อน'); return; }
-      try{ await api('saveAll', state.db); toast('ส่งข้อมูลขึ้น Sheet แล้ว'); }catch(e){ toast('ส่งไม่สำเร็จ: '+e.message); }
-    };
-    $('#reloadNow').onclick=async()=>{
-      store.writeCfg($('#apiUrl').value.trim());
-      await loadAll(); fillUsers(); render();
-      toast(state.lastError ? ('ดึงไม่สำเร็จ: '+state.lastError) : ('ดึงข้อมูลแล้ว · '+state.db.members.length+' รายชื่อ'));
-    };
-    $('#clearMembers').onclick=()=>{
-      if(!confirm('ล้างรายชื่อที่เก็บไว้ในเครื่องนี้? ข้อมูลบนชีต Members ไม่ถูกลบ')) return;
-      state.db.members = []; store.write(state.db); fillUsers(); render(); toast('ล้างรายชื่อในเครื่องแล้ว กดดึงข้อมูลจากชีตอีกครั้งได้เลย');
-    };
-    $('#resetLocal').onclick=()=>{
-      if(!confirm('ล้างข้อมูลที่เก็บในเครื่องทั้งหมด? ข้อมูลบน Google Sheet จะไม่ถูกลบ')) return;
-      state.db={members:[],check5s:[],onegcl:[],waste:[]}; persist(); render(); toast('ล้างข้อมูลในเครื่องแล้ว');
-    };
-  }
 }
 
 /* ---------- 12. แถบบน ---------- */
@@ -2004,7 +1988,7 @@ function fillUsers(){
 const PAGE_TITLE = {
   home:'ภาพรวมหอผู้ป่วย', map:'แผนผังโซน', check5s:'ตรวจ 5ส รายสัปดาห์',
   round:'ตาราง Round 5ส', onegcl:'One G-C-L & Ethics', waste:'ค่าขยะ & รายรับ',
-  report:'สรุปรายเดือน', team:'สมาชิกทีมโซน', setup:'เชื่อมต่อ Google Sheet'
+  report:'สรุปรายเดือน', team:'สมาชิกทีมโซน'
 };
 const drawer = {
   open(){ $('#side').classList.add('open'); $('#scrim').classList.add('show');
@@ -2012,6 +1996,13 @@ const drawer = {
   close(){ $('#side').classList.remove('open'); $('#scrim').classList.remove('show');
            $('#burger').setAttribute('aria-expanded','false'); document.body.style.overflow=''; }
 };
+$('#connPill').onclick = async()=>{
+  setConn(null);
+  await loadAll(); fillUsers(); render();
+  toast(state.lastError ? ('เชื่อมต่อไม่ได้: '+state.lastError)
+                        : ('เชื่อมต่อแล้ว · รายชื่อ '+state.db.members.length+' คน · ผลตรวจ '+state.db.check5s.length+' รายการ'));
+};
+
 $('#burger').onclick = ()=> $('#side').classList.contains('open') ? drawer.close() : drawer.open();
 $('#scrim').onclick = drawer.close;
 $('#sideClose').onclick = drawer.close;
