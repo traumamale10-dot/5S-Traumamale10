@@ -32,7 +32,7 @@
   --shadow:0 1px 2px rgba(15,53,41,.06), 0 8px 24px -12px rgba(15,53,41,.22);
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;max-width:100%}
 body{
   font-family:"IBM Plex Sans Thai","Sarabun","Leelawadee UI",system-ui,sans-serif;
   background:var(--mist); color:var(--ink);
@@ -66,7 +66,7 @@ a{color:var(--canopy)}
 .side-foot b{color:#CFE9DA;font-weight:600}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
 
-.main{min-width:0;padding:0 0 60px}
+.main{min-width:0;max-width:100%;padding:0 0 60px}
 .topbar{
   display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
   padding:14px 30px;background:rgba(237,246,240,.9);backdrop-filter:blur(8px);
@@ -78,7 +78,7 @@ select,input[type=text],input[type=date],input[type=number],textarea{
   background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:7px 10px
 }
 textarea{width:100%;resize:vertical;min-height:64px;line-height:1.55}
-.wrap{padding:24px 30px;max-width:1240px}
+.wrap{padding:24px 30px;max-width:1240px;min-width:0}
 h2.page-title{font-size:25px;margin:0 0 4px;letter-spacing:-.4px}
 .page-sub{color:var(--muted);margin:0 0 20px;font-size:13.5px;max-width:70ch}
 
@@ -96,10 +96,11 @@ h2.page-title{font-size:25px;margin:0 0 4px;letter-spacing:-.4px}
 .hs span{font-size:12px;color:#A9DCC1}
 
 /* ---------- การ์ด ---------- */
-.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);min-width:0;max-width:100%}
 .card h3{margin:0 0 3px;font-size:16px}
 .card .hint{margin:0 0 14px;color:var(--muted);font-size:12.5px}
 .grid{display:grid;gap:16px}
+.grid>*{min-width:0}
 .g2{grid-template-columns:1.45fr 1fr}
 .g3{grid-template-columns:repeat(3,1fr)}
 .g5{grid-template-columns:repeat(5,1fr)}
@@ -119,7 +120,7 @@ h2.page-title{font-size:25px;margin:0 0 4px;letter-spacing:-.4px}
 .bar i{display:block;height:100%;border-radius:99px;background:var(--zc)}
 
 /* ---------- แผนผัง ---------- */
-.map-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.map-wrap{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);min-width:0;max-width:100%}
 .map-wrap svg{width:100%;height:auto;display:block}
 .room{cursor:pointer}
 .room:hover .room-fill{filter:brightness(.94)}
@@ -136,7 +137,7 @@ h2.page-title{font-size:25px;margin:0 0 4px;letter-spacing:-.4px}
 .tbl th,.tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
 .tbl thead th{background:#F2F9F5;font-weight:600;color:var(--canopy);text-align:center}
 .tbl td.num{text-align:center;font-weight:600;width:62px}
-.scroll{overflow-x:auto}
+.scroll{overflow-x:auto;max-width:100%}
 .zone-tag{display:inline-flex;align-items:center;gap:6px;font-weight:600}
 .zone-tag i{width:10px;height:10px;border-radius:3px;display:block}
 
@@ -257,6 +258,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
   .nav button{padding:13px 13px;font-size:15.5px}
   .nav svg{width:21px;height:21px}
 
+  html,body{overflow-x:hidden}
   .topbar{padding:10px 14px;gap:8px;position:static;backdrop-filter:none}
   .topbar .period{flex-wrap:wrap}
   #connPill{display:none}
@@ -272,9 +274,14 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
   .hero{padding:20px 18px;border-radius:16px}
   .hero h2{font-size:20px}
   .hero-deco{width:210px;right:-40px;top:-30px}
-  .hero-stats{gap:14px 22px;margin-top:16px}
-  .hs b{font-size:23px}
-  .hs span{font-size:11.5px}
+  .hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:16px}
+  .hs b{font-size:24px}
+  .hs span{font-size:11.5px;display:block;line-height:1.35}
+  .zone-card{padding:13px}
+  .zone-card .zn{font-size:14.5px;gap:6px}
+  .zone-card .zn svg{width:22px;height:22px}
+  .zone-card .score{font-size:26px;margin-top:6px}
+  .zone-card .meta{font-size:11px;line-height:1.4}
 
   .g2,.g3{grid-template-columns:1fr}
   .g5{grid-template-columns:repeat(2,1fr)}
@@ -320,7 +327,18 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
   .hero h2{font-size:18px}
 }
 
+.print-doc{display:none}
+.print-doc h1{font-size:20px;margin:0 0 6px;text-align:center}
+.print-doc .pd-sub{text-align:center;font-size:13px;color:#333;margin:0 0 14px;line-height:1.5}
+.print-doc .pd-tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.print-doc .pd-tbl th,.print-doc .pd-tbl td{border:1px solid #666;padding:4px 6px;vertical-align:top}
+.print-doc .pd-tbl thead th{background:#EAF4EE;text-align:center;font-weight:700}
+.print-doc .pd-sign{display:flex;justify-content:space-between;gap:30px;margin-top:34px;font-size:13px}
+
 @media print{
+  body.printing>.shell{display:none!important}
+  body.printing .print-doc{display:block!important;padding:0}
+  @page{size:A4 landscape;margin:12mm}
   .side,.mtop,.topbar,.scrim,.btn{display:none!important}
   .wrap{padding:0}
   .scroll .tbl{min-width:0}
@@ -1026,7 +1044,7 @@ function vHome(){
       <div class="hs"><b>${avg||'—'}</b><span>คะแนนเฉลี่ยทุกโซน (เต็ม 100)</span></div>
       <div class="hs"><b>${rs.length}<span style="font-size:14px;color:#A9DCC1"> / 20</span></b><span>ครั้งที่ตรวจแล้วในเดือนนี้</span></div>
       <div class="hs"><b>${open}</b><span>เรื่องที่รอติดตามแก้ไข</span></div>
-      <div class="hs"><b>${submitters}<span style="font-size:14px;color:#A9DCC1"> / ${totalM}</span></b><span>ส่ง One G-C-L แล้ว</span></div>
+      <div class="hs"><b>${submitters}<span style="font-size:14px;color:#A9DCC1"> / ${totalM}</span></b><span>ส่ง One G-C-L แล้ว (เดือนละครั้ง)</span></div>
     </div>
   </section>
 
@@ -1309,13 +1327,18 @@ function vRound(){
 
 /* ---------- รูปภาพกิจกรรม ---------- */
 state.pics = {};
-function picField(key, label){
+function picField(key, label, curUrl, curId){
   const cur = state.pics[key];
+  const old = (!cur && curUrl) ? `<a href="${esc(curUrl)}" target="_blank" rel="noopener">
+      <img src="${curId?'https://drive.google.com/thumbnail?id='+curId+'&sz=w300':esc(curUrl)}" alt="" style="height:78px;width:78px;object-fit:cover;border-radius:8px;border:1px solid var(--line)"></a>
+      <span>รูปที่บันทึกไว้แล้ว<br>แนบใหม่เพื่อแทนที่</span>` : '';
   return `<div class="field"><label>${esc(label)} <span class="sub">ถ่ายจากมือถือหรือเลือกไฟล์ · เก็บลง Google Drive</span></label>
     <div class="pic">
       <input type="file" accept="image/*" id="file_${key}" class="hide">
-      <button type="button" class="btn pic-add" data-pk="${key}">${cur?'เปลี่ยนรูป':'แนบรูป'}</button>
-      <div class="pic-prev" id="prev_${key}">${cur?`<img src="${cur.data}" alt=""><span>${esc(cur.name)}<br>${Math.round(cur.data.length/1400)} KB</span><button type="button" class="btn btn-sm" data-pdel="${key}">เอาออก</button>`:'<span>ยังไม่ได้แนบรูป</span>'}</div>
+      <button type="button" class="btn pic-add" data-pk="${key}">${cur?'เปลี่ยนรูป':(curUrl?'แนบรูปใหม่':'แนบรูป')}</button>
+      <div class="pic-prev" id="prev_${key}">${cur
+        ? `<img src="${cur.data}" alt=""><span>${esc(cur.name)}<br>${Math.round(cur.data.length/1400)} KB</span><button type="button" class="btn btn-sm" data-pdel="${key}">เอาออก</button>`
+        : (old || '<span>ยังไม่ได้แนบรูป</span>')}</div>
     </div></div>`;
 }
 function readPic(file, key, cb){
@@ -1353,98 +1376,163 @@ function thumbHTML(url, id){
   return `<a href="${esc(url)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(src)}" alt="รูปกิจกรรม" loading="lazy"></a>`;
 }
 
-/* ---------- หน้า: One G-C-L & Ethics ---------- */
+/* ---------- หน้า: One G-C-L & Ethics (ส่งเดือนละครั้ง) ---------- */
 function vGCL(){
-  const tab = state.gclTab||'form';
-  const list = rowsGCL();
+  const tab  = state.gclTab || 'form';
+  const all  = rowsGCL();
+  const list = all.filter(r=>!r.legacy);
+
+  const who = state.gclName || state.user || (state.db.members[0]||{}).name || '';
+  const ex  = list.find(r => r.name === who);
 
   const formHTML = `
   <div class="card">
-    <h3>บันทึกกิจกรรมประจำสัปดาห์</h3>
-    <p class="hint">โครงสร้างข้อมูลตรงกับชีต OneGCLnew ทุกช่อง บันทึกแล้วจะเพิ่มเป็นแถวใหม่ต่อท้าย</p>
+    <h3>${ex?'แก้ไขกิจกรรมประจำเดือน':'บันทึกกิจกรรมประจำเดือน'}</h3>
+    <p class="hint">ส่งเดือนละหนึ่งครั้งต่อคน ${ex
+      ? `พบข้อมูลที่ส่งไว้แล้วเมื่อ ${thDate(ex.date)} แก้ไขแล้วกดบันทึกได้เลย ระบบจะทับข้อมูลเดิมโดยไม่สร้างแถวใหม่`
+      : `ยังไม่มีข้อมูลของเดือน${TH_MONTHS[state.month-1]} ${state.year}`}</p>
+
     <div class="row">
-      <div class="field"><label for="gDate">วันที่</label><input type="date" id="gDate" value="${todayISO()}"></div>
       <div class="field"><label for="gName">ชื่อ–สกุล</label>
-        <select id="gName">${memberOptions(state.user)}</select></div>
+        <select id="gName">${memberOptions(who)}</select></div>
+      <div class="field"><label for="gDate">วันที่บันทึก</label>
+        <input type="date" id="gDate" value="${ex?ex.date:todayISO()}"></div>
       <div class="field"><label for="gZone">โซน</label>
-        <select id="gZone"><option value="">— ไม่ระบุ —</option>${ZONES.map(z=>`<option value="${z.id}">โซน${z.name}</option>`).join('')}</select></div>
+        <select id="gZone"><option value="">— ไม่ระบุ —</option>${ZONES.map(z=>{
+          const sel = (ex?ex.zone:(state.db.members.find(m=>m.name===who)||{}).zone)===z.id;
+          return `<option value="${z.id}" ${sel?'selected':''}>โซน${z.name}</option>`;
+        }).join('')}</select></div>
     </div>
 
     <fieldset><legend>Ethics · จริยธรรม</legend>
       <div class="field"><label for="gEthic">ข้อจริยธรรมที่ปฏิบัติ</label>
-        <select id="gEthic"><option value="">— ยังไม่ระบุ —</option>${OPT_ETHIC.map(o=>`<option>${esc(o)}</option>`).join('')}</select></div>
+        <select id="gEthic"><option value="">— ยังไม่ระบุ —</option>${OPT_ETHIC.map(o=>`<option ${ex&&ex.ethic===o?'selected':''}>${esc(o)}</option>`).join('')}</select></div>
       <div class="field"><label for="gEthicEx">ยกตัวอย่างการปฏิบัติ</label>
-        <textarea id="gEthicEx" placeholder="เช่น ผู้ป่วยปฏิเสธการรักษา ได้ให้ข้อมูลครบถ้วนและรายงานแพทย์เมื่อมาตรวจ"></textarea></div>
-      ${picField('ethic','รูปภาพประกอบ')}
+        <textarea id="gEthicEx" placeholder="เช่น ผู้ป่วยปฏิเสธการรักษา ได้ให้ข้อมูลครบถ้วนและรายงานแพทย์เมื่อมาตรวจ">${ex?esc(ex.ethicEx||''):''}</textarea></div>
+      ${picField('ethic','รูปภาพประกอบ', ex&&ex.ethicImg, ex&&ex.ethicImgId)}
     </fieldset>
 
     <fieldset><legend>One Green · ต้นไม้ประจำตัว</legend>
-      <div class="field"><label for="gTree">ชื่อต้นไม้</label><input type="text" id="gTree" placeholder="เช่น กวักมรกต, เดหลี, กุหลาบหิน"></div>
-      ${picField('tree','รูปต้นไม้')}
+      <div class="field"><label for="gTree">ชื่อต้นไม้</label>
+        <input type="text" id="gTree" value="${ex?esc(ex.tree||''):''}" placeholder="เช่น กวักมรกต, เดหลี, กุหลาบหิน"></div>
+      ${picField('tree','รูปต้นไม้', ex&&ex.treeImg, ex&&ex.treeImgId)}
     </fieldset>
 
     <fieldset><legend>One Cleaned · กิจกรรมความสะอาด</legend>
-      <div class="field"><label for="gClean">ระบุกิจกรรม</label><input type="text" id="gClean" placeholder="เช่น ทำความสะอาดเครื่อง Infusion pump"></div>
+      <div class="field"><label for="gClean">ระบุกิจกรรม</label>
+        <input type="text" id="gClean" value="${ex?esc(ex.clean||''):''}" placeholder="เช่น ทำความสะอาดเครื่อง Infusion pump"></div>
       <div class="field"><label>สรุป One Cleaned</label>
-        <div class="pill-group" id="gCleanSum">${OPT_CLEAN.map(o=>`<button type="button" data-v="${esc(o)}" aria-pressed="false">${esc(o)}</button>`).join('')}</div></div>
-      ${picField('clean','รูปภาพ One Cleaned')}
+        <div class="pill-group" id="gCleanSum">${OPT_CLEAN.map(o=>`<button type="button" data-v="${esc(o)}" aria-pressed="${!!(ex&&ex.cleanSum===o)}">${esc(o)}</button>`).join('')}</div></div>
+      ${picField('clean','รูปภาพ One Cleaned', ex&&ex.cleanImg, ex&&ex.cleanImgId)}
     </fieldset>
 
     <fieldset><legend>One Lean · ลดความสูญเปล่า</legend>
-      <div class="field"><label for="gLean">ระบุกิจกรรม</label><input type="text" id="gLean" placeholder="เช่น จัดเรียงคลังวัสดุและเขียนวันหมดอายุกำกับ"></div>
+      <div class="field"><label for="gLean">ระบุกิจกรรม</label>
+        <input type="text" id="gLean" value="${ex?esc(ex.lean||''):''}" placeholder="เช่น จัดเรียงคลังวัสดุและเขียนวันหมดอายุกำกับ"></div>
       <div class="field"><label>สรุป One Lean</label>
-        <div class="pill-group" id="gLeanSum">${OPT_LEAN.map(o=>`<button type="button" data-v="${esc(o)}" aria-pressed="false">${esc(o)}</button>`).join('')}</div></div>
-      ${picField('lean','รูปภาพ One Lean')}
+        <div class="pill-group" id="gLeanSum">${OPT_LEAN.map(o=>`<button type="button" data-v="${esc(o)}" aria-pressed="${!!(ex&&ex.leanSum===o)}">${esc(o)}</button>`).join('')}</div></div>
+      ${picField('lean','รูปภาพ One Lean', ex&&ex.leanImg, ex&&ex.leanImgId)}
     </fieldset>
 
-    <button class="btn btn-primary" id="saveGCL">บันทึกกิจกรรม</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="saveGCL">${ex?'บันทึกการแก้ไข':'บันทึกกิจกรรม'}</button>
+      ${ex?`<button class="btn" id="delGCLcur">ลบข้อมูลของเดือนนี้</button>`:''}
+    </div>
   </div>`;
 
-  const statusHTML = (()=>{
-    const byName = {};
-    list.forEach(r=>{ (byName[r.name]=byName[r.name]||[]).push(r); });
-    const rows = state.db.members.map(m=>{
-      const rs = byName[m.name]||[];
-      const wk = [1,2,3,4].map(w=>{
-        const hit = rs.find(r=>r.week===w);
-        return `<td class="num">${hit?'<span style="color:var(--ok);font-size:16px">●</span>':'<span style="color:#DCE7E1;font-size:16px">○</span>'}</td>`;
-      }).join('');
-      const z = Z[m.zone];
-      return `<tr><td>${esc(m.name)}</td>
-        <td>${z?`<span class="zone-tag"><i style="background:${z.hex}"></i>${esc(z.name)}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
-        ${wk}
-        <td class="num">${rs.length?`<span class="chip">${rs.length} ครั้ง</span>`:'<span class="chip late">ยังไม่ส่ง</span>'}</td></tr>`;
-    }).join('');
-    return `<div class="card scroll">
-      <h3>สถานะการส่งรายบุคคล</h3>
-      <p class="hint">วงกลมทึบคือส่งแล้วในสัปดาห์นั้น</p>
-      <table class="tbl"><thead><tr><th style="text-align:left">ชื่อ–สกุล</th><th>โซน</th><th>ส1</th><th>ส2</th><th>ส3</th><th>ส4</th><th>รวม</th></tr></thead>
-      <tbody>${rows}</tbody></table></div>`;
-  })();
+  const sent = new Set(list.map(r=>r.name));
+  const statusHTML = `<div class="card scroll">
+      <h3>สถานะการส่งประจำเดือน${TH_MONTHS[state.month-1]} ${state.year}</h3>
+      <p class="hint">ส่งเดือนละหนึ่งครั้งต่อคน · ส่งแล้ว ${sent.size} จาก ${state.db.members.length} คน</p>
+      <table class="tbl"><thead><tr>
+        <th style="text-align:left">ชื่อ–สกุล</th><th>โซน</th><th>สถานะ</th><th>วันที่ส่ง</th><th>กิจกรรมที่บันทึก</th><th></th>
+      </tr></thead><tbody>${state.db.members.map(m=>{
+        const r = list.find(x=>x.name===m.name), z = Z[m.zone];
+        const acts = r ? [r.ethic?'Ethics':'', r.tree?'Green':'', r.clean?'Cleaned':'', r.lean?'Lean':''].filter(Boolean).join(' · ') : '';
+        return `<tr>
+          <td>${esc(m.name)}</td>
+          <td>${z?`<span class="zone-tag"><i style="background:${z.hex}"></i>${esc(z.name)}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+          <td>${r?'<span class="chip">ส่งแล้ว</span>':'<span class="chip late">ยังไม่ส่ง</span>'}</td>
+          <td style="white-space:nowrap">${r?thDate(r.date):'—'}</td>
+          <td style="font-size:12px">${esc(acts)||'—'}</td>
+          <td><button class="btn btn-sm" data-editg="${esc(m.name)}">${r?'แก้ไข':'บันทึก'}</button></td>
+        </tr>`;
+      }).join('')}</tbody></table>
+      <div style="margin-top:12px"><button class="btn btn-primary btn-sm" id="printGCL">พิมพ์สรุปประจำเดือน</button></div>
+    </div>`;
 
-  const logHTML = list.length ? `<div class="card scroll">
-    <h3>บันทึกทั้งหมดในเดือนนี้ (${list.length} รายการ)</h3>
+  const logHTML = all.length ? `<div class="card scroll">
+    <h3>บันทึกทั้งหมดในเดือนนี้ (${all.length} รายการ)</h3>
+    <p class="hint">แถวที่มาจากแบบฟอร์มเดิมในชีต OneGCLnew จะแก้ไขที่นี่ไม่ได้</p>
     <table class="tbl wide"><thead><tr><th>วันที่</th><th style="text-align:left">ชื่อ–สกุล</th><th>ต้นไม้</th><th style="text-align:left">One Cleaned</th><th style="text-align:left">One Lean</th><th>จริยธรรม</th><th>รูปกิจกรรม</th><th></th></tr></thead>
-    <tbody>${list.slice().reverse().map(r=>`<tr>
+    <tbody>${all.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(r=>`<tr>
       <td style="white-space:nowrap">${thDate(r.date)}</td>
-      <td>${esc(r.name)}</td>
+      <td>${esc(r.name)}${r.legacy?' <span class="chip">ฟอร์มเดิม</span>':''}</td>
       <td>${esc(r.tree||'—')}</td>
       <td>${esc(r.clean||'—')}${r.cleanSum?`<br><span class="chip">${esc(r.cleanSum)}</span>`:''}</td>
       <td>${esc(r.lean||'—')}${r.leanSum?`<br><span class="chip">${esc(r.leanSum)}</span>`:''}</td>
       <td style="font-size:12px">${esc((r.ethic||'').split('—')[0]||'—')}</td>
       <td><div class="thumb-row">${[['ethicImg','ethicImgId'],['treeImg','treeImgId'],['cleanImg','cleanImgId'],['leanImg','leanImgId']].map(k=>thumbHTML(r[k[0]],r[k[1]])).join('')||'<span style="color:var(--muted)">—</span>'}</div></td>
-      <td><button class="btn btn-sm" data-delg="${r.id}">ลบ</button></td>
-    </tr>`).join('')}</tbody></table></div>`
-    : `<div class="card">${emptyHTML('ยังไม่มีบันทึกในเดือนนี้','เริ่มจากแท็บ “บันทึกกิจกรรม”')}</div>`;
+      <td style="white-space:nowrap">${r.legacy?'':`<button class="btn btn-sm" data-editg="${esc(r.name)}">แก้ไข</button> <button class="btn btn-sm" data-delg="${r.id}">ลบ</button>`}</td>
+    </tr>`).join('')}</tbody></table>
+    <div style="margin-top:12px"><button class="btn btn-primary btn-sm" id="printGCL2">พิมพ์สรุปประจำเดือน</button></div></div>`
+    : `<div class="card">${emptyHTML('ยังไม่มีบันทึกในเดือนนี้','เริ่มจากแท็บ “บันทึก / แก้ไข”')}</div>`;
 
   return `<h2 class="page-title">One Green · One Clean · One Lean &amp; Ethics</h2>
-  <p class="page-sub">กิจกรรมรายบุคคลที่ทำต่อเนื่องทุกสัปดาห์ ควบคู่กับการตรวจ 5ส ของโซน</p>
+  <p class="page-sub">กิจกรรมรายบุคคล ส่งเดือนละหนึ่งครั้ง แก้ไขย้อนหลังได้ตลอดรอบเดือน และพิมพ์สรุปเก็บเข้าแฟ้มได้</p>
   <div class="tabs" id="gclTabs">
-    <button data-t="form"   aria-selected="${tab==='form'}">บันทึกกิจกรรม</button>
+    <button data-t="form"   aria-selected="${tab==='form'}">บันทึก / แก้ไข</button>
     <button data-t="status" aria-selected="${tab==='status'}">สถานะรายบุคคล</button>
     <button data-t="log"    aria-selected="${tab==='log'}">บันทึกทั้งหมด</button>
   </div>
   ${ tab==='form'?formHTML : tab==='status'?statusHTML : logHTML }`;
+}
+
+/* เอกสารสำหรับสั่งพิมพ์ */
+function gclPrintHTML(){
+  const list = rowsGCL();
+  const rows = state.db.members.map((m,i)=>{
+    const r = list.find(x=>x.name===m.name && !x.legacy) || list.find(x=>x.name===m.name);
+    const z = Z[m.zone];
+    return `<tr>
+      <td style="text-align:center">${i+1}</td>
+      <td>${esc(m.name)}</td>
+      <td>${z?esc(z.name):'—'}</td>
+      <td>${r?esc((r.ethic||'').split('—')[0]||'—'):'—'}</td>
+      <td>${r?esc(r.tree||'—'):'—'}</td>
+      <td>${r?esc(r.clean||'—')+(r.cleanSum?' ('+esc(r.cleanSum)+')':''):'—'}</td>
+      <td>${r?esc(r.lean||'—')+(r.leanSum?' ('+esc(r.leanSum)+')':''):'—'}</td>
+      <td style="text-align:center">${r?'ส่งแล้ว':'ยังไม่ส่ง'}</td>
+    </tr>`;
+  }).join('');
+  const sent = new Set(list.map(r=>r.name)).size;
+  return `<h1>สรุปกิจกรรม One Green · One Clean · One Lean และจริยธรรม</h1>
+    <p class="pd-sub">หอผู้ป่วยศัลยกรรมอุบัติเหตุชาย ชั้น 10 โรงพยาบาลมหาราชนครราชสีมา<br>
+      ประจำเดือน${TH_MONTHS[state.month-1]} พ.ศ. ${state.year} · ส่งแล้ว ${sent} จาก ${state.db.members.length} คน</p>
+    <table class="pd-tbl"><thead><tr>
+      <th style="width:32px">ที่</th><th style="width:160px">ชื่อ–สกุล</th><th style="width:70px">โซน</th>
+      <th style="width:120px">จริยธรรม</th><th style="width:86px">One Green</th>
+      <th>One Cleaned</th><th>One Lean</th><th style="width:58px">สถานะ</th>
+    </tr></thead><tbody>${rows}</tbody></table>
+    <div class="pd-sign">
+      <div>ผู้รวบรวม ......................................................</div>
+      <div>หัวหน้าหอผู้ป่วย ......................................................</div>
+    </div>`;
+}
+
+function printDoc(html){
+  document.querySelectorAll('.print-doc').forEach(e=>e.remove());
+  const el = document.createElement('div');
+  el.className = 'print-doc'; el.innerHTML = html;
+  document.body.appendChild(el);
+  document.body.classList.add('printing');
+  const cleanup = ()=>{
+    el.remove(); document.body.classList.remove('printing');
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(()=>window.print(), 80);
+  setTimeout(cleanup, 60000);
 }
 
 
@@ -1637,6 +1725,12 @@ function vReport(){
   </div>
 
   <div class="card" style="margin-bottom:16px">
+    <h3>เอกสารสำหรับเก็บเข้าแฟ้ม</h3>
+    <p class="hint">พิมพ์สรุปกิจกรรม One G-C-L และจริยธรรมของทุกคนในเดือนนี้</p>
+    <button class="btn btn-primary btn-sm" id="printGCL3">พิมพ์สรุป One G-C-L ประจำเดือน</button>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
     <h3>คลังภาพกิจกรรมเดือนนี้</h3>
     <p class="hint">รูปทั้งหมดเก็บอยู่ในโฟลเดอร์ OneGCL_Images_App บน Google Drive กดที่รูปเพื่อเปิดไฟล์ต้นฉบับ</p>
     ${(function(){
@@ -1656,7 +1750,7 @@ function vReport(){
   <div class="grid g2">
     <div class="card"><h3>ต้นไม้ที่ดูแลมากที่สุด</h3><p class="hint">One Green ประจำเดือน</p>
       ${ topTrees.length ? `<div class="barchart">${topTrees.map(([t,n])=>`<div class="bc-row"><span>${esc(t)}</span><div class="bc-track"><div class="bc-fill" style="width:${Math.round(n/topTrees[0][1]*100)}%"></div></div><b>${n}</b></div>`).join('')}</div>` : emptyHTML('ยังไม่มีข้อมูล','บันทึก One Green เพื่อดูสรุปที่นี่') }</div>
-    <div class="card"><h3>ผู้ที่ยังไม่ได้ส่งกิจกรรม</h3><p class="hint">เดือน${TH_MONTHS[state.month-1]} ${state.year}</p>
+    <div class="card"><h3>ผู้ที่ยังไม่ได้ส่งกิจกรรม</h3><p class="hint">เดือน${TH_MONTHS[state.month-1]} ${state.year} · ส่งเดือนละหนึ่งครั้ง</p>
       ${ missing.length ? `<p style="font-size:13.5px;line-height:1.9">${missing.map(m=>`<span class="chip late" style="margin:0 4px 4px 0;display:inline-block">${esc(m.name)}</span>`).join('')}</p>` : emptyHTML('ส่งครบทุกคน','ทีมทำได้ตามเป้าหมายของเดือนนี้') }</div>
   </div>`;
 }
@@ -1743,6 +1837,8 @@ function bind(){
     if(r){ r.followStatus='open'; r.followDoneAt=''; r.followDoneBy=''; persist(); toast('กลับไปเป็นรอติดตาม'); render(); }
   });
 
+  const pg3 = $('#printGCL3'); if(pg3) pg3.onclick = ()=>printDoc(gclPrintHTML());
+
   const rc = $('#retryConn');
   if(rc) rc.onclick = async()=>{
     rc.disabled = true; rc.textContent = 'กำลังเชื่อมต่อ…';
@@ -1804,8 +1900,16 @@ function bind(){
 
   // One G-C-L
   if(state.page==='onegcl'){
-    document.querySelectorAll('#gclTabs button').forEach(b=>b.onclick=()=>{ state.gclTab=b.dataset.t; render(); });
+    document.querySelectorAll('#gclTabs button').forEach(b=>b.onclick=()=>{ state.gclTab=b.dataset.t; state.pics={}; render(); });
     const picked = id => { const b=document.querySelector('#'+id+' button[aria-pressed="true"]'); return b?b.dataset.v:''; };
+
+    // เปลี่ยนชื่อผู้บันทึกแล้วโหลดข้อมูลของคนนั้นขึ้นมาแก้ไข
+    const gn = $('#gName');
+    if(gn) gn.onchange = ()=>{ state.gclName = gn.value; state.pics = {}; render(); };
+
+    document.querySelectorAll('[data-editg]').forEach(b=>b.onclick=()=>{
+      state.gclName = b.dataset.editg; state.gclTab='form'; state.pics={}; render();
+    });
 
     document.querySelectorAll('.pic-add').forEach(b=>b.onclick=()=>document.getElementById('file_'+b.dataset.pk).click());
     ['ethic','tree','clean','lean'].forEach(k=>{
@@ -1817,54 +1921,67 @@ function bind(){
           const prev = document.getElementById('prev_'+k), p = state.pics[k];
           prev.innerHTML = `<img src="${p.data}" alt=""><span>${esc(p.name)}<br>${Math.round(p.data.length/1400)} KB</span><button type="button" class="btn btn-sm" data-pdel="${k}">เอาออก</button>`;
           document.querySelector('.pic-add[data-pk="'+k+'"]').textContent = 'เปลี่ยนรูป';
-          prev.querySelector('[data-pdel]').onclick = ()=>{
-            delete state.pics[k];
-            prev.innerHTML = '<span>ยังไม่ได้แนบรูป</span>';
-            document.querySelector('.pic-add[data-pk="'+k+'"]').textContent = 'แนบรูป';
-          };
+          prev.querySelector('[data-pdel]').onclick = ()=>{ delete state.pics[k]; render(); };
         });
       };
     });
-    document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{
-      const k=b.dataset.pdel; delete state.pics[k];
-      document.getElementById('prev_'+k).innerHTML='<span>ยังไม่ได้แนบรูป</span>';
-      document.querySelector('.pic-add[data-pk="'+k+'"]').textContent='แนบรูป';
-    });
+    document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{ delete state.pics[b.dataset.pdel]; render(); });
+
     const sv = $('#saveGCL');
-    if(sv) sv.onclick=async()=>{
-      const date=$('#gDate').value||todayISO();
-      const who = $('#gName').value;
-      const base = {
-        id: uid(), period: periodFromDate(date), date,
-        week: weekOfMonth(date),
+    if(sv) sv.onclick = async()=>{
+      const who  = $('#gName').value;
+      const date = $('#gDate').value || todayISO();
+      const prev = rowsGCL().find(r=>!r.legacy && r.name===who);
+      const rec  = Object.assign({}, prev || { id: uid() });
+
+      Object.assign(rec, {
+        period: periodFromDate(date), date, week: weekOfMonth(date),
         name: who, zone: $('#gZone').value,
         ethic: $('#gEthic').value, ethicEx: $('#gEthicEx').value.trim(),
         tree: $('#gTree').value.trim(),
         clean: $('#gClean').value.trim(), cleanSum: picked('gCleanSum'),
         lean: $('#gLean').value.trim(),  leanSum: picked('gLeanSum'),
         email:(state.db.members.find(m=>m.name===who)||{}).email||''
-      };
+      });
+
       const hasPic = Object.keys(state.pics).length;
-      if(!base.tree && !base.clean && !base.lean && !base.ethic && !hasPic){ toast('กรอกอย่างน้อยหนึ่งกิจกรรมก่อนบันทึก'); return; }
+      if(!rec.tree && !rec.clean && !rec.lean && !rec.ethic && !hasPic && !prev){
+        toast('กรอกอย่างน้อยหนึ่งกิจกรรมก่อนบันทึก'); return;
+      }
 
       sv.disabled = true; sv.textContent = hasPic ? 'กำลังอัปโหลดรูป…' : 'กำลังบันทึก…';
       try{
         for(const k of ['ethic','tree','clean','lean']){
+          if(!state.pics[k]) continue;                 // ไม่ได้แนบใหม่ ใช้รูปเดิมต่อ
           const r = await uploadPic(k, who, date);
-          base[k+'Img'] = r.url; base[k+'ImgId'] = r.id;
+          rec[k+'Img'] = r.url; rec[k+'ImgId'] = r.id;
         }
-        state.db.onegcl.push(base); persist();
-        state.pics = {};
-        toast('บันทึกกิจกรรมของ '+who.replace(/^นาง(สาว)?/,'')+' แล้ว'+(hasPic&&CFG.API_URL?' · รูปเก็บใน Google Drive':''));
-        state.gclTab='log'; render();
+        const i = state.db.onegcl.findIndex(r=>r.id===rec.id);
+        if(i>=0) state.db.onegcl[i] = rec; else state.db.onegcl.push(rec);
+        state.pics = {}; persist();
+        toast((prev?'แก้ไขข้อมูลของ ':'บันทึกกิจกรรมของ ')+who.replace(/^นาง(สาว)?/,'')+' แล้ว');
+        state.gclTab='status'; render();
       }catch(e){
         toast('อัปโหลดรูปไม่สำเร็จ: '+e.message);
-        sv.disabled = false; sv.textContent = 'บันทึกกิจกรรม';
+        sv.disabled = false; sv.textContent = prev?'บันทึกการแก้ไข':'บันทึกกิจกรรม';
       }
     };
+
+    const dc = $('#delGCLcur');
+    if(dc) dc.onclick = ()=>{
+      const prev = rowsGCL().find(r=>!r.legacy && r.name===(state.gclName||state.user));
+      if(!prev) return;
+      if(!confirm('ลบข้อมูลของเดือนนี้?')) return;
+      state.db.onegcl = state.db.onegcl.filter(r=>r.id!==prev.id);
+      state.pics={}; persist(); render(); toast('ลบแล้ว');
+    };
+
     document.querySelectorAll('[data-delg]').forEach(b=>b.onclick=()=>{
+      if(!confirm('ลบรายการนี้?')) return;
       state.db.onegcl = state.db.onegcl.filter(r=>r.id!==b.dataset.delg); persist(); render();
     });
+
+    ['printGCL','printGCL2'].forEach(id=>{ const b=$('#'+id); if(b) b.onclick=()=>printDoc(gclPrintHTML()); });
   }
 
   // ตาราง Round
