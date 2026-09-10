@@ -198,6 +198,10 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 .chip.late{background:var(--warn-bg);color:var(--warn)}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:11px;box-shadow:var(--shadow);z-index:99;font-weight:500}
 .hide{display:none!important}
+.loadbar{height:3px;background:#DCEBE2;overflow:hidden;position:relative}
+.loadbar i{position:absolute;left:0;top:0;height:100%;width:38%;border-radius:99px;
+  background:linear-gradient(90deg,var(--leaf),var(--canopy));animation:loadSlide 1.1s ease-in-out infinite}
+@keyframes loadSlide{0%{left:-40%}100%{left:100%}}
 .conn-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
   background:var(--paper);border-radius:99px;padding:3px 10px;font-size:11.5px;font-weight:600;
   cursor:pointer;color:var(--muted);white-space:nowrap;line-height:1.7}
@@ -439,6 +443,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
       </div>
       <button class="conn-pill busy" id="connPill" title="กดเพื่อเชื่อมต่ออีกครั้ง"><i></i><span>กำลังเชื่อมต่อ…</span></button>
     </div>
+    <div id="loadbar" class="loadbar hide"><i></i></div>
     <div class="wrap" id="view"></div>
   </main>
 </div>
@@ -596,7 +601,7 @@ const OPT_ETHIC = [
 /* ---------- 7. สถานะแอป ---------- */
 const now = new Date();
 const state = {
-  page:'home', lastError:'', lastSync:'',
+  page:'home', _shownPage:'', lastError:'', lastSync:'',
   month: now.getMonth()+1,
   year:  now.getFullYear()+543,
   user:  '',
@@ -617,8 +622,9 @@ async function api(action, payload){
   try{
     return await apiPost(action, payload);
   }catch(e){
-    // บางเครือข่าย/บางการตั้งค่า Deploy บล็อก POST ข้ามโดเมน ลองอ่านด้วย GET แทน
-    if(action==='getAll' || action==='ping'){
+    // ลองอ่านด้วย GET เฉพาะกรณีที่ POST ไปไม่ถึงเซิร์ฟเวอร์จริง ๆ
+    const netErr = (e instanceof TypeError) || /Failed to fetch|NetworkError|Load failed/i.test(e.message||'');
+    if(netErr && (action==='getAll' || action==='ping')){
       try{ return await apiGet(action); }catch(e2){ throw e; }
     }
     throw e;
@@ -652,27 +658,78 @@ async function unwrap(res){
   return json.data;
 }
 
-async function loadAll(){
-  CFG.API_URL = store.readCfg() || DEFAULT_API;
-  setConn(null);
-  if(CFG.API_URL){
-    try{
-      const d = await api('getAll', {});
-      state.db = normalizeDb({ members:(d.members||[]).filter(m=>String(m.name||'').trim()), check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[] });
-      store.write(state.db);
-      state.lastError = ''; state.lastSync = nowTime(); setConn(true); return;
-    }catch(e){ state.lastError = e.message; setConn(false, e.message); }
-  }
+function loadLocal(){
   const local = store.read();
   state.db = normalizeDb(local || { members:[], check5s:[], onegcl:[], waste:[] });
-  if(!state.db.waste) state.db.waste = [];
+  if(!state.db.waste)   state.db.waste = [];
   if(!state.db.members) state.db.members = [];
 }
+
+async function loadAll(){
+  CFG.API_URL = store.readCfg() || DEFAULT_API;
+  if(!CFG.API_URL){ loadLocal(); setConn(false); return; }
+
+  setConn(null); setLoading(true);
+  try{
+    const d = await api('getAll', {});
+    state.db = normalizeDb({
+      members:(d.members||[]).filter(m=>String(m.name||'').trim()),
+      check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[]
+    });
+    store.write(state.db);
+    state.lastError = ''; state.lastSync = nowTime(); setConn(true);
+  }catch(e){
+    state.lastError = e.message; setConn(false, e.message);
+    if(!state.db || !state.db.members) loadLocal();   // ยังไม่มีอะไรในหน้าจอ ค่อยใช้ของในเครื่อง
+  }finally{ setLoading(false); }
+}
+
+function setLoading(on){
+  const b = document.getElementById('loadbar');
+  if(b) b.classList.toggle('hide', !on);
+}
+
+/* ---------- ส่งขึ้นชีตแบบรวบยอด ไม่ยิงทุกครั้งที่แตะปุ่ม ---------- */
+let saveTimer = null, savePending = false, saveInflight = false;
+
+/** ตัดรูปแบบ data URL ออกก่อนส่ง เพราะยาวเกินความจุของช่องในชีตและทำให้ช้ามาก */
+function dbForSheet(){
+  const strip = r=>{
+    const o = Object.assign({}, r);
+    ['ethicImg','treeImg','cleanImg','leanImg'].forEach(k=>{
+      if(String(o[k]||'').startsWith('data:')) o[k] = '';
+    });
+    return o;
+  };
+  return {
+    members: state.db.members,
+    check5s: state.db.check5s,
+    onegcl : (state.db.onegcl||[]).filter(r=>!r.legacy).map(strip),
+    waste  : state.db.waste
+  };
+}
+
+async function flushSave(){
+  if(saveInflight || !savePending || !CFG.API_URL) return;
+  savePending = false; saveInflight = true;
+  try{
+    await api('saveAll', dbForSheet());
+    state.lastError = ''; state.lastSync = nowTime(); setConn(true);
+  }catch(e){
+    state.lastError = e.message; setConn(false, e.message);
+    toast('บันทึกขึ้น Sheet ไม่สำเร็จ: '+e.message);
+  }finally{
+    saveInflight = false;
+    if(savePending) flushSave();
+  }
+}
+
 function persist(){
   store.write(state.db);
-  if(CFG.API_URL) api('saveAll', state.db)
-    .then(()=>{ state.lastError=''; state.lastSync = nowTime(); setConn(true); })
-    .catch(e=>{ state.lastError = e.message; setConn(false, e.message); toast('บันทึกขึ้น Sheet ไม่สำเร็จ: '+e.message); });
+  if(!CFG.API_URL) return;
+  savePending = true;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flushSave, 900);   // รวบการแก้หลายครั้งติดกันให้ส่งรอบเดียว
 }
 function setConn(ok, msg){
   const label = ok===null ? 'กำลังเชื่อมต่อ…'
@@ -1005,10 +1062,22 @@ function render(){
     if(b.dataset.page===state.page) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
   });
   const mt = $('#mTitle'); if(mt) mt.textContent = PAGE_TITLE[state.page] || '5ส';
+
+  // อยู่หน้าเดิม เช่น สลับโซนหรือบันทึกผล ให้คงตำแหน่งที่เลื่อนอ่านค้างไว้
+  const samePage = state._shownPage === state.page;
+  const keepY = samePage ? window.scrollY : 0;
+
   const v = $('#view');
   v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, waste:vWaste, report:vReport, team:vTeam}[state.page]||vHome)();
   bind();
-  window.scrollTo({top:0});
+
+  state._shownPage = state.page;
+  if(samePage){
+    const y = Math.min(keepY, Math.max(0, document.documentElement.scrollHeight - window.innerHeight));
+    window.scrollTo(0, y);
+  }else{
+    window.scrollTo(0, 0);
+  }
 }
 
 /* ---------- หน้า: ภาพรวม ---------- */
@@ -2169,8 +2238,10 @@ function fillTop(){
 }
 function fillUsers(){
   const u=$('#selUser');
-  u.innerHTML = state.db.members.map(m=>`<option ${m.name===state.user?'selected':''}>${esc(m.name)}</option>`).join('');
+  // ถ้าคนที่เลือกไว้ไม่มีในรายชื่อล่าสุดแล้ว ให้กลับไปใช้คนแรก
+  if(state.user && !state.db.members.some(m=>m.name===state.user)) state.user = '';
   if(!state.user && state.db.members[0]) state.user = state.db.members[0].name;
+  u.innerHTML = memberOptions(state.user);
   $('#whoami').textContent = state.user.replace(/^นาง(สาว)?/,'');
   u.onchange=()=>{ state.user=u.value; $('#whoami').textContent=state.user.replace(/^นาง(สาว)?/,''); };
 }
@@ -2205,9 +2276,24 @@ document.getElementById('nav').addEventListener('click', e=>{
   state.page = b.dataset.page; drawer.close(); render();
 });
 
+window.addEventListener('beforeunload', ()=>{
+  // ยังมีอะไรค้างไม่ได้ส่ง ให้ยิงทิ้งท้ายแบบไม่ต้องรอผล
+  if(savePending && CFG.API_URL && navigator.sendBeacon){
+    try{
+      navigator.sendBeacon(CFG.API_URL,
+        new Blob([JSON.stringify({ action:'saveAll', payload: dbForSheet() })], { type:'text/plain;charset=utf-8' }));
+      savePending = false;
+    }catch(e){}
+  }
+});
+
 (async function init(){
-  await loadAll();
+  CFG.API_URL = store.readCfg() || DEFAULT_API;
+  loadLocal();                       // แสดงข้อมูลที่แคชไว้ทันที ไม่ต้องรอเซิร์ฟเวอร์
   fillTop(); fillUsers(); render();
+  setConn(null);
+  await loadAll();                   // แล้วค่อยดึงของล่าสุดมาทับเบื้องหลัง
+  fillUsers(); render();
 })();
 </script>
 </body>
