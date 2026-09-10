@@ -601,7 +601,7 @@ const OPT_ETHIC = [
 /* ---------- 7. สถานะแอป ---------- */
 const now = new Date();
 const state = {
-  page:'home', _shownPage:'', lastError:'', lastSync:'',
+  page:'home', _shownPage:'', wasteEdit:null, lastError:'', lastSync:'',
   month: now.getMonth()+1,
   year:  now.getFullYear()+543,
   user:  '',
@@ -705,7 +705,11 @@ function dbForSheet(){
     members: state.db.members,
     check5s: state.db.check5s,
     onegcl : (state.db.onegcl||[]).filter(r=>!r.legacy).map(strip),
-    waste  : state.db.waste
+    waste  : (state.db.waste||[]).map(r=>{
+      const o = Object.assign({}, r);
+      if(String(o.slipImg||'').startsWith('data:')) o.slipImg = '';
+      return o;
+    })
   };
 }
 
@@ -807,7 +811,16 @@ const rows5s  = ()=> state.db.check5s.filter(r=>r.period===period());
 const rowsGCL = ()=> state.db.onegcl.filter(r=>r.period===period());
 const rowsWaste = ()=> (state.db.waste||[]).filter(r=>r.period===period());
 const money = n => (Number(n)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
-const WASTE_TYPES = ['กระดาษ','ขวดพลาสติกใส','พลาสติกรวม','กระป๋องอลูมิเนียม','ขวดแก้ว','เหล็ก/โลหะ','อื่น ๆ'];
+/* รายการตามใบธนาคารขยะรีไซเคิล โรงพยาบาลมหาราชนครราชสีมา */
+const WASTE_TYPES = ['น้ำเกลือ','ลัง','กระดาษย่อย','กระดาษขาวดำ','พลาสติกรวม','ขวดน้ำ Pet','แก้ว','ถุงพลาสติก'];
+/* รวมรายการมาตรฐานกับรายการอื่น ๆ ที่เคยพิมพ์เพิ่มไว้เอง */
+function wasteTypeList(){
+  const extra = [];
+  (state.db.waste||[]).forEach(r=>{
+    if(r.type && WASTE_TYPES.indexOf(r.type)<0 && extra.indexOf(r.type)<0) extra.push(r.type);
+  });
+  return WASTE_TYPES.concat(extra.sort((a,b)=>a.localeCompare(b,'th')));
+}
 function wasteSum(list){
   const t = list.reduce((a,r)=>a+(Number(r.amount)||0),0);
   const p = list.filter(r=>r.status==='paid').reduce((a,r)=>a+(Number(r.amount)||0),0);
@@ -1456,6 +1469,26 @@ function readPic(file, key, cb){
   };
   fr.readAsDataURL(file);
 }
+function bindPicInputs(keys){
+  document.querySelectorAll('.pic-add').forEach(b=>b.onclick=()=>{
+    const el = document.getElementById('file_'+b.dataset.pk); if(el) el.click();
+  });
+  keys.forEach(k=>{
+    const f = document.getElementById('file_'+k); if(!f) return;
+    f.onchange = ()=>{
+      const file = f.files && f.files[0]; if(!file) return;
+      if(!/^image\//.test(file.type)){ toast('เลือกได้เฉพาะไฟล์รูปภาพ'); return; }
+      readPic(file, k, ()=>{
+        const prev = document.getElementById('prev_'+k), p = state.pics[k];
+        prev.innerHTML = `<img src="${p.data}" alt=""><span>${esc(p.name)}<br>${Math.round(p.data.length/1400)} KB</span><button type="button" class="btn btn-sm" data-pdel="${k}">เอาออก</button>`;
+        const add = document.querySelector('.pic-add[data-pk="'+k+'"]'); if(add) add.textContent = 'เปลี่ยนรูป';
+        prev.querySelector('[data-pdel]').onclick = ()=>{ delete state.pics[k]; render(); };
+      });
+    };
+  });
+  document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{ delete state.pics[b.dataset.pdel]; render(); });
+}
+
 async function uploadPic(key, who, when){
   const p = state.pics[key];
   if(!p) return { url:'', id:'' };
@@ -1643,6 +1676,8 @@ function vWaste(){
   const byType = WASTE_TYPES.map(t=>({ t, ...wasteSum(ws.filter(r=>r.type===t)) })).filter(x=>x.total>0);
   const maxT = Math.max(1, ...byType.map(x=>x.total));
   const byZone = ZONES.map(z=>({ z, ...wasteSum(ws.filter(r=>r.zone===z.id)) })).filter(x=>x.total>0);
+  const types = wasteTypeList();
+  const edit  = state.wasteEdit ? (state.db.waste||[]).find(r=>r.id===state.wasteEdit) : null;
   const maxZ = Math.max(1, ...byZone.map(x=>x.total));
 
   const rows = ws.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(r=>{
@@ -1655,13 +1690,19 @@ function vWaste(){
       <td class="num">${r.weight?Number(r.weight).toLocaleString('th-TH'):'—'}</td>
       <td class="num">${r.price?money(r.price):'—'}</td>
       <td class="num" style="font-weight:700">${money(r.amount)}</td>
-      <td>${esc(r.buyer||'—')}</td>
+      <td>${esc(r.buyer||'—')}${(r.book||r.no)?`<br><span style="font-size:11px;color:var(--muted)">เล่ม ${esc(r.book||'—')} / เลขที่ ${esc(r.no||'—')}</span>`:''}</td>
+      <td>${thumbHTML(r.slipImg, r.slipImgId)||'<span style="color:var(--muted)">—</span>'}</td>
       <td style="white-space:nowrap">${ paid
         ? `<span class="chip">จ่ายแล้ว${r.paidAt?' · '+thDate(r.paidAt):''}</span>`
         : `<span class="chip late">ค้างจ่าย</span>` }</td>
-      <td style="white-space:nowrap">${ paid
-        ? `<button class="btn btn-sm" data-wundo="${r.id}">ยกเลิก</button>`
-        : `<button class="btn btn-ok btn-sm" data-wpaid="${r.id}">รับเงินแล้ว</button>` }
+      <td style="font-size:11.5px;color:var(--muted);white-space:nowrap">${ r.editedAt
+        ? esc(thDate(r.editedAt)+(r.editedBy?' · '+r.editedBy.replace(/^นาง(สาว)?/,''):''))
+        : (r.by ? 'บันทึกโดย '+esc(r.by.replace(/^นาง(สาว)?/,'')) : '—') }</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" data-wedit="${r.id}">แก้ไข</button>
+        ${ paid
+          ? `<button class="btn btn-sm" data-wundo="${r.id}">ยกเลิกรับเงิน</button>`
+          : `<button class="btn btn-ok btn-sm" data-wpaid="${r.id}">รับเงินแล้ว</button>` }
         <button class="btn btn-sm" data-wdel="${r.id}">ลบ</button></td>
     </tr>`;
   }).join('');
@@ -1685,38 +1726,59 @@ function vWaste(){
   </div>
 
   <div class="grid g2" style="margin-bottom:18px">
-    <div class="card">
-      <h3>บันทึกการขายขยะ</h3>
-      <p class="hint">ใส่น้ำหนักและราคาต่อกิโลกรัม ระบบคิดจำนวนเงินให้เอง หรือจะพิมพ์จำนวนเงินเองก็ได้</p>
+    <div class="card" id="wasteForm" ${edit?`style="border-top:4px solid var(--canopy)"`:''}>
+      <h3>${edit?'แก้ไขรายการขายขยะ':'บันทึกการขายขยะ'}</h3>
+      <p class="hint">${edit
+        ? `กำลังแก้ไขรายการวันที่ ${thDate(edit.date)} · ${esc(edit.type||'')}${edit.editedAt?` · แก้ไขล่าสุด ${thDate(edit.editedAt)}${edit.editedBy?' โดย '+esc(edit.editedBy.replace(/^นาง(สาว)?/,'')):''}`:''}`
+        : 'ใส่น้ำหนักและราคาต่อกิโลกรัม ระบบคิดจำนวนเงินให้เอง หรือจะพิมพ์จำนวนเงินเองก็ได้'}</p>
       <div class="row">
-        <div class="field"><label for="wDate">วันที่ขาย</label><input type="date" id="wDate" value="${todayISO()}"></div>
+        <div class="field"><label for="wDate">วันที่ขาย</label>
+          <input type="date" id="wDate" value="${edit?edit.date:todayISO()}"></div>
         <div class="field"><label for="wZone">โซนที่รวบรวม</label>
-          <select id="wZone"><option value="">ส่วนกลาง / ทั้งหอผู้ป่วย</option>${ZONES.map(z=>`<option value="${z.id}">โซน${z.name}</option>`).join('')}</select></div>
-        <div class="field"><label for="wType">ประเภทขยะ</label>
-          <select id="wType">${WASTE_TYPES.map(t=>`<option>${esc(t)}</option>`).join('')}</select></div>
+          <select id="wZone"><option value="">ส่วนกลาง / ทั้งหอผู้ป่วย</option>${ZONES.map(z=>`<option value="${z.id}" ${edit&&edit.zone===z.id?'selected':''}>โซน${z.name}</option>`).join('')}</select></div>
+        <div class="field"><label for="wType">รายการ</label>
+          <select id="wType">${types.map(t=>`<option ${edit&&edit.type===t?'selected':''}>${esc(t)}</option>`).join('')}
+            <option value="__other">อื่น ๆ (พิมพ์เพิ่มเอง)</option></select></div>
+      </div>
+      <div class="field ${'hide'}" id="wOtherWrap"><label for="wTypeOther">ระบุรายการอื่น ๆ</label>
+        <input type="text" id="wTypeOther" placeholder="เช่น กระป๋องอลูมิเนียม, เหล็ก"></div>
+      <div class="row">
+        <div class="field"><label for="wWeight">จำนวน (กิโลกรัม)</label>
+          <input type="number" id="wWeight" min="0" step="0.1" placeholder="0" value="${edit&&edit.weight?edit.weight:''}"></div>
+        <div class="field"><label for="wPrice">ราคาต่อหน่วย (บาท)</label>
+          <input type="number" id="wPrice" min="0" step="0.25" placeholder="0" value="${edit&&edit.price?edit.price:''}"></div>
+        <div class="field"><label for="wAmount">รวมเงิน (บาท)</label>
+          <input type="number" id="wAmount" min="0" step="0.01" placeholder="0" value="${edit&&edit.amount?edit.amount:''}"></div>
       </div>
       <div class="row">
-        <div class="field"><label for="wWeight">น้ำหนัก (กก.)</label><input type="number" id="wWeight" min="0" step="0.1" placeholder="0"></div>
-        <div class="field"><label for="wPrice">ราคาต่อกิโลกรัม (บาท)</label><input type="number" id="wPrice" min="0" step="0.25" placeholder="0"></div>
-        <div class="field"><label for="wAmount">จำนวนเงิน (บาท)</label><input type="number" id="wAmount" min="0" step="0.01" placeholder="0"></div>
+        <div class="field"><label for="wBuyer">ผู้รับซื้อ / ร้าน</label>
+          <input type="text" id="wBuyer" value="${edit?esc(edit.buyer||''):''}" placeholder="เช่น ธนาคารขยะรีไซเคิล รพ.มหาราชนครราชสีมา"></div>
+        <div class="field"><label for="wBy">${edit?'ผู้แก้ไข':'ผู้บันทึก'}</label>
+          <select id="wBy">${memberOptions(edit&&!edit.editedAt?edit.by:state.user)}</select></div>
       </div>
       <div class="row">
-        <div class="field"><label for="wBuyer">ผู้รับซื้อ / ร้าน</label><input type="text" id="wBuyer" placeholder="เช่น ร้านรับซื้อของเก่าหน้าโรงพยาบาล"></div>
-        <div class="field"><label for="wBy">ผู้บันทึก</label>
-          <select id="wBy">${memberOptions(state.user)}</select></div>
+        <div class="field"><label for="wBook">เล่มที่</label>
+          <input type="text" id="wBook" value="${edit?esc(edit.book||''):''}" placeholder="เช่น 076"></div>
+        <div class="field"><label for="wNo">เลขที่</label>
+          <input type="text" id="wNo" value="${edit?esc(edit.no||''):''}" placeholder="เช่น 3761"></div>
       </div>
       <div class="field"><label>สถานะการรับเงิน</label>
         <div class="pill-group" id="wStatus">
-          <button type="button" data-v="paid" aria-pressed="true">จ่ายแล้ว</button>
-          <button type="button" data-v="due" aria-pressed="false">ค้างจ่าย</button>
+          <button type="button" data-v="paid" aria-pressed="${!edit || edit.status==='paid'}">จ่ายแล้ว</button>
+          <button type="button" data-v="due" aria-pressed="${!!(edit && edit.status!=='paid')}">ค้างจ่าย</button>
         </div></div>
-      <div class="field"><label for="wNote">หมายเหตุ</label><input type="text" id="wNote" placeholder="เช่น นัดรับเงินสิ้นเดือน"></div>
-      <button class="btn btn-primary" id="saveWaste">บันทึกรายรับ</button>
+      <div class="field"><label for="wNote">หมายเหตุ</label>
+        <input type="text" id="wNote" value="${edit?esc(edit.note||''):''}" placeholder="เช่น นัดรับเงินสิ้นเดือน"></div>
+      ${picField('wslip','รูปสลิปการเงิน / ใบเสร็จ', edit&&edit.slipImg, edit&&edit.slipImgId)}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="saveWaste">${edit?'บันทึกการแก้ไข':'บันทึกรายรับ'}</button>
+        ${edit?`<button class="btn" id="cancelWaste">ยกเลิก</button>`:''}
+      </div>
     </div>
 
     <div>
       <div class="card" style="margin-bottom:16px">
-        <h3>รายรับแยกตามประเภทขยะ</h3>
+        <h3>รายรับแยกตามรายการ</h3>
         <p class="hint">เดือน${TH_MONTHS[state.month-1]} ${state.year}</p>
         ${ byType.length ? `<div class="barchart">${byType.map(x=>`<div class="bc-row"><span>${esc(x.t)}</span>
             <div class="bc-track"><div class="bc-fill" style="width:${Math.round(x.total/maxT*100)}%"></div></div><b>${money(x.total)}</b></div>`).join('')}</div>`
@@ -1736,10 +1798,10 @@ function vWaste(){
     <h3>รายการทั้งหมดในเดือนนี้ (${ws.length} รายการ)</h3>
     <p class="hint">กดปุ่มรับเงินแล้วเมื่อได้รับเงินจริง ยอดจะย้ายจากช่องค้างจ่ายไปช่องรับเงินแล้วทันที</p>
     ${ ws.length ? `<table class="tbl wide">
-      <thead><tr><th>วันที่</th><th>โซน</th><th>ประเภท</th><th>น้ำหนัก (กก.)</th><th>ราคา/กก.</th><th>จำนวนเงิน</th><th>ผู้รับซื้อ</th><th>สถานะ</th><th></th></tr></thead>
+      <thead><tr><th>วันที่</th><th>โซน</th><th>รายการ</th><th>จำนวน (กก.)</th><th>ราคา/หน่วย</th><th>รวมเงิน</th><th>ผู้รับซื้อ</th><th>สลิป</th><th>สถานะ</th><th>แก้ไขล่าสุด</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
       <tfoot><tr><th colspan="5" style="text-align:right">รวม</th>
-        <th class="num">${money(sum.total)}</th><th colspan="3" style="text-align:left">รับแล้ว ${money(sum.paid)} · ค้าง ${money(sum.due)} บาท</th></tr></tfoot>
+        <th class="num">${money(sum.total)}</th><th colspan="5" style="text-align:left">รับแล้ว ${money(sum.paid)} · ค้าง ${money(sum.due)} บาท</th></tr></tfoot>
     </table>
     <div style="margin-top:12px"><button class="btn btn-sm" onclick="window.print()">พิมพ์รายงาน</button></div>`
     : emptyHTML('ยังไม่มีรายการในเดือนนี้','เริ่มบันทึกจากแบบฟอร์มด้านบน') }
@@ -2032,21 +2094,7 @@ function bind(){
       state.gclName = b.dataset.editg; state.gclTab='form'; state.pics={}; render();
     });
 
-    document.querySelectorAll('.pic-add').forEach(b=>b.onclick=()=>document.getElementById('file_'+b.dataset.pk).click());
-    ['ethic','tree','clean','lean'].forEach(k=>{
-      const f = document.getElementById('file_'+k); if(!f) return;
-      f.onchange = ()=>{
-        const file = f.files && f.files[0]; if(!file) return;
-        if(!/^image\//.test(file.type)){ toast('เลือกได้เฉพาะไฟล์รูปภาพ'); return; }
-        readPic(file, k, ()=>{
-          const prev = document.getElementById('prev_'+k), p = state.pics[k];
-          prev.innerHTML = `<img src="${p.data}" alt=""><span>${esc(p.name)}<br>${Math.round(p.data.length/1400)} KB</span><button type="button" class="btn btn-sm" data-pdel="${k}">เอาออก</button>`;
-          document.querySelector('.pic-add[data-pk="'+k+'"]').textContent = 'เปลี่ยนรูป';
-          prev.querySelector('[data-pdel]').onclick = ()=>{ delete state.pics[k]; render(); };
-        });
-      };
-    });
-    document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{ delete state.pics[b.dataset.pdel]; render(); });
+    bindPicInputs(['ethic','tree','clean','lean']);
 
     const sv = $('#saveGCL');
     if(sv) sv.onclick = async()=>{
@@ -2121,42 +2169,106 @@ function bind(){
 
   // ค่าขยะ
   if(state.page==='waste'){
-    const calc = ()=>{
-      const w = parseFloat($('#wWeight').value)||0, pr = parseFloat($('#wPrice').value)||0;
-      if(w && pr) $('#wAmount').value = (w*pr).toFixed(2);
+    const otherWrap = $('#wOtherWrap');
+    const typeSel   = $('#wType');
+    const syncOther = ()=> otherWrap.classList.toggle('hide', typeSel.value !== '__other');
+    typeSel.onchange = ()=>{
+      syncOther();
+      if(typeSel.value !== '__other'){
+        // เติมราคาต่อหน่วยจากครั้งล่าสุดของรายการเดียวกันให้อัตโนมัติ
+        const last = (state.db.waste||[]).filter(r=>r.type===typeSel.value && r.price).slice(-1)[0];
+        if(last && !$('#wPrice').value){ $('#wPrice').value = last.price; calc(); }
+      }
     };
+    syncOther();
+
+    function calc(){
+      const w = parseFloat($('#wWeight').value)||0, pr = parseFloat($('#wPrice').value)||0;
+      if(w && pr) $('#wAmount').value = +(w*pr).toFixed(2);
+    }
     $('#wWeight').oninput = calc; $('#wPrice').oninput = calc;
 
-    $('#saveWaste').onclick=()=>{
+    const editing = state.wasteEdit ? (state.db.waste||[]).find(r=>r.id===state.wasteEdit) : null;
+
+    bindPicInputs(['wslip']);
+
+    $('#saveWaste').onclick=async()=>{
       const date = $('#wDate').value||todayISO();
       const amount = parseFloat($('#wAmount').value)||0;
-      if(!amount){ toast('ใส่จำนวนเงิน หรือใส่น้ำหนักกับราคาต่อกิโลกรัม'); return; }
+      let type = typeSel.value;
+      if(type === '__other'){
+        type = $('#wTypeOther').value.trim();
+        if(!type){ toast('ระบุชื่อรายการอื่น ๆ ก่อน'); return; }
+      }
+      if(!amount){ toast('ใส่รวมเงิน หรือใส่จำนวนกิโลกรัมกับราคาต่อหน่วย'); return; }
+
       const st = document.querySelector('#wStatus button[aria-pressed="true"]');
       const paid = st && st.dataset.v==='paid';
-      state.db.waste = state.db.waste || [];
-      state.db.waste.push({
-        id: uid(), period: periodFromDate(date), date,
-        zone: $('#wZone').value, type: $('#wType').value,
+      const who  = $('#wBy').value;
+
+      const data = {
+        period: periodFromDate(date), date,
+        zone: $('#wZone').value, type,
         weight: parseFloat($('#wWeight').value)||0,
-        price: parseFloat($('#wPrice').value)||0,
-        amount, buyer: $('#wBuyer').value.trim(), by: $('#wBy').value,
+        price:  parseFloat($('#wPrice').value)||0,
+        amount, buyer: $('#wBuyer').value.trim(),
+        book: $('#wBook').value.trim(), no: $('#wNo').value.trim(),
         note: $('#wNote').value.trim(),
-        status: paid?'paid':'due', paidAt: paid?date:''
-      });
-      persist(); toast('บันทึกรายรับ '+money(amount)+' บาทแล้ว'); render();
+        status: paid?'paid':'due'
+      };
+
+      const btn = $('#saveWaste'), label = btn.textContent;
+      if(state.pics.wslip){ btn.disabled = true; btn.textContent = 'กำลังอัปโหลดสลิป…'; }
+      try{
+        if(state.pics.wslip){
+          const up = await uploadPic('wslip', who, date);
+          data.slipImg = up.url; data.slipImgId = up.id;
+        }
+      }catch(e){
+        toast('อัปโหลดสลิปไม่สำเร็จ: '+e.message);
+        btn.disabled = false; btn.textContent = label; return;
+      }
+
+      state.db.waste = state.db.waste || [];
+      if(editing){
+        Object.assign(editing, data, { editedAt: todayISO(), editedBy: who });
+        if(paid && !editing.paidAt) editing.paidAt = date;
+        if(!paid) editing.paidAt = '';
+        toast('บันทึกการแก้ไขแล้ว · '+money(amount)+' บาท');
+        state.wasteEdit = null;
+      }else{
+        state.db.waste.push(Object.assign({ id: uid(), by: who, createdAt: todayISO() }, data,
+          { paidAt: paid?date:'' }));
+        toast('บันทึกรายรับ '+money(amount)+' บาทแล้ว'+(data.slipImg?' · แนบสลิปแล้ว':''));
+      }
+      state.pics = {};
+      persist(); render();
     };
+
+    const cw = $('#cancelWaste');
+    if(cw) cw.onclick = ()=>{ state.wasteEdit = null; state.pics = {}; render(); };
+
+    document.querySelectorAll('[data-wedit]').forEach(b=>b.onclick=()=>{
+      state.wasteEdit = b.dataset.wedit; state.pics = {}; render();
+      const f = document.getElementById('wasteForm');
+      if(f && f.scrollIntoView) f.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
 
     document.querySelectorAll('[data-wpaid]').forEach(b=>b.onclick=()=>{
       const r = state.db.waste.find(x=>x.id===b.dataset.wpaid);
-      if(r){ r.status='paid'; r.paidAt=todayISO(); persist(); toast('บันทึกว่ารับเงินแล้ว'); render(); }
+      if(r){ r.status='paid'; r.paidAt=todayISO(); r.editedAt=todayISO(); r.editedBy=state.user;
+             persist(); toast('บันทึกว่ารับเงินแล้ว'); render(); }
     });
     document.querySelectorAll('[data-wundo]').forEach(b=>b.onclick=()=>{
       const r = state.db.waste.find(x=>x.id===b.dataset.wundo);
-      if(r){ r.status='due'; r.paidAt=''; persist(); render(); }
+      if(r){ r.status='due'; r.paidAt=''; r.editedAt=todayISO(); r.editedBy=state.user;
+             persist(); render(); }
     });
     document.querySelectorAll('[data-wdel]').forEach(b=>b.onclick=()=>{
       if(!confirm('ลบรายการนี้?')) return;
-      state.db.waste = state.db.waste.filter(x=>x.id!==b.dataset.wdel); persist(); render();
+      state.db.waste = state.db.waste.filter(x=>x.id!==b.dataset.wdel);
+      if(state.wasteEdit===b.dataset.wdel) state.wasteEdit=null;
+      persist(); render();
     });
   }
 
