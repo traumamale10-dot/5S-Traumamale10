@@ -724,6 +724,7 @@ function loadLocal(){
   if(!state.db.members) state.db.members = [];
   if(!state.db.planActivities) state.db.planActivities = [];
   if(!state.db.planTracking)   state.db.planTracking = [];
+  delete state.db._planSourceBackfilled;
 }
 
 async function loadAll(){
@@ -740,6 +741,8 @@ async function loadAll(){
     });
     store.write(state.db);
     state.lastError = ''; state.lastSync = nowTime(); setConn(true);
+    // ถ้าเพิ่งจับคู่แหล่งข้อมูลอัตโนมัติให้กิจกรรมที่มีอยู่แล้ว (เช่นชีตที่สร้างไว้ก่อนหน้านี้) ให้บันทึกกลับขึ้นชีตทันที
+    if(state.db._planSourceBackfilled){ delete state.db._planSourceBackfilled; persist(); }
   }catch(e){
     state.lastError = e.message; setConn(false, e.message);
     if(!state.db || !state.db.members) loadLocal();   // ยังไม่มีอะไรในหน้าจอ ค่อยใช้ของในเครื่อง
@@ -859,6 +862,25 @@ function periodFromDate(iso){
   if(y < 2400) y += 543;                 // ค.ศ. เป็น พ.ศ.
   return y+'-'+m[2];
 }
+/* จับคู่อัตโนมัติ: ถ้าชื่อกิจกรรมตรงกับที่ระบบมีข้อมูลรองรับ จะตั้งแหล่งข้อมูลเป็นอัตโนมัติให้เองโดยไม่ต้องเลือกเอง
+   ครอบคลุมทั้งชื่อกิจกรรมรุ่นใหม่และรุ่นเก่า (เผื่อชีตที่เคยสร้างไว้ก่อนหน้านี้) */
+const AUTO_SOURCE_MAP = {
+  'ติดตามอัตราการส่งบันทึก Ethics ประจำเดือน': 'onegcl_ethic',
+  'ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน': 'check5s_avg',
+  'ตรวจประเมินความเรียบร้อยของพื้นที่': 'check5s_avg'   // ชื่อกิจกรรมรุ่นก่อนหน้า
+};
+/** ใส่แหล่งข้อมูลอัตโนมัติให้กิจกรรมที่ชื่อตรงกับหัวข้อที่ระบบดึงข้อมูลได้ กิจกรรมอื่นที่ไม่ตรงจะยังกรอกเองเหมือนเดิม
+ *  คืนค่า true ถ้ามีการแก้ไข (ใช้เพื่อรู้ว่าต้อง persist กลับขึ้นชีตหรือไม่) */
+function backfillPlanSources(list){
+  let changed = false;
+  (list||[]).forEach(a=>{
+    if(!a.source){
+      const guess = AUTO_SOURCE_MAP[String(a.activity||'').trim()];
+      if(guess){ a.source = guess; changed = true; }
+    }
+  });
+  return changed;
+}
 function normalizeDb(db){
   ['check5s','onegcl','waste'].forEach(k=>{
     (db[k]||[]).forEach(r=>{
@@ -872,6 +894,7 @@ function normalizeDb(db){
   if(!db.planActivities) db.planActivities = [];
   if(!db.planTracking)   db.planTracking   = [];
   db.planActivities.forEach(a=>{ if(a.active===''||a.active==null) a.active = true; });
+  db._planSourceBackfilled = backfillPlanSources(db.planActivities);
   return db;
 }
 function planActivitiesOf(dim){ return (state.db.planActivities||[]).filter(a=>a.dimension===dim); }
