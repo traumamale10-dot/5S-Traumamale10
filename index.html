@@ -309,6 +309,19 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
   .scroll::after{content:'ปัดซ้าย–ขวาเพื่อดูทั้งตาราง';display:block;
     font-size:11.5px;color:var(--muted);padding-top:8px}
 
+  /* ตาราง "แผนปฏิบัติการ 4 มิติ": จัดเป็นการ์ดเรียงลงด้านล่างแทน ไม่ต้องปัดซ้าย-ขวา */
+  .scroll .tbl.stack{min-width:0}
+  .stack-host.scroll::after{content:none}
+  table.tbl.stack thead{display:none}
+  table.tbl.stack,table.tbl.stack tbody,table.tbl.stack tr,table.tbl.stack td{display:block;width:100%}
+  table.tbl.stack tr{border:1px solid var(--line);border-radius:12px;padding:4px 12px;margin-bottom:12px;background:#fff}
+  table.tbl.stack td{border:none;padding:9px 0;display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px}
+  table.tbl.stack td:not(:last-child){border-bottom:1px dashed var(--line)}
+  table.tbl.stack td[data-label]:before{content:attr(data-label);flex-basis:100%;
+    font-size:11.5px;font-weight:700;color:var(--canopy)}
+  table.tbl.stack td:not([data-label]){padding-top:2px}
+  table.tbl.stack td select,table.tbl.stack td input{width:100%}
+
   /* แผนผัง ปัดดูในขนาดที่อ่านออก */
   .map-wrap{overflow-x:auto;padding:10px}
   .map-wrap svg{min-width:860px}
@@ -496,29 +509,57 @@ const PLAN_SEED = [
   ['green','จัดมุมสีเขียว/มุมพักสายตา','ทีมโซนที่รับผิดชอบพื้นที่นั้น','ครั้งเดียว + ดูแลรายสัปดาห์','เช็กลิสต์สภาพต้นไม้/ความเรียบร้อย',''],
   ['green','ดำเนินกิจกรรม 5ส. จัดระเบียบอุปกรณ์-เอกสาร-พื้นที่ปฏิบัติงาน','หัวหน้าโซนแต่ละโซน','ทุกวันจันทร์','แบบตรวจ 5ส. ที่มีอยู่ในระบบแล้ว',''],
   ['green','ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg'],
+  ['green','ติดตามอัตราการส่งบันทึกต้นไม้ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (ต้นไม้)','onegcl_tree'],
+  ['green','ติดตามอัตราการส่งบันทึก One Lean ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Lean)','onegcl_lean'],
   ['clean','ตรวจสอบ-แก้ไขจุดเสี่ยงด้านสิ่งแวดล้อม','เวรที่ปฏิบัติงานแต่ละกะ + ผู้ดูแลอาคารสถานที่','ทุกเวร','บันทึกจุดเสี่ยงที่พบ/แก้ไขแล้วในระบบ',''],
   ['clean','ทำความสะอาดจุดที่มือแตะบ่อย','ผู้ช่วยเหลือคนไข้/แม่บ้านประจำโซน','ทุกเวร','เช็กลิสต์ทำความสะอาดรายจุด',''],
   ['clean','รณรงค์ล้างมือผ่านโครงการธนาคารมือสะอาด','ทีมควบคุมการติดเชื้อประจำหอผู้ป่วย','ต่อเนื่องทุกวัน','สรุปยอดสะสม/อัตราการล้างมือรายเดือน',''],
+  ['clean','ติดตามอัตราการส่งบันทึก One Cleaned ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Cleaned)','onegcl_clean'],
   ['ethic','ทบทวนแนวทางจริยธรรมบริการกับบุคลากร','หัวหน้าหอผู้ป่วย/พี่เลี้ยงเวร','เดือนละ 1 ครั้ง','บันทึกการประชุม/ผู้เข้าร่วม',''],
   ['ethic','ติดตามอัตราการส่งบันทึก Ethics ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L & Ethics','onegcl_ethic'],
   ['ethic','สังเกตพฤติกรรมบริการระหว่างปฏิบัติงาน','หัวหน้าเวร','ทุกเวร (สุ่มสังเกต)','แบบประเมินพฤติกรรมบริการ',''],
-  ['ethic','เก็บข้อมูลความพึงพอใจ/ข้อร้องเรียนจากผู้ป่วยและญาติ','ผู้ประสานงานโครงการ','รายเดือน','แบบสอบถามความพึงพอใจ + สรุปข้อร้องเรียน',''],
+  ['ethic','เก็บข้อมูลความพึงพอใจ/ข้อร้องเรียนจากผู้ป่วยและญาติ','ผู้ประสานงานโครงการ','รายเดือน','แบบสอบถามความพึงพอใจ + สรุปข้อร้องเรียน — แหล่งข้อมูลภายนอก กรอกเอง',''],
   ['energy','ปิดไฟ/พัดลม/แอร์ ถอดปลั๊กเมื่อไม่ใช้งาน','ทุกเวรที่ปฏิบัติงาน','ทุกเวร (ก่อนเปลี่ยนเวร)','เช็กลิสต์ตรวจก่อนเปลี่ยนเวร',''],
   ['energy','ติดป้ายเตือน/รณรงค์ประหยัดพลังงาน','ทีมประชาสัมพันธ์ภายในหน่วยงาน','ครั้งเดียว + ทบทวนทุกไตรมาส','ภาพถ่ายจุดติดป้าย',''],
-  ['energy','เก็บข้อมูลการใช้พลังงานไฟฟ้าของหน่วยงาน','ผู้ประสานงานโครงการ/ธุรการหอผู้ป่วย','รายเดือน','ตัวเลขหน่วยไฟฟ้าเทียบค่าพื้นฐาน',''],
+  ['energy','ติดตามอัตราการบันทึกกิจกรรมประหยัดพลังงาน (One Lean)','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Lean หมวดประหยัดพลังงาน)','onegcl_lean_energy'],
   ['cross','กิจกรรม One Green One Lean One Clean One Safe One Etic','บุคลากรทุกคนร่วมกัน','ทุกเดือน','บันทึกการเข้าร่วมกิจกรรม',''],
   ['cross','ประชุมติดตามผลรวม 4 มิติ','หัวหน้าหอผู้ป่วย + ผู้ประสานงานโครงการ','ทุกสิ้นเดือน','สรุปผลเทียบเป้าหมายทั้ง 4 ตัวชี้วัด นำเสนอในที่ประชุม','']
 ];
-/* แหล่งข้อมูลอัตโนมัติที่รองรับ: onegcl_ethic = คำนวณจากยอดส่ง Ethics ในหน้า One G-C-L & Ethics ของเดือนนั้น */
+/* แหล่งข้อมูลอัตโนมัติที่รองรับ — ดึงจากหน้า One G-C-L & Ethics (รายบุคคล/เดือน) และหน้าตรวจ 5ส. (รายสัปดาห์)
+   สิ่งที่ยังไม่มีชีตเก็บข้อมูลในระบบ (ความพึงพอใจผู้รับบริการ, ค่าไฟ) จึงยังต้องกรอกเอง */
+const AUTO_SOURCE_CONF = {
+  onegcl_ethic: { kind:'onegcl',     field:'ethic', target:95, label:'One G-C-L & Ethics (จริยธรรม)' },
+  onegcl_tree:  { kind:'onegcl',     field:'tree',  target:90, label:'One G-C-L (ต้นไม้ / พื้นที่สีเขียว)' },
+  onegcl_clean: { kind:'onegcl',     field:'clean', target:90, label:'One G-C-L (One Cleaned)' },
+  onegcl_lean:  { kind:'onegcl',     field:'lean',  target:90, label:'One G-C-L (One Lean)' },
+  onegcl_lean_energy: { kind:'onegcl_tag', field:'lean', tagField:'leanSum', tagValue:'ประหยัดพลังงาน', target:80,
+                         label:'One G-C-L (One Lean · หมวดประหยัดพลังงาน)' },
+  check5s_avg:  { kind:'check5s', target:80,               label:'ตรวจ 5ส. รายสัปดาห์' }
+};
 const PLAN_SOURCES = [
   { id:'',             label:'กรอกเอง' },
-  { id:'onegcl_ethic',  label:'ดึงจาก One G-C-L & Ethics อัตโนมัติ' },
+  { id:'onegcl_ethic',  label:'ดึงจาก One G-C-L & Ethics (จริยธรรม) อัตโนมัติ' },
+  { id:'onegcl_tree',   label:'ดึงจาก One G-C-L (ต้นไม้) อัตโนมัติ' },
+  { id:'onegcl_clean',  label:'ดึงจาก One G-C-L (One Cleaned) อัตโนมัติ' },
+  { id:'onegcl_lean',   label:'ดึงจาก One G-C-L (One Lean) อัตโนมัติ' },
+  { id:'onegcl_lean_energy', label:'ดึงจาก One G-C-L (One Lean · ประหยัดพลังงาน) อัตโนมัติ' },
   { id:'check5s_avg',   label:'ดึงจากคะแนนตรวจ 5ส. อัตโนมัติ' }
 ];
-/** สัดส่วนบุคลากรที่ส่งบันทึก Ethics ในรอบเดือนที่กำลังดูอยู่ (state.month/state.year) */
-function ethicAutoStats(){
+/** สัดส่วนบุคลากรที่ส่งบันทึกหัวข้อ field (ethic/tree/clean/lean) ในหน้า One G-C-L ของรอบเดือนที่กำลังดูอยู่ */
+function onegclAutoStats(field){
   const per = period();
-  const sentNames = new Set(state.db.onegcl.filter(r=>r.period===per && String(r.ethic||'').trim()).map(r=>r.name));
+  const sentNames = new Set(state.db.onegcl.filter(r=>r.period===per && String(r[field]||'').trim()).map(r=>r.name));
+  const total = state.db.members.length;
+  const sent  = sentNames.size;
+  const pct   = total ? Math.round(sent/total*100) : 0;
+  return { total, sent, pct };
+}
+/** เหมือน onegclAutoStats แต่กรองเฉพาะรายการที่ติดหมวด (tagField===tagValue) เช่น One Lean หมวด "ประหยัดพลังงาน" */
+function onegclTagStats(field, tagField, tagValue){
+  const per = period();
+  const sentNames = new Set(state.db.onegcl
+    .filter(r=>r.period===per && String(r[field]||'').trim() && r[tagField]===tagValue)
+    .map(r=>r.name));
   const total = state.db.members.length;
   const sent  = sentNames.size;
   const pct   = total ? Math.round(sent/total*100) : 0;
@@ -529,6 +570,27 @@ function check5sAvgStats(){
   const rows = rows5s();
   const avg  = rows.length ? Math.round(rows.reduce((a,r)=>a+(r.total||0),0)/rows.length) : null;
   return { count: rows.length, avg };
+}
+/** คำนวณผลอัตโนมัติของกิจกรรมตามแหล่งข้อมูลที่ตั้งไว้ (คืน null ถ้าไม่ใช่กิจกรรมอัตโนมัติ) */
+function planAutoResult(source){
+  const conf = AUTO_SOURCE_CONF[source];
+  if(!conf) return null;
+  if(conf.kind==='onegcl'){
+    const s = onegclAutoStats(conf.field);
+    return { has:true, achieved: s.pct>=conf.target, text:`${s.sent}/${s.total} คน (${s.pct}%)`, label:conf.label };
+  }
+  if(conf.kind==='onegcl_tag'){
+    const s = onegclTagStats(conf.field, conf.tagField, conf.tagValue);
+    return { has:true, achieved: s.pct>=conf.target, text:`${s.sent}/${s.total} คน (${s.pct}%)`, label:conf.label };
+  }
+  if(conf.kind==='check5s'){
+    const s = check5sAvgStats();
+    const has = s.avg!=null;
+    return { has, achieved: has && s.avg>=conf.target,
+      text: has ? `เฉลี่ย ${s.avg}/100 (${s.count} ครั้งตรวจ)` : 'ยังไม่มีผลตรวจ 5ส. ในเดือนนี้',
+      label:conf.label };
+  }
+  return null;
 }
 
 /* ---------- 3. แผนผังหอผู้ป่วย (viewBox 1480 x 1160) ---------- */
@@ -866,8 +928,13 @@ function periodFromDate(iso){
    ครอบคลุมทั้งชื่อกิจกรรมรุ่นใหม่และรุ่นเก่า (เผื่อชีตที่เคยสร้างไว้ก่อนหน้านี้) */
 const AUTO_SOURCE_MAP = {
   'ติดตามอัตราการส่งบันทึก Ethics ประจำเดือน': 'onegcl_ethic',
+  'ติดตามอัตราการส่งบันทึกต้นไม้ประจำเดือน': 'onegcl_tree',
+  'ติดตามอัตราการส่งบันทึก One Cleaned ประจำเดือน': 'onegcl_clean',
+  'ติดตามอัตราการส่งบันทึก One Lean ประจำเดือน': 'onegcl_lean',
   'ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน': 'check5s_avg',
-  'ตรวจประเมินความเรียบร้อยของพื้นที่': 'check5s_avg'   // ชื่อกิจกรรมรุ่นก่อนหน้า
+  'ตรวจประเมินความเรียบร้อยของพื้นที่': 'check5s_avg',   // ชื่อกิจกรรมรุ่นก่อนหน้า
+  'ติดตามอัตราการบันทึกกิจกรรมประหยัดพลังงาน (One Lean)': 'onegcl_lean_energy',
+  'เก็บข้อมูลการใช้พลังงานไฟฟ้าของหน่วยงาน': 'onegcl_lean_energy'   // ชื่อกิจกรรมรุ่นก่อนหน้า (กรอกเอง) → เปลี่ยนมาดึงจาก One Lean แทน
 };
 /** ใส่แหล่งข้อมูลอัตโนมัติให้กิจกรรมที่ชื่อตรงกับหัวข้อที่ระบบดึงข้อมูลได้ กิจกรรมอื่นที่ไม่ตรงจะยังกรอกเองเหมือนเดิม
  *  คืนค่า true ถ้ามีการแก้ไข (ใช้เพื่อรู้ว่าต้อง persist กลับขึ้นชีตหรือไม่) */
@@ -877,6 +944,28 @@ function backfillPlanSources(list){
     if(!a.source){
       const guess = AUTO_SOURCE_MAP[String(a.activity||'').trim()];
       if(guess){ a.source = guess; changed = true; }
+    }
+  });
+  return changed;
+}
+/* กิจกรรมติดตามอัตโนมัติที่แนะนำ — ใช้เติมให้รายการที่เคยสร้างไว้ก่อนหน้านี้ (ยังไม่มีตัวนี้) โดยไม่แตะกิจกรรมอื่นที่มีอยู่แล้ว */
+const RECOMMENDED_AUTO_ACTIVITIES = [
+  ['green','ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg'],
+  ['green','ติดตามอัตราการส่งบันทึกต้นไม้ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (ต้นไม้)','onegcl_tree'],
+  ['green','ติดตามอัตราการส่งบันทึก One Lean ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Lean)','onegcl_lean'],
+  ['clean','ติดตามอัตราการส่งบันทึก One Cleaned ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Cleaned)','onegcl_clean'],
+  ['ethic','ติดตามอัตราการส่งบันทึก Ethics ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L & Ethics','onegcl_ethic']
+];
+/** เติมกิจกรรมติดตามอัตโนมัติที่ยังขาดหายไปในรายการเดิม (ทำงานเฉพาะกรณีมีรายการอยู่แล้วอย่างน้อย 1 อัน
+ *  เพื่อไม่ไปแทรกข้อมูลให้ผู้ที่ยังไม่เคยตั้งค่าอะไรเลย) คืนค่า true ถ้ามีการเพิ่ม */
+function addMissingAutoActivities(list){
+  if(!list.length) return false;
+  let changed = false;
+  const existingNames = new Set(list.map(a=>String(a.activity||'').trim()));
+  RECOMMENDED_AUTO_ACTIVITIES.forEach((s,i)=>{
+    if(!existingNames.has(s[1])){
+      list.push({ id:'auto'+i+'_'+Date.now().toString(36), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4], active:true, source:s[5] });
+      changed = true;
     }
   });
   return changed;
@@ -894,7 +983,9 @@ function normalizeDb(db){
   if(!db.planActivities) db.planActivities = [];
   if(!db.planTracking)   db.planTracking   = [];
   db.planActivities.forEach(a=>{ if(a.active===''||a.active==null) a.active = true; });
-  db._planSourceBackfilled = backfillPlanSources(db.planActivities);
+  const backfilled = backfillPlanSources(db.planActivities);
+  const added = addMissingAutoActivities(db.planActivities);
+  db._planSourceBackfilled = backfilled || added;
   return db;
 }
 function planActivitiesOf(dim){ return (state.db.planActivities||[]).filter(a=>a.dimension===dim); }
@@ -2014,19 +2105,19 @@ function vPlan(){
   const acts = state.db.planActivities || [];
 
   const listRows = acts.map(a=>`<tr>
-    <td><select data-pid="${a.id}" data-f="dimension">${DIMS.map(d=>`<option value="${d.id}" ${a.dimension===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}</select></td>
-    <td><input type="text" data-pid="${a.id}" data-f="activity" value="${esc(a.activity||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
-    <td><input type="text" data-pid="${a.id}" data-f="responsible" value="${esc(a.responsible||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
-    <td><input type="text" data-pid="${a.id}" data-f="frequency" value="${esc(a.frequency||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
-    <td><input type="text" data-pid="${a.id}" data-f="method" value="${esc(a.method||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
-    <td><select data-pid="${a.id}" data-f="source">${PLAN_SOURCES.map(s=>`<option value="${s.id}" ${ (a.source||'')===s.id?'selected':''}>${esc(s.label)}</option>`).join('')}</select></td>
-    <td style="text-align:center"><input type="checkbox" data-pid="${a.id}" data-f="active" ${a.active!==false?'checked':''}></td>
-    <td><button class="btn btn-sm" data-pdel="${a.id}">ลบ</button></td>
+    <td data-label="มิติ"><select data-pid="${a.id}" data-f="dimension">${DIMS.map(d=>`<option value="${d.id}" ${a.dimension===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}</select></td>
+    <td data-label="กิจกรรม"><input type="text" data-pid="${a.id}" data-f="activity" value="${esc(a.activity||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td data-label="ผู้รับผิดชอบ"><input type="text" data-pid="${a.id}" data-f="responsible" value="${esc(a.responsible||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td data-label="ความถี่"><input type="text" data-pid="${a.id}" data-f="frequency" value="${esc(a.frequency||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td data-label="วิธีติดตามผล"><input type="text" data-pid="${a.id}" data-f="method" value="${esc(a.method||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td data-label="แหล่งข้อมูล"><select data-pid="${a.id}" data-f="source">${PLAN_SOURCES.map(s=>`<option value="${s.id}" ${ (a.source||'')===s.id?'selected':''}>${esc(s.label)}</option>`).join('')}</select></td>
+    <td data-label="ใช้งาน" style="text-align:center"><input type="checkbox" data-pid="${a.id}" data-f="active" ${a.active!==false?'checked':''}></td>
+    <td><button class="btn btn-sm" data-pdel="${a.id}">ลบกิจกรรมนี้</button></td>
   </tr>`).join('');
 
-  const listHTML = `<div class="card scroll">
+  const listHTML = `<div class="card scroll stack-host">
     ${ acts.length ? '' : emptyHTML('ยังไม่มีรายการกิจกรรม','กดปุ่มด้านล่างเพื่อโหลดกิจกรรมตัวอย่างทั้ง 4 มิติ หรือเพิ่มเองทีละรายการ') }
-    <table class="tbl wide" ${acts.length?'':'style="display:none"'}>
+    <table class="tbl wide stack" ${acts.length?'':'style="display:none"'}>
       <thead><tr>
         <th style="width:12%">มิติ</th><th style="text-align:left">กิจกรรม</th>
         <th style="text-align:left;width:14%">ผู้รับผิดชอบ</th><th style="width:12%">ความถี่</th>
@@ -2035,7 +2126,7 @@ function vPlan(){
       </tr></thead>
       <tbody>${listRows}</tbody>
     </table>
-    <p class="hint" style="margin-top:10px">ระบบดึงข้อมูลอัตโนมัติได้ 2 จุด: <b>Ethics</b> (จากหน้า One G-C-L &amp; Ethics) และ <b>คะแนน 5ส.</b> (จากหน้าตรวจ 5ส. รายสัปดาห์) กิจกรรมอื่น เช่น การใช้พลังงานไฟฟ้า ความพึงพอใจผู้ป่วย จุดเสี่ยงสิ่งแวดล้อม ยังไม่มีชีตข้อมูลรองรับในระบบ จึงต้องกรอกเอง — ระบบจะบันทึกชื่อผู้กรอก (ตามที่เลือกไว้ที่ช่อง “ผู้บันทึก” ด้านบน) และวันที่ไว้ให้อัตโนมัติทุกครั้งที่แก้ไข</p>
+    <p class="hint" style="margin-top:10px">ระบบดึงข้อมูลอัตโนมัติจาก 2 แหล่งที่มีอยู่แล้ว: <b>One G-C-L &amp; Ethics</b> (ต้นไม้ / One Cleaned / One Lean / จริยธรรม / หมวดประหยัดพลังงานใน One Lean — ดูอัตราการส่งบันทึกของบุคลากรรายเดือน) และ <b>ตรวจ 5ส. รายสัปดาห์</b> (คะแนนเฉลี่ย) กิจกรรมที่ตรงกับ 6 หัวข้อนี้จะคำนวณให้เองไม่ต้องกรอกซ้ำ — <i>หมายเหตุ: ตัวเลขพลังงานที่ได้เป็นอัตราการบันทึกกิจกรรมประหยัดพลังงานของบุคลากร (proxy) ไม่ใช่หน่วยไฟฟ้าจริงจากมิเตอร์</i> ส่วน<b>ความพึงพอใจของผู้รับบริการ</b> ยังไม่มีชีตข้อมูลรองรับในระบบ (ต้องเอาข้อมูลจากแหล่งอื่น) จึงต้องกรอกเอง — ระบบจะบันทึกชื่อผู้กรอก (ตามที่เลือกไว้ที่ช่อง “ผู้บันทึก” ด้านบน) และวันที่ไว้ให้อัตโนมัติทุกครั้งที่แก้ไข</p>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn" id="addPlanAct">เพิ่มกิจกรรม</button>
       ${ acts.length ? '' : `<button class="btn btn-primary" id="seedPlanAct">โหลดกิจกรรมตัวอย่าง 4 มิติ</button>` }
@@ -2048,23 +2139,14 @@ function vPlan(){
     if(!rows.length) return '';
     const trs = rows.map(a=>{
       const t = planTrackFor(a.id, per) || {};
-      let statusCell, valueCell, lastCell, nameTag = '';
+      let statusCell, valueCell, lastCell;
+      const auto = planAutoResult(a.source);
 
-      if(a.source==='onegcl_ethic'){
-        const es = ethicAutoStats();
-        const target = 95;
-        const chipCls = es.pct>=target ? 'chip' : 'chip late';
-        statusCell = `<span class="${chipCls}">${es.pct>=target?'ถึงเป้าหมาย':'ยังไม่ถึงเป้าหมาย'}</span>`;
-        valueCell  = `${es.sent}/${es.total} คน (${es.pct}%)`;
-        lastCell   = `<span class="chip" style="background:#EAF4EE">ดึงอัตโนมัติ</span><br><span style="font-size:11px;color:var(--muted)">จาก One G-C-L &amp; Ethics</span>`;
-      }else if(a.source==='check5s_avg'){
-        const cs = check5sAvgStats();
-        const target = 80;
-        const has = cs.avg!=null;
-        const chipCls = has && cs.avg>=target ? 'chip' : 'chip late';
-        statusCell = has ? `<span class="${chipCls}">${cs.avg>=target?'ถึงเป้าหมาย':'ยังไม่ถึงเป้าหมาย'}</span>` : `<span class="chip late">ยังไม่มีข้อมูล</span>`;
-        valueCell  = has ? `เฉลี่ย ${cs.avg}/100 (${cs.count} ครั้งตรวจ)` : `ยังไม่มีผลตรวจ 5ส. ในเดือนนี้`;
-        lastCell   = `<span class="chip" style="background:#EAF4EE">ดึงอัตโนมัติ</span><br><span style="font-size:11px;color:var(--muted)">จากตรวจ 5ส. รายสัปดาห์</span>`;
+      if(auto){
+        statusCell = !auto.has ? `<span class="chip late">ยังไม่มีข้อมูล</span>`
+          : `<span class="${auto.achieved?'chip':'chip late'}">${auto.achieved?'ถึงเป้าหมาย':'ยังไม่ถึงเป้าหมาย'}</span>`;
+        valueCell  = auto.text;
+        lastCell   = `<span class="chip" style="background:#EAF4EE">ดึงอัตโนมัติ</span><br><span style="font-size:11px;color:var(--muted)">จาก ${esc(auto.label)}</span>`;
       }else{
         const st = t.status || 'todo';
         statusCell = `<select data-tact="${a.id}" data-tf="status">${PLAN_STATUS.map(s=>`<option value="${s.id}" ${st===s.id?'selected':''}>${s.label}</option>`).join('')}</select>`;
@@ -2076,20 +2158,20 @@ function vPlan(){
       const noteCell = `<input type="text" data-tact="${a.id}" data-tf="note" value="${esc(t.note||'')}" placeholder="หมายเหตุ" style="width:100%">`;
 
       return `<tr>
-        <td style="min-width:190px">
+        <td data-label="กิจกรรม" style="min-width:0">
           <b style="font-size:13px">${esc(a.activity||'')}</b><br>
           <span style="font-size:11.5px;color:var(--muted)">${esc(a.responsible||'—')} · ${esc(a.frequency||'—')}</span>
         </td>
-        <td>${statusCell}</td>
-        <td>${valueCell}</td>
-        <td>${noteCell}</td>
-        <td>${lastCell}</td>
+        <td data-label="สถานะ">${statusCell}</td>
+        <td data-label="ผลที่วัดได้">${valueCell}</td>
+        <td data-label="หมายเหตุ">${noteCell}</td>
+        <td data-label="แหล่งข้อมูล / ผู้กรอก">${lastCell}</td>
       </tr>`;
     }).join('');
-    return `<div class="card scroll" style="margin-bottom:14px;border-top:4px solid ${d.hex}">
+    return `<div class="card scroll stack-host" style="margin-bottom:14px;border-top:4px solid ${d.hex}">
       <h3 style="color:${d.hex};margin-bottom:2px">${esc(d.name)}</h3>
       <p class="hint">${rows.length} กิจกรรม</p>
-      <table class="tbl wide"><thead><tr>
+      <table class="tbl wide stack"><thead><tr>
         <th style="text-align:left">กิจกรรม</th><th style="width:150px">สถานะ</th>
         <th style="width:170px;text-align:left">ผลที่วัดได้</th><th style="width:190px;text-align:left">หมายเหตุ</th>
         <th style="width:150px">แหล่งข้อมูล / ผู้กรอก</th>
