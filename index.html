@@ -103,8 +103,9 @@ h2.page-title{font-size:25px;margin:0 0 4px;letter-spacing:-.4px}
 .grid>*{min-width:0}
 .g2{grid-template-columns:1.45fr 1fr}
 .g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
 .g5{grid-template-columns:repeat(5,1fr)}
-@media(max-width:1080px){.g2,.g3{grid-template-columns:1fr}.g5{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1080px){.g2,.g3{grid-template-columns:1fr}.g4,.g5{grid-template-columns:repeat(2,1fr)}}
 
 /* ---------- การ์ดโซน ---------- */
 .zone-card{
@@ -299,7 +300,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
   .zone-card .meta{font-size:11px;line-height:1.4}
 
   .g2,.g3{grid-template-columns:1fr}
-  .g5{grid-template-columns:repeat(2,1fr)}
+  .g4,.g5{grid-template-columns:repeat(2,1fr)}
   .card{padding:15px;border-radius:13px}
 
   /* ตารางกว้าง ให้ปัดดูแทนการบีบตัวอักษร */
@@ -351,7 +352,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 }
 
 @media(max-width:400px){
-  .g5{grid-template-columns:1fr}
+  .g4,.g5{grid-template-columns:1fr}
   .hero h2{font-size:18px}
 }
 
@@ -990,6 +991,18 @@ function normalizeDb(db){
 }
 function planActivitiesOf(dim){ return (state.db.planActivities||[]).filter(a=>a.dimension===dim); }
 function planTrackFor(activityId, per){ return (state.db.planTracking||[]).find(t=>t.activityId===activityId && t.period===per); }
+/** สรุปความคืบหน้าของมิติ dim ในรอบเดือนที่กำลังดูอยู่: จากกิจกรรมที่ใช้งานทั้งหมด มีกี่อันที่ "ถึงเป้าหมาย/เสร็จสิ้น" แล้ว */
+function planDimSummary(dim){
+  const per  = period();
+  const acts = planActivitiesOf(dim).filter(a=>a.active!==false);
+  let achieved = 0;
+  acts.forEach(a=>{
+    const auto = planAutoResult(a.source);
+    const ok = auto ? (auto.has && auto.achieved) : ((planTrackFor(a.id, per)||{}).status==='done');
+    if(ok) achieved++;
+  });
+  return { total: acts.length, achieved, pct: acts.length ? Math.round(achieved/acts.length*100) : null };
+}
 const rows5s  = ()=> state.db.check5s.filter(r=>r.period===period());
 const rowsGCL = ()=> state.db.onegcl.filter(r=>r.period===period());
 const rowsWaste = ()=> (state.db.waste||[]).filter(r=>r.period===period());
@@ -1323,6 +1336,21 @@ function vHome(){
       <div class="hs"><b>${submitters}<span style="font-size:14px;color:#A9DCC1"> / ${totalM}</span></b><span>ส่ง One G-C-L แล้ว (เดือนละครั้ง)</span></div>
     </div>
   </section>
+
+  <div class="card" style="margin-bottom:18px">
+    <h3>ความคืบหน้าแผนปฏิบัติการ 4 มิติ · ${TH_MONTHS[state.month-1]} ${state.year}</h3>
+    <p class="hint">กิจกรรมที่ “ถึงเป้าหมาย/เสร็จสิ้น” แล้วในแต่ละมิติของเดือนนี้ — แตะการ์ดเพื่อดูรายละเอียด</p>
+    <div class="grid g4">${DIMS.filter(d=>d.id!=='cross').map(d=>{
+      const s = planDimSummary(d.id);
+      const pct = s.pct==null ? 0 : s.pct;
+      return `<button class="zone-card" data-go="plan" style="--zc:${d.hex}">
+        <div class="zn"><span>${esc(d.name)}</span></div>
+        <div class="score">${s.pct==null?'—':s.pct+'%'}<span style="font-size:13px;font-weight:500;color:var(--muted)"> ถึงเป้า</span></div>
+        <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="meta">${s.total? `${s.achieved}/${s.total} กิจกรรมถึงเป้าหมาย` : 'ยังไม่มีกิจกรรมในมิตินี้'}</div>
+      </button>`;
+    }).join('')}</div>
+  </div>
 
   <div class="grid g5" style="margin-bottom:18px">${zoneCards}</div>
 
