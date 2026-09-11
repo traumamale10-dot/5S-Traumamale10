@@ -404,6 +404,9 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
       <button data-page="report">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V9M10 20V4M16 20v-7M22 20H2"/></svg>
         สรุปรายเดือน</button>
+      <button data-page="plan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="17" rx="2.2"/><path d="M9 2.3h6v3H9z"/><path d="M8 12h5M8 15.5h8"/><path d="M8 8.5h8"/></svg>
+        แผนปฏิบัติการ 4 มิติ</button>
       <button data-page="team">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M17 5.5a3.2 3.2 0 0 1 0 6M18.5 20c0-2.6-.9-4.3-2.2-5.4"/></svg>
         สมาชิกทีมโซน</button>
@@ -472,6 +475,39 @@ const ZONES = [
   { id:'bua',   name:'ดอกบัว',    color:'var(--z-bua)',   hex:'#2C64C8', icon:'lotus' }
 ];
 const Z = Object.fromEntries(ZONES.map(z=>[z.id,z]));
+
+/* ---------- 2b. แผนปฏิบัติการ 4 มิติ ---------- */
+const DIMS = [
+  { id:'green',  name:'พื้นที่สีเขียว',       hex:'#4CA64C' },
+  { id:'clean',  name:'สะอาดปลอดภัย',         hex:'#2C64C8' },
+  { id:'ethic',  name:'บุคลากรมีจริยธรรม',     hex:'#D6489B' },
+  { id:'energy', name:'ประหยัดพลังงาน',       hex:'#E5B71C' },
+  { id:'cross',  name:'ภาพรวมข้ามมิติ',       hex:'#175943' }
+];
+const DIM = Object.fromEntries(DIMS.map(d=>[d.id,d]));
+const PLAN_STATUS = [
+  { id:'todo',  label:'ยังไม่เริ่ม' },
+  { id:'doing', label:'กำลังดำเนินการ' },
+  { id:'done',  label:'เสร็จสิ้น' },
+  { id:'late',  label:'ล่าช้า' }
+];
+/* กิจกรรมตั้งต้น ใช้ตอนกดปุ่ม "โหลดกิจกรรมตัวอย่าง 4 มิติ" ในหน้าแผนปฏิบัติการ */
+const PLAN_SEED = [
+  ['green','จัดมุมสีเขียว/มุมพักสายตา','ทีมโซนที่รับผิดชอบพื้นที่นั้น','ครั้งเดียว + ดูแลรายสัปดาห์','เช็กลิสต์สภาพต้นไม้/ความเรียบร้อย'],
+  ['green','ดำเนินกิจกรรม 5ส. จัดระเบียบอุปกรณ์-เอกสาร-พื้นที่ปฏิบัติงาน','หัวหน้าโซนแต่ละโซน','ทุกวันจันทร์','แบบตรวจ 5ส. ที่มีอยู่ในระบบแล้ว'],
+  ['green','ตรวจประเมินความเรียบร้อยของพื้นที่','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','คะแนนตรวจ 5ส. เทียบเป้าหมาย'],
+  ['clean','ตรวจสอบ-แก้ไขจุดเสี่ยงด้านสิ่งแวดล้อม','เวรที่ปฏิบัติงานแต่ละกะ + ผู้ดูแลอาคารสถานที่','ทุกเวร','บันทึกจุดเสี่ยงที่พบ/แก้ไขแล้วในระบบ'],
+  ['clean','ทำความสะอาดจุดที่มือแตะบ่อย','ผู้ช่วยเหลือคนไข้/แม่บ้านประจำโซน','ทุกเวร','เช็กลิสต์ทำความสะอาดรายจุด'],
+  ['clean','รณรงค์ล้างมือผ่านโครงการธนาคารมือสะอาด','ทีมควบคุมการติดเชื้อประจำหอผู้ป่วย','ต่อเนื่องทุกวัน','สรุปยอดสะสม/อัตราการล้างมือรายเดือน'],
+  ['ethic','ทบทวนแนวทางจริยธรรมบริการกับบุคลากร','หัวหน้าหอผู้ป่วย/พี่เลี้ยงเวร','เดือนละ 1 ครั้ง','บันทึกการประชุม/ผู้เข้าร่วม'],
+  ['ethic','สังเกตพฤติกรรมบริการระหว่างปฏิบัติงาน','หัวหน้าเวร','ทุกเวร (สุ่มสังเกต)','แบบประเมินพฤติกรรมบริการ'],
+  ['ethic','เก็บข้อมูลความพึงพอใจ/ข้อร้องเรียนจากผู้ป่วยและญาติ','ผู้ประสานงานโครงการ','รายเดือน','แบบสอบถามความพึงพอใจ + สรุปข้อร้องเรียน'],
+  ['energy','ปิดไฟ/พัดลม/แอร์ ถอดปลั๊กเมื่อไม่ใช้งาน','ทุกเวรที่ปฏิบัติงาน','ทุกเวร (ก่อนเปลี่ยนเวร)','เช็กลิสต์ตรวจก่อนเปลี่ยนเวร'],
+  ['energy','ติดป้ายเตือน/รณรงค์ประหยัดพลังงาน','ทีมประชาสัมพันธ์ภายในหน่วยงาน','ครั้งเดียว + ทบทวนทุกไตรมาส','ภาพถ่ายจุดติดป้าย'],
+  ['energy','เก็บข้อมูลการใช้พลังงานไฟฟ้าของหน่วยงาน','ผู้ประสานงานโครงการ/ธุรการหอผู้ป่วย','รายเดือน','ตัวเลขหน่วยไฟฟ้าเทียบค่าพื้นฐาน'],
+  ['cross','กิจกรรม One Green One Lean One Clean One Safe One Etic','บุคลากรทุกคนร่วมกัน','ทุกเดือน','บันทึกการเข้าร่วมกิจกรรม'],
+  ['cross','ประชุมติดตามผลรวม 4 มิติ','หัวหน้าหอผู้ป่วย + ผู้ประสานงานโครงการ','ทุกสิ้นเดือน','สรุปผลเทียบเป้าหมายทั้ง 4 ตัวชี้วัด นำเสนอในที่ประชุม']
+];
 
 /* ---------- 3. แผนผังหอผู้ป่วย (viewBox 1480 x 1160) ---------- */
 /* วางตามผังจริงของหอผู้ป่วย แก้พิกัด/ชื่อห้องได้ที่นี่ */
@@ -605,7 +641,8 @@ const state = {
   month: now.getMonth()+1,
   year:  now.getFullYear()+543,
   user:  '',
-  db: { members:[], check5s:[], onegcl:[], waste:[] }
+  planTab: 'list',
+  db: { members:[], check5s:[], onegcl:[], waste:[], planActivities:[], planTracking:[] }
 };
 const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 
@@ -660,9 +697,11 @@ async function unwrap(res){
 
 function loadLocal(){
   const local = store.read();
-  state.db = normalizeDb(local || { members:[], check5s:[], onegcl:[], waste:[] });
+  state.db = normalizeDb(local || { members:[], check5s:[], onegcl:[], waste:[], planActivities:[], planTracking:[] });
   if(!state.db.waste)   state.db.waste = [];
   if(!state.db.members) state.db.members = [];
+  if(!state.db.planActivities) state.db.planActivities = [];
+  if(!state.db.planTracking)   state.db.planTracking = [];
 }
 
 async function loadAll(){
@@ -674,7 +713,8 @@ async function loadAll(){
     const d = await api('getAll', {});
     state.db = normalizeDb({
       members:(d.members||[]).filter(m=>String(m.name||'').trim()),
-      check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[]
+      check5s:d.check5s||[], onegcl:d.onegcl||[], waste:d.waste||[],
+      planActivities:d.planActivities||[], planTracking:d.planTracking||[]
     });
     store.write(state.db);
     state.lastError = ''; state.lastSync = nowTime(); setConn(true);
@@ -709,7 +749,9 @@ function dbForSheet(){
       const o = Object.assign({}, r);
       if(String(o.slipImg||'').startsWith('data:')) o.slipImg = '';
       return o;
-    })
+    }),
+    planActivities: state.db.planActivities||[],
+    planTracking  : state.db.planTracking||[]
   };
 }
 
@@ -805,8 +847,13 @@ function normalizeDb(db){
     });
   });
   (db.check5s||[]).forEach(r=>{ r.total = Number(r.total)||0; if(!r.scores) r.scores = {}; });
+  if(!db.planActivities) db.planActivities = [];
+  if(!db.planTracking)   db.planTracking   = [];
+  db.planActivities.forEach(a=>{ if(a.active===''||a.active==null) a.active = true; });
   return db;
 }
+function planActivitiesOf(dim){ return (state.db.planActivities||[]).filter(a=>a.dimension===dim); }
+function planTrackFor(activityId, per){ return (state.db.planTracking||[]).find(t=>t.activityId===activityId && t.period===per); }
 const rows5s  = ()=> state.db.check5s.filter(r=>r.period===period());
 const rowsGCL = ()=> state.db.onegcl.filter(r=>r.period===period());
 const rowsWaste = ()=> (state.db.waste||[]).filter(r=>r.period===period());
@@ -1081,7 +1128,7 @@ function render(){
   const keepY = samePage ? window.scrollY : 0;
 
   const v = $('#view');
-  v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, waste:vWaste, report:vReport, team:vTeam}[state.page]||vHome)();
+  v.innerHTML = ({home:vHome, map:vMap, check5s:vCheck, round:vRound, onegcl:vGCL, waste:vWaste, report:vReport, plan:vPlan, team:vTeam}[state.page]||vHome)();
   bind();
 
   state._shownPage = state.page;
@@ -1915,6 +1962,78 @@ function vReport(){
 }
 
 /* ---------- หน้า: สมาชิกทีม ---------- */
+/* ---------- หน้า: แผนปฏิบัติการ 4 มิติ ---------- */
+function vPlan(){
+  const tab  = state.planTab || 'list';
+  const per  = period();
+  const acts = state.db.planActivities || [];
+
+  const listRows = acts.map(a=>`<tr>
+    <td><select data-pid="${a.id}" data-f="dimension">${DIMS.map(d=>`<option value="${d.id}" ${a.dimension===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}</select></td>
+    <td><input type="text" data-pid="${a.id}" data-f="activity" value="${esc(a.activity||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td><input type="text" data-pid="${a.id}" data-f="responsible" value="${esc(a.responsible||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td><input type="text" data-pid="${a.id}" data-f="frequency" value="${esc(a.frequency||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td><input type="text" data-pid="${a.id}" data-f="method" value="${esc(a.method||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td style="text-align:center"><input type="checkbox" data-pid="${a.id}" data-f="active" ${a.active!==false?'checked':''}></td>
+    <td><button class="btn btn-sm" data-pdel="${a.id}">ลบ</button></td>
+  </tr>`).join('');
+
+  const listHTML = `<div class="card scroll">
+    ${ acts.length ? '' : emptyHTML('ยังไม่มีรายการกิจกรรม','กดปุ่มด้านล่างเพื่อโหลดกิจกรรมตัวอย่างทั้ง 4 มิติ หรือเพิ่มเองทีละรายการ') }
+    <table class="tbl wide" ${acts.length?'':'style="display:none"'}>
+      <thead><tr>
+        <th style="width:13%">มิติ</th><th style="text-align:left">กิจกรรม</th>
+        <th style="text-align:left;width:16%">ผู้รับผิดชอบ</th><th style="width:13%">ความถี่</th>
+        <th style="text-align:left;width:17%">วิธีติดตามผล</th><th style="width:58px">ใช้งาน</th><th style="width:52px"></th>
+      </tr></thead>
+      <tbody>${listRows}</tbody>
+    </table>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="addPlanAct">เพิ่มกิจกรรม</button>
+      ${ acts.length ? '' : `<button class="btn btn-primary" id="seedPlanAct">โหลดกิจกรรมตัวอย่าง 4 มิติ</button>` }
+      <button class="btn btn-primary" id="savePlanList">บันทึกรายการกิจกรรม</button>
+    </div>
+  </div>`;
+
+  const dimSections = DIMS.map(d=>{
+    const rows = planActivitiesOf(d.id).filter(a=>a.active!==false);
+    if(!rows.length) return '';
+    const trs = rows.map(a=>{
+      const t = planTrackFor(a.id, per) || {};
+      const st = t.status || 'todo';
+      return `<tr>
+        <td style="min-width:190px">
+          <b style="font-size:13px">${esc(a.activity||'')}</b><br>
+          <span style="font-size:11.5px;color:var(--muted)">${esc(a.responsible||'—')} · ${esc(a.frequency||'—')}</span>
+        </td>
+        <td><select data-tact="${a.id}" data-tf="status">${PLAN_STATUS.map(s=>`<option value="${s.id}" ${st===s.id?'selected':''}>${s.label}</option>`).join('')}</select></td>
+        <td><input type="text" data-tact="${a.id}" data-tf="value" value="${esc(t.value||'')}" placeholder="ผลที่วัดได้" style="width:100%"></td>
+        <td><input type="text" data-tact="${a.id}" data-tf="note" value="${esc(t.note||'')}" placeholder="หมายเหตุ" style="width:100%"></td>
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap">${t.doneAt?thDate(t.doneAt)+(t.doneBy?' · '+esc(t.doneBy):''):'—'}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="card scroll" style="margin-bottom:14px;border-top:4px solid ${d.hex}">
+      <h3 style="color:${d.hex};margin-bottom:2px">${esc(d.name)}</h3>
+      <p class="hint">${rows.length} กิจกรรม</p>
+      <table class="tbl wide"><thead><tr>
+        <th style="text-align:left">กิจกรรม</th><th style="width:150px">สถานะ</th>
+        <th style="width:160px;text-align:left">ผลที่วัดได้</th><th style="width:190px;text-align:left">หมายเหตุ</th>
+        <th style="width:140px">บันทึกล่าสุด</th>
+      </tr></thead><tbody>${trs}</tbody></table>
+    </div>`;
+  }).join('');
+
+  const trackHTML = dimSections || `<div class="card">${emptyHTML('ยังไม่มีกิจกรรมให้ติดตาม','ไปที่แท็บ “รายการกิจกรรม” เพื่อเพิ่มหรือโหลดกิจกรรมตัวอย่างก่อน')}</div>`;
+
+  return `<h2 class="page-title">แผนปฏิบัติการ 4 มิติ</h2>
+  <p class="page-sub">กำหนดกิจกรรม ผู้รับผิดชอบ และความถี่ในแท็บ “รายการกิจกรรม” แล้วติดตามผลรายเดือนแยกตาม 4 มิติได้ในแท็บถัดไป — เลือกเดือน/ปีได้จากแถบด้านบน</p>
+  <div class="tabs" id="planTabs">
+    <button data-t="list"  aria-selected="${tab==='list'}">รายการกิจกรรม</button>
+    <button data-t="track" aria-selected="${tab==='track'}">ติดตามผลรายเดือน · ${TH_MONTHS[state.month-1]} ${state.year}</button>
+  </div>
+  ${ tab==='list' ? listHTML : trackHTML }`;
+}
+
 function vTeam(){
   const rows = state.db.members.map(m=>`<tr>
     <td><input type="text" data-mid="${m.id}" data-f="name" value="${esc(m.name)}" style="width:100%;border:0;background:transparent;padding:2px"></td>
@@ -2272,6 +2391,54 @@ function bind(){
     });
   }
 
+  // แผนปฏิบัติการ 4 มิติ
+  if(state.page==='plan'){
+    document.querySelectorAll('#planTabs button').forEach(b=>b.onclick=()=>{ state.planTab=b.dataset.t; render(); });
+
+    document.querySelectorAll('[data-pid]').forEach(el=>{
+      const h = ()=>{
+        const a = state.db.planActivities.find(x=>x.id===el.dataset.pid); if(!a) return;
+        const f = el.dataset.f;
+        a[f] = el.type==='checkbox' ? el.checked : el.value;
+        persist();
+      };
+      el.addEventListener((el.tagName==='SELECT'||el.type==='checkbox') ? 'change' : 'input', h);
+    });
+    document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{
+      if(!confirm('ลบกิจกรรมนี้?')) return;
+      state.db.planActivities = state.db.planActivities.filter(a=>a.id!==b.dataset.pdel);
+      persist(); render();
+    });
+
+    const addA = $('#addPlanAct');
+    if(addA) addA.onclick=()=>{
+      state.db.planActivities.push({ id:'p'+uid(), dimension:'green', activity:'', responsible:'', frequency:'', method:'', active:true });
+      persist(); render();
+    };
+    const seedA = $('#seedPlanAct');
+    if(seedA) seedA.onclick=()=>{
+      state.db.planActivities = PLAN_SEED.map((s,i)=>({ id:'p'+(i+1), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4], active:true }));
+      persist(); render(); toast('โหลดกิจกรรมตัวอย่างแล้ว '+state.db.planActivities.length+' รายการ');
+    };
+    const saveL = $('#savePlanList');
+    if(saveL) saveL.onclick=()=>{ persist(); toast('บันทึกรายการกิจกรรมแล้ว'); };
+
+    document.querySelectorAll('[data-tact]').forEach(el=>{
+      const h = ()=>{
+        const aid = el.dataset.tact, f = el.dataset.tf, per = period();
+        let t = state.db.planTracking.find(x=>x.activityId===aid && x.period===per);
+        if(!t){
+          t = { id:'t_'+aid+'_'+per.replace('-',''), activityId:aid, period:per, status:'todo', value:'', note:'', doneBy:'', doneAt:'' };
+          state.db.planTracking.push(t);
+        }
+        t[f] = el.value;
+        t.doneAt = todayISO(); t.doneBy = state.user;
+        persist();
+      };
+      el.addEventListener(el.tagName==='SELECT' ? 'change' : 'input', h);
+    });
+  }
+
   // สมาชิกทีม
   if(state.page==='team'){
     document.querySelectorAll('[data-mid]').forEach(el=>{
@@ -2361,7 +2528,7 @@ function fillUsers(){
 const PAGE_TITLE = {
   home:'ภาพรวมหอผู้ป่วย', map:'แผนผังโซน', check5s:'ตรวจ 5ส รายสัปดาห์',
   round:'ตาราง Round 5ส', onegcl:'One G-C-L & Ethics', waste:'ค่าขยะ & รายรับ',
-  report:'สรุปรายเดือน', team:'สมาชิกทีมโซน'
+  report:'สรุปรายเดือน', plan:'แผนปฏิบัติการ 4 มิติ', team:'สมาชิกทีมโซน'
 };
 const drawer = {
   open(){ $('#side').classList.add('open'); $('#scrim').classList.add('show');
