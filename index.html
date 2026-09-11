@@ -495,7 +495,7 @@ const PLAN_STATUS = [
 const PLAN_SEED = [
   ['green','จัดมุมสีเขียว/มุมพักสายตา','ทีมโซนที่รับผิดชอบพื้นที่นั้น','ครั้งเดียว + ดูแลรายสัปดาห์','เช็กลิสต์สภาพต้นไม้/ความเรียบร้อย',''],
   ['green','ดำเนินกิจกรรม 5ส. จัดระเบียบอุปกรณ์-เอกสาร-พื้นที่ปฏิบัติงาน','หัวหน้าโซนแต่ละโซน','ทุกวันจันทร์','แบบตรวจ 5ส. ที่มีอยู่ในระบบแล้ว',''],
-  ['green','ตรวจประเมินความเรียบร้อยของพื้นที่','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','คะแนนตรวจ 5ส. เทียบเป้าหมาย',''],
+  ['green','ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg'],
   ['clean','ตรวจสอบ-แก้ไขจุดเสี่ยงด้านสิ่งแวดล้อม','เวรที่ปฏิบัติงานแต่ละกะ + ผู้ดูแลอาคารสถานที่','ทุกเวร','บันทึกจุดเสี่ยงที่พบ/แก้ไขแล้วในระบบ',''],
   ['clean','ทำความสะอาดจุดที่มือแตะบ่อย','ผู้ช่วยเหลือคนไข้/แม่บ้านประจำโซน','ทุกเวร','เช็กลิสต์ทำความสะอาดรายจุด',''],
   ['clean','รณรงค์ล้างมือผ่านโครงการธนาคารมือสะอาด','ทีมควบคุมการติดเชื้อประจำหอผู้ป่วย','ต่อเนื่องทุกวัน','สรุปยอดสะสม/อัตราการล้างมือรายเดือน',''],
@@ -511,8 +511,9 @@ const PLAN_SEED = [
 ];
 /* แหล่งข้อมูลอัตโนมัติที่รองรับ: onegcl_ethic = คำนวณจากยอดส่ง Ethics ในหน้า One G-C-L & Ethics ของเดือนนั้น */
 const PLAN_SOURCES = [
-  { id:'',            label:'กรอกเอง' },
-  { id:'onegcl_ethic', label:'ดึงจาก One G-C-L & Ethics อัตโนมัติ' }
+  { id:'',             label:'กรอกเอง' },
+  { id:'onegcl_ethic',  label:'ดึงจาก One G-C-L & Ethics อัตโนมัติ' },
+  { id:'check5s_avg',   label:'ดึงจากคะแนนตรวจ 5ส. อัตโนมัติ' }
 ];
 /** สัดส่วนบุคลากรที่ส่งบันทึก Ethics ในรอบเดือนที่กำลังดูอยู่ (state.month/state.year) */
 function ethicAutoStats(){
@@ -522,6 +523,12 @@ function ethicAutoStats(){
   const sent  = sentNames.size;
   const pct   = total ? Math.round(sent/total*100) : 0;
   return { total, sent, pct };
+}
+/** คะแนนตรวจ 5ส. เฉลี่ยของทุกโซนในรอบเดือนที่กำลังดูอยู่ (เต็ม 100 ต่อครั้งตรวจ) */
+function check5sAvgStats(){
+  const rows = rows5s();
+  const avg  = rows.length ? Math.round(rows.reduce((a,r)=>a+(r.total||0),0)/rows.length) : null;
+  return { count: rows.length, avg };
 }
 
 /* ---------- 3. แผนผังหอผู้ป่วย (viewBox 1480 x 1160) ---------- */
@@ -2005,7 +2012,7 @@ function vPlan(){
       </tr></thead>
       <tbody>${listRows}</tbody>
     </table>
-    <p class="hint" style="margin-top:10px">ตั้งค่า “แหล่งข้อมูล” เป็น <b>ดึงจาก One G-C-L &amp; Ethics อัตโนมัติ</b> ได้กับกิจกรรมด้านจริยธรรม — ระบบจะคำนวณสัดส่วนบุคลากรที่ส่งบันทึก Ethics ของเดือนนั้นให้เองในแท็บติดตามผล ไม่ต้องกรอกซ้ำ</p>
+    <p class="hint" style="margin-top:10px">ระบบดึงข้อมูลอัตโนมัติได้ 2 จุด: <b>Ethics</b> (จากหน้า One G-C-L &amp; Ethics) และ <b>คะแนน 5ส.</b> (จากหน้าตรวจ 5ส. รายสัปดาห์) กิจกรรมอื่น เช่น การใช้พลังงานไฟฟ้า ความพึงพอใจผู้ป่วย จุดเสี่ยงสิ่งแวดล้อม ยังไม่มีชีตข้อมูลรองรับในระบบ จึงต้องกรอกเอง — ระบบจะบันทึกชื่อผู้กรอก (ตามที่เลือกไว้ที่ช่อง “ผู้บันทึก” ด้านบน) และวันที่ไว้ให้อัตโนมัติทุกครั้งที่แก้ไข</p>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn" id="addPlanAct">เพิ่มกิจกรรม</button>
       ${ acts.length ? '' : `<button class="btn btn-primary" id="seedPlanAct">โหลดกิจกรรมตัวอย่าง 4 มิติ</button>` }
@@ -2017,22 +2024,31 @@ function vPlan(){
     const rows = planActivitiesOf(d.id).filter(a=>a.active!==false);
     if(!rows.length) return '';
     const trs = rows.map(a=>{
-      const auto = a.source==='onegcl_ethic';
       const t = planTrackFor(a.id, per) || {};
+      let statusCell, valueCell, lastCell, nameTag = '';
 
-      let statusCell, valueCell, lastCell;
-      if(auto){
+      if(a.source==='onegcl_ethic'){
         const es = ethicAutoStats();
         const target = 95;
         const chipCls = es.pct>=target ? 'chip' : 'chip late';
         statusCell = `<span class="${chipCls}">${es.pct>=target?'ถึงเป้าหมาย':'ยังไม่ถึงเป้าหมาย'}</span>`;
-        valueCell  = `${es.sent}/${es.total} คน (${es.pct}%)<br><span style="font-size:11px;color:var(--muted)">คำนวณอัตโนมัติจาก One G-C-L &amp; Ethics</span>`;
-        lastCell   = `<span style="font-size:11px;color:var(--muted)">อัปเดตตามข้อมูลล่าสุด</span>`;
+        valueCell  = `${es.sent}/${es.total} คน (${es.pct}%)`;
+        lastCell   = `<span class="chip" style="background:#EAF4EE">ดึงอัตโนมัติ</span><br><span style="font-size:11px;color:var(--muted)">จาก One G-C-L &amp; Ethics</span>`;
+      }else if(a.source==='check5s_avg'){
+        const cs = check5sAvgStats();
+        const target = 80;
+        const has = cs.avg!=null;
+        const chipCls = has && cs.avg>=target ? 'chip' : 'chip late';
+        statusCell = has ? `<span class="${chipCls}">${cs.avg>=target?'ถึงเป้าหมาย':'ยังไม่ถึงเป้าหมาย'}</span>` : `<span class="chip late">ยังไม่มีข้อมูล</span>`;
+        valueCell  = has ? `เฉลี่ย ${cs.avg}/100 (${cs.count} ครั้งตรวจ)` : `ยังไม่มีผลตรวจ 5ส. ในเดือนนี้`;
+        lastCell   = `<span class="chip" style="background:#EAF4EE">ดึงอัตโนมัติ</span><br><span style="font-size:11px;color:var(--muted)">จากตรวจ 5ส. รายสัปดาห์</span>`;
       }else{
         const st = t.status || 'todo';
         statusCell = `<select data-tact="${a.id}" data-tf="status">${PLAN_STATUS.map(s=>`<option value="${s.id}" ${st===s.id?'selected':''}>${s.label}</option>`).join('')}</select>`;
         valueCell  = `<input type="text" data-tact="${a.id}" data-tf="value" value="${esc(t.value||'')}" placeholder="ผลที่วัดได้" style="width:100%">`;
-        lastCell   = `<span style="font-size:11px;color:var(--muted);white-space:nowrap">${t.doneAt?thDate(t.doneAt)+(t.doneBy?' · '+esc(t.doneBy):''):'—'}</span>`;
+        lastCell   = t.doneAt
+          ? `${thDate(t.doneAt)}<br><span style="font-size:11px;color:var(--muted)">ผู้กรอก: ${esc(t.doneBy||'—')}</span>`
+          : `<span style="font-size:11px;color:var(--muted)">ยังไม่มีผู้กรอก</span>`;
       }
       const noteCell = `<input type="text" data-tact="${a.id}" data-tf="note" value="${esc(t.note||'')}" placeholder="หมายเหตุ" style="width:100%">`;
 
@@ -2053,7 +2069,7 @@ function vPlan(){
       <table class="tbl wide"><thead><tr>
         <th style="text-align:left">กิจกรรม</th><th style="width:150px">สถานะ</th>
         <th style="width:170px;text-align:left">ผลที่วัดได้</th><th style="width:190px;text-align:left">หมายเหตุ</th>
-        <th style="width:150px">บันทึกล่าสุด</th>
+        <th style="width:150px">แหล่งข้อมูล / ผู้กรอก</th>
       </tr></thead><tbody>${trs}</tbody></table>
     </div>`;
   }).join('');
