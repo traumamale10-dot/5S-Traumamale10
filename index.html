@@ -493,21 +493,36 @@ const PLAN_STATUS = [
 ];
 /* กิจกรรมตั้งต้น ใช้ตอนกดปุ่ม "โหลดกิจกรรมตัวอย่าง 4 มิติ" ในหน้าแผนปฏิบัติการ */
 const PLAN_SEED = [
-  ['green','จัดมุมสีเขียว/มุมพักสายตา','ทีมโซนที่รับผิดชอบพื้นที่นั้น','ครั้งเดียว + ดูแลรายสัปดาห์','เช็กลิสต์สภาพต้นไม้/ความเรียบร้อย'],
-  ['green','ดำเนินกิจกรรม 5ส. จัดระเบียบอุปกรณ์-เอกสาร-พื้นที่ปฏิบัติงาน','หัวหน้าโซนแต่ละโซน','ทุกวันจันทร์','แบบตรวจ 5ส. ที่มีอยู่ในระบบแล้ว'],
-  ['green','ตรวจประเมินความเรียบร้อยของพื้นที่','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','คะแนนตรวจ 5ส. เทียบเป้าหมาย'],
-  ['clean','ตรวจสอบ-แก้ไขจุดเสี่ยงด้านสิ่งแวดล้อม','เวรที่ปฏิบัติงานแต่ละกะ + ผู้ดูแลอาคารสถานที่','ทุกเวร','บันทึกจุดเสี่ยงที่พบ/แก้ไขแล้วในระบบ'],
-  ['clean','ทำความสะอาดจุดที่มือแตะบ่อย','ผู้ช่วยเหลือคนไข้/แม่บ้านประจำโซน','ทุกเวร','เช็กลิสต์ทำความสะอาดรายจุด'],
-  ['clean','รณรงค์ล้างมือผ่านโครงการธนาคารมือสะอาด','ทีมควบคุมการติดเชื้อประจำหอผู้ป่วย','ต่อเนื่องทุกวัน','สรุปยอดสะสม/อัตราการล้างมือรายเดือน'],
-  ['ethic','ทบทวนแนวทางจริยธรรมบริการกับบุคลากร','หัวหน้าหอผู้ป่วย/พี่เลี้ยงเวร','เดือนละ 1 ครั้ง','บันทึกการประชุม/ผู้เข้าร่วม'],
-  ['ethic','สังเกตพฤติกรรมบริการระหว่างปฏิบัติงาน','หัวหน้าเวร','ทุกเวร (สุ่มสังเกต)','แบบประเมินพฤติกรรมบริการ'],
-  ['ethic','เก็บข้อมูลความพึงพอใจ/ข้อร้องเรียนจากผู้ป่วยและญาติ','ผู้ประสานงานโครงการ','รายเดือน','แบบสอบถามความพึงพอใจ + สรุปข้อร้องเรียน'],
-  ['energy','ปิดไฟ/พัดลม/แอร์ ถอดปลั๊กเมื่อไม่ใช้งาน','ทุกเวรที่ปฏิบัติงาน','ทุกเวร (ก่อนเปลี่ยนเวร)','เช็กลิสต์ตรวจก่อนเปลี่ยนเวร'],
-  ['energy','ติดป้ายเตือน/รณรงค์ประหยัดพลังงาน','ทีมประชาสัมพันธ์ภายในหน่วยงาน','ครั้งเดียว + ทบทวนทุกไตรมาส','ภาพถ่ายจุดติดป้าย'],
-  ['energy','เก็บข้อมูลการใช้พลังงานไฟฟ้าของหน่วยงาน','ผู้ประสานงานโครงการ/ธุรการหอผู้ป่วย','รายเดือน','ตัวเลขหน่วยไฟฟ้าเทียบค่าพื้นฐาน'],
-  ['cross','กิจกรรม One Green One Lean One Clean One Safe One Etic','บุคลากรทุกคนร่วมกัน','ทุกเดือน','บันทึกการเข้าร่วมกิจกรรม'],
-  ['cross','ประชุมติดตามผลรวม 4 มิติ','หัวหน้าหอผู้ป่วย + ผู้ประสานงานโครงการ','ทุกสิ้นเดือน','สรุปผลเทียบเป้าหมายทั้ง 4 ตัวชี้วัด นำเสนอในที่ประชุม']
+  ['green','จัดมุมสีเขียว/มุมพักสายตา','ทีมโซนที่รับผิดชอบพื้นที่นั้น','ครั้งเดียว + ดูแลรายสัปดาห์','เช็กลิสต์สภาพต้นไม้/ความเรียบร้อย',''],
+  ['green','ดำเนินกิจกรรม 5ส. จัดระเบียบอุปกรณ์-เอกสาร-พื้นที่ปฏิบัติงาน','หัวหน้าโซนแต่ละโซน','ทุกวันจันทร์','แบบตรวจ 5ส. ที่มีอยู่ในระบบแล้ว',''],
+  ['green','ตรวจประเมินความเรียบร้อยของพื้นที่','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','คะแนนตรวจ 5ส. เทียบเป้าหมาย',''],
+  ['clean','ตรวจสอบ-แก้ไขจุดเสี่ยงด้านสิ่งแวดล้อม','เวรที่ปฏิบัติงานแต่ละกะ + ผู้ดูแลอาคารสถานที่','ทุกเวร','บันทึกจุดเสี่ยงที่พบ/แก้ไขแล้วในระบบ',''],
+  ['clean','ทำความสะอาดจุดที่มือแตะบ่อย','ผู้ช่วยเหลือคนไข้/แม่บ้านประจำโซน','ทุกเวร','เช็กลิสต์ทำความสะอาดรายจุด',''],
+  ['clean','รณรงค์ล้างมือผ่านโครงการธนาคารมือสะอาด','ทีมควบคุมการติดเชื้อประจำหอผู้ป่วย','ต่อเนื่องทุกวัน','สรุปยอดสะสม/อัตราการล้างมือรายเดือน',''],
+  ['ethic','ทบทวนแนวทางจริยธรรมบริการกับบุคลากร','หัวหน้าหอผู้ป่วย/พี่เลี้ยงเวร','เดือนละ 1 ครั้ง','บันทึกการประชุม/ผู้เข้าร่วม',''],
+  ['ethic','ติดตามอัตราการส่งบันทึก Ethics ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L & Ethics','onegcl_ethic'],
+  ['ethic','สังเกตพฤติกรรมบริการระหว่างปฏิบัติงาน','หัวหน้าเวร','ทุกเวร (สุ่มสังเกต)','แบบประเมินพฤติกรรมบริการ',''],
+  ['ethic','เก็บข้อมูลความพึงพอใจ/ข้อร้องเรียนจากผู้ป่วยและญาติ','ผู้ประสานงานโครงการ','รายเดือน','แบบสอบถามความพึงพอใจ + สรุปข้อร้องเรียน',''],
+  ['energy','ปิดไฟ/พัดลม/แอร์ ถอดปลั๊กเมื่อไม่ใช้งาน','ทุกเวรที่ปฏิบัติงาน','ทุกเวร (ก่อนเปลี่ยนเวร)','เช็กลิสต์ตรวจก่อนเปลี่ยนเวร',''],
+  ['energy','ติดป้ายเตือน/รณรงค์ประหยัดพลังงาน','ทีมประชาสัมพันธ์ภายในหน่วยงาน','ครั้งเดียว + ทบทวนทุกไตรมาส','ภาพถ่ายจุดติดป้าย',''],
+  ['energy','เก็บข้อมูลการใช้พลังงานไฟฟ้าของหน่วยงาน','ผู้ประสานงานโครงการ/ธุรการหอผู้ป่วย','รายเดือน','ตัวเลขหน่วยไฟฟ้าเทียบค่าพื้นฐาน',''],
+  ['cross','กิจกรรม One Green One Lean One Clean One Safe One Etic','บุคลากรทุกคนร่วมกัน','ทุกเดือน','บันทึกการเข้าร่วมกิจกรรม',''],
+  ['cross','ประชุมติดตามผลรวม 4 มิติ','หัวหน้าหอผู้ป่วย + ผู้ประสานงานโครงการ','ทุกสิ้นเดือน','สรุปผลเทียบเป้าหมายทั้ง 4 ตัวชี้วัด นำเสนอในที่ประชุม','']
 ];
+/* แหล่งข้อมูลอัตโนมัติที่รองรับ: onegcl_ethic = คำนวณจากยอดส่ง Ethics ในหน้า One G-C-L & Ethics ของเดือนนั้น */
+const PLAN_SOURCES = [
+  { id:'',            label:'กรอกเอง' },
+  { id:'onegcl_ethic', label:'ดึงจาก One G-C-L & Ethics อัตโนมัติ' }
+];
+/** สัดส่วนบุคลากรที่ส่งบันทึก Ethics ในรอบเดือนที่กำลังดูอยู่ (state.month/state.year) */
+function ethicAutoStats(){
+  const per = period();
+  const sentNames = new Set(state.db.onegcl.filter(r=>r.period===per && String(r.ethic||'').trim()).map(r=>r.name));
+  const total = state.db.members.length;
+  const sent  = sentNames.size;
+  const pct   = total ? Math.round(sent/total*100) : 0;
+  return { total, sent, pct };
+}
 
 /* ---------- 3. แผนผังหอผู้ป่วย (viewBox 1480 x 1160) ---------- */
 /* วางตามผังจริงของหอผู้ป่วย แก้พิกัด/ชื่อห้องได้ที่นี่ */
@@ -1974,6 +1989,7 @@ function vPlan(){
     <td><input type="text" data-pid="${a.id}" data-f="responsible" value="${esc(a.responsible||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
     <td><input type="text" data-pid="${a.id}" data-f="frequency" value="${esc(a.frequency||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
     <td><input type="text" data-pid="${a.id}" data-f="method" value="${esc(a.method||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
+    <td><select data-pid="${a.id}" data-f="source">${PLAN_SOURCES.map(s=>`<option value="${s.id}" ${ (a.source||'')===s.id?'selected':''}>${esc(s.label)}</option>`).join('')}</select></td>
     <td style="text-align:center"><input type="checkbox" data-pid="${a.id}" data-f="active" ${a.active!==false?'checked':''}></td>
     <td><button class="btn btn-sm" data-pdel="${a.id}">ลบ</button></td>
   </tr>`).join('');
@@ -1982,12 +1998,14 @@ function vPlan(){
     ${ acts.length ? '' : emptyHTML('ยังไม่มีรายการกิจกรรม','กดปุ่มด้านล่างเพื่อโหลดกิจกรรมตัวอย่างทั้ง 4 มิติ หรือเพิ่มเองทีละรายการ') }
     <table class="tbl wide" ${acts.length?'':'style="display:none"'}>
       <thead><tr>
-        <th style="width:13%">มิติ</th><th style="text-align:left">กิจกรรม</th>
-        <th style="text-align:left;width:16%">ผู้รับผิดชอบ</th><th style="width:13%">ความถี่</th>
-        <th style="text-align:left;width:17%">วิธีติดตามผล</th><th style="width:58px">ใช้งาน</th><th style="width:52px"></th>
+        <th style="width:12%">มิติ</th><th style="text-align:left">กิจกรรม</th>
+        <th style="text-align:left;width:14%">ผู้รับผิดชอบ</th><th style="width:12%">ความถี่</th>
+        <th style="text-align:left;width:15%">วิธีติดตามผล</th><th style="width:15%">แหล่งข้อมูล</th>
+        <th style="width:56px">ใช้งาน</th><th style="width:52px"></th>
       </tr></thead>
       <tbody>${listRows}</tbody>
     </table>
+    <p class="hint" style="margin-top:10px">ตั้งค่า “แหล่งข้อมูล” เป็น <b>ดึงจาก One G-C-L &amp; Ethics อัตโนมัติ</b> ได้กับกิจกรรมด้านจริยธรรม — ระบบจะคำนวณสัดส่วนบุคลากรที่ส่งบันทึก Ethics ของเดือนนั้นให้เองในแท็บติดตามผล ไม่ต้องกรอกซ้ำ</p>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn" id="addPlanAct">เพิ่มกิจกรรม</button>
       ${ acts.length ? '' : `<button class="btn btn-primary" id="seedPlanAct">โหลดกิจกรรมตัวอย่าง 4 มิติ</button>` }
@@ -1999,17 +2017,34 @@ function vPlan(){
     const rows = planActivitiesOf(d.id).filter(a=>a.active!==false);
     if(!rows.length) return '';
     const trs = rows.map(a=>{
+      const auto = a.source==='onegcl_ethic';
       const t = planTrackFor(a.id, per) || {};
-      const st = t.status || 'todo';
+
+      let statusCell, valueCell, lastCell;
+      if(auto){
+        const es = ethicAutoStats();
+        const target = 95;
+        const chipCls = es.pct>=target ? 'chip' : 'chip late';
+        statusCell = `<span class="${chipCls}">${es.pct>=target?'ถึงเป้าหมาย':'ยังไม่ถึงเป้าหมาย'}</span>`;
+        valueCell  = `${es.sent}/${es.total} คน (${es.pct}%)<br><span style="font-size:11px;color:var(--muted)">คำนวณอัตโนมัติจาก One G-C-L &amp; Ethics</span>`;
+        lastCell   = `<span style="font-size:11px;color:var(--muted)">อัปเดตตามข้อมูลล่าสุด</span>`;
+      }else{
+        const st = t.status || 'todo';
+        statusCell = `<select data-tact="${a.id}" data-tf="status">${PLAN_STATUS.map(s=>`<option value="${s.id}" ${st===s.id?'selected':''}>${s.label}</option>`).join('')}</select>`;
+        valueCell  = `<input type="text" data-tact="${a.id}" data-tf="value" value="${esc(t.value||'')}" placeholder="ผลที่วัดได้" style="width:100%">`;
+        lastCell   = `<span style="font-size:11px;color:var(--muted);white-space:nowrap">${t.doneAt?thDate(t.doneAt)+(t.doneBy?' · '+esc(t.doneBy):''):'—'}</span>`;
+      }
+      const noteCell = `<input type="text" data-tact="${a.id}" data-tf="note" value="${esc(t.note||'')}" placeholder="หมายเหตุ" style="width:100%">`;
+
       return `<tr>
         <td style="min-width:190px">
           <b style="font-size:13px">${esc(a.activity||'')}</b><br>
           <span style="font-size:11.5px;color:var(--muted)">${esc(a.responsible||'—')} · ${esc(a.frequency||'—')}</span>
         </td>
-        <td><select data-tact="${a.id}" data-tf="status">${PLAN_STATUS.map(s=>`<option value="${s.id}" ${st===s.id?'selected':''}>${s.label}</option>`).join('')}</select></td>
-        <td><input type="text" data-tact="${a.id}" data-tf="value" value="${esc(t.value||'')}" placeholder="ผลที่วัดได้" style="width:100%"></td>
-        <td><input type="text" data-tact="${a.id}" data-tf="note" value="${esc(t.note||'')}" placeholder="หมายเหตุ" style="width:100%"></td>
-        <td style="font-size:11px;color:var(--muted);white-space:nowrap">${t.doneAt?thDate(t.doneAt)+(t.doneBy?' · '+esc(t.doneBy):''):'—'}</td>
+        <td>${statusCell}</td>
+        <td>${valueCell}</td>
+        <td>${noteCell}</td>
+        <td>${lastCell}</td>
       </tr>`;
     }).join('');
     return `<div class="card scroll" style="margin-bottom:14px;border-top:4px solid ${d.hex}">
@@ -2017,8 +2052,8 @@ function vPlan(){
       <p class="hint">${rows.length} กิจกรรม</p>
       <table class="tbl wide"><thead><tr>
         <th style="text-align:left">กิจกรรม</th><th style="width:150px">สถานะ</th>
-        <th style="width:160px;text-align:left">ผลที่วัดได้</th><th style="width:190px;text-align:left">หมายเหตุ</th>
-        <th style="width:140px">บันทึกล่าสุด</th>
+        <th style="width:170px;text-align:left">ผลที่วัดได้</th><th style="width:190px;text-align:left">หมายเหตุ</th>
+        <th style="width:150px">บันทึกล่าสุด</th>
       </tr></thead><tbody>${trs}</tbody></table>
     </div>`;
   }).join('');
@@ -2412,12 +2447,12 @@ function bind(){
 
     const addA = $('#addPlanAct');
     if(addA) addA.onclick=()=>{
-      state.db.planActivities.push({ id:'p'+uid(), dimension:'green', activity:'', responsible:'', frequency:'', method:'', active:true });
+      state.db.planActivities.push({ id:'p'+uid(), dimension:'green', activity:'', responsible:'', frequency:'', method:'', active:true, source:'' });
       persist(); render();
     };
     const seedA = $('#seedPlanAct');
     if(seedA) seedA.onclick=()=>{
-      state.db.planActivities = PLAN_SEED.map((s,i)=>({ id:'p'+(i+1), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4], active:true }));
+      state.db.planActivities = PLAN_SEED.map((s,i)=>({ id:'p'+(i+1), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4], active:true, source:s[5]||'' }));
       persist(); render(); toast('โหลดกิจกรรมตัวอย่างแล้ว '+state.db.planActivities.length+' รายการ');
     };
     const saveL = $('#savePlanList');
