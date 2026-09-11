@@ -2100,39 +2100,7 @@ function vReport(){
 /* ---------- หน้า: สมาชิกทีม ---------- */
 /* ---------- หน้า: แผนปฏิบัติการ 4 มิติ ---------- */
 function vPlan(){
-  const tab  = state.planTab || 'list';
   const per  = period();
-  const acts = state.db.planActivities || [];
-
-  const listRows = acts.map(a=>`<tr>
-    <td data-label="มิติ"><select data-pid="${a.id}" data-f="dimension">${DIMS.map(d=>`<option value="${d.id}" ${a.dimension===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}</select></td>
-    <td data-label="กิจกรรม"><input type="text" data-pid="${a.id}" data-f="activity" value="${esc(a.activity||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
-    <td data-label="ผู้รับผิดชอบ"><input type="text" data-pid="${a.id}" data-f="responsible" value="${esc(a.responsible||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
-    <td data-label="ความถี่"><input type="text" data-pid="${a.id}" data-f="frequency" value="${esc(a.frequency||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
-    <td data-label="วิธีติดตามผล"><input type="text" data-pid="${a.id}" data-f="method" value="${esc(a.method||'')}" style="width:100%;border:0;background:transparent;padding:2px"></td>
-    <td data-label="แหล่งข้อมูล"><select data-pid="${a.id}" data-f="source">${PLAN_SOURCES.map(s=>`<option value="${s.id}" ${ (a.source||'')===s.id?'selected':''}>${esc(s.label)}</option>`).join('')}</select></td>
-    <td data-label="ใช้งาน" style="text-align:center"><input type="checkbox" data-pid="${a.id}" data-f="active" ${a.active!==false?'checked':''}></td>
-    <td><button class="btn btn-sm" data-pdel="${a.id}">ลบกิจกรรมนี้</button></td>
-  </tr>`).join('');
-
-  const listHTML = `<div class="card scroll stack-host">
-    ${ acts.length ? '' : emptyHTML('ยังไม่มีรายการกิจกรรม','กดปุ่มด้านล่างเพื่อโหลดกิจกรรมตัวอย่างทั้ง 4 มิติ หรือเพิ่มเองทีละรายการ') }
-    <table class="tbl wide stack" ${acts.length?'':'style="display:none"'}>
-      <thead><tr>
-        <th style="width:12%">มิติ</th><th style="text-align:left">กิจกรรม</th>
-        <th style="text-align:left;width:14%">ผู้รับผิดชอบ</th><th style="width:12%">ความถี่</th>
-        <th style="text-align:left;width:15%">วิธีติดตามผล</th><th style="width:15%">แหล่งข้อมูล</th>
-        <th style="width:56px">ใช้งาน</th><th style="width:52px"></th>
-      </tr></thead>
-      <tbody>${listRows}</tbody>
-    </table>
-    <p class="hint" style="margin-top:10px">ระบบดึงข้อมูลอัตโนมัติจาก 2 แหล่งที่มีอยู่แล้ว: <b>One G-C-L &amp; Ethics</b> (ต้นไม้ / One Cleaned / One Lean / จริยธรรม / หมวดประหยัดพลังงานใน One Lean — ดูอัตราการส่งบันทึกของบุคลากรรายเดือน) และ <b>ตรวจ 5ส. รายสัปดาห์</b> (คะแนนเฉลี่ย) กิจกรรมที่ตรงกับ 6 หัวข้อนี้จะคำนวณให้เองไม่ต้องกรอกซ้ำ — <i>หมายเหตุ: ตัวเลขพลังงานที่ได้เป็นอัตราการบันทึกกิจกรรมประหยัดพลังงานของบุคลากร (proxy) ไม่ใช่หน่วยไฟฟ้าจริงจากมิเตอร์</i> ส่วน<b>ความพึงพอใจของผู้รับบริการ</b> ยังไม่มีชีตข้อมูลรองรับในระบบ (ต้องเอาข้อมูลจากแหล่งอื่น) จึงต้องกรอกเอง — ระบบจะบันทึกชื่อผู้กรอก (ตามที่เลือกไว้ที่ช่อง “ผู้บันทึก” ด้านบน) และวันที่ไว้ให้อัตโนมัติทุกครั้งที่แก้ไข</p>
-    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn" id="addPlanAct">เพิ่มกิจกรรม</button>
-      ${ acts.length ? '' : `<button class="btn btn-primary" id="seedPlanAct">โหลดกิจกรรมตัวอย่าง 4 มิติ</button>` }
-      <button class="btn btn-primary" id="savePlanList">บันทึกรายการกิจกรรม</button>
-    </div>
-  </div>`;
 
   const dimSections = DIMS.map(d=>{
     const rows = planActivitiesOf(d.id).filter(a=>a.active!==false);
@@ -2179,15 +2147,11 @@ function vPlan(){
     </div>`;
   }).join('');
 
-  const trackHTML = dimSections || `<div class="card">${emptyHTML('ยังไม่มีกิจกรรมให้ติดตาม','ไปที่แท็บ “รายการกิจกรรม” เพื่อเพิ่มหรือโหลดกิจกรรมตัวอย่างก่อน')}</div>`;
+  const trackHTML = dimSections || `<div class="card">${emptyHTML('ยังไม่มีกิจกรรมให้ติดตาม','ยังไม่มีการตั้งค่ากิจกรรมในระบบ')}</div>`;
 
   return `<h2 class="page-title">แผนปฏิบัติการ 4 มิติ</h2>
-  <p class="page-sub">กำหนดกิจกรรม ผู้รับผิดชอบ และความถี่ในแท็บ “รายการกิจกรรม” แล้วติดตามผลรายเดือนแยกตาม 4 มิติได้ในแท็บถัดไป — เลือกเดือน/ปีได้จากแถบด้านบน</p>
-  <div class="tabs" id="planTabs">
-    <button data-t="list"  aria-selected="${tab==='list'}">รายการกิจกรรม</button>
-    <button data-t="track" aria-selected="${tab==='track'}">ติดตามผลรายเดือน · ${TH_MONTHS[state.month-1]} ${state.year}</button>
-  </div>
-  ${ tab==='list' ? listHTML : trackHTML }`;
+  <p class="page-sub">ติดตามผลรายเดือนแยกตาม 4 มิติ · ${TH_MONTHS[state.month-1]} ${state.year} — เลือกเดือน/ปีได้จากแถบด้านบน</p>
+  ${trackHTML}`;
 }
 
 function vTeam(){
@@ -2549,36 +2513,6 @@ function bind(){
 
   // แผนปฏิบัติการ 4 มิติ
   if(state.page==='plan'){
-    document.querySelectorAll('#planTabs button').forEach(b=>b.onclick=()=>{ state.planTab=b.dataset.t; render(); });
-
-    document.querySelectorAll('[data-pid]').forEach(el=>{
-      const h = ()=>{
-        const a = state.db.planActivities.find(x=>x.id===el.dataset.pid); if(!a) return;
-        const f = el.dataset.f;
-        a[f] = el.type==='checkbox' ? el.checked : el.value;
-        persist();
-      };
-      el.addEventListener((el.tagName==='SELECT'||el.type==='checkbox') ? 'change' : 'input', h);
-    });
-    document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{
-      if(!confirm('ลบกิจกรรมนี้?')) return;
-      state.db.planActivities = state.db.planActivities.filter(a=>a.id!==b.dataset.pdel);
-      persist(); render();
-    });
-
-    const addA = $('#addPlanAct');
-    if(addA) addA.onclick=()=>{
-      state.db.planActivities.push({ id:'p'+uid(), dimension:'green', activity:'', responsible:'', frequency:'', method:'', active:true, source:'' });
-      persist(); render();
-    };
-    const seedA = $('#seedPlanAct');
-    if(seedA) seedA.onclick=()=>{
-      state.db.planActivities = PLAN_SEED.map((s,i)=>({ id:'p'+(i+1), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4], active:true, source:s[5]||'' }));
-      persist(); render(); toast('โหลดกิจกรรมตัวอย่างแล้ว '+state.db.planActivities.length+' รายการ');
-    };
-    const saveL = $('#savePlanList');
-    if(saveL) saveL.onclick=()=>{ persist(); toast('บันทึกรายการกิจกรรมแล้ว'); };
-
     document.querySelectorAll('[data-tact]').forEach(el=>{
       const h = ()=>{
         const aid = el.dataset.tact, f = el.dataset.tf, per = period();
