@@ -1034,16 +1034,24 @@ function planManualResult(activityId, per){
   return { avg, state: state_, target, dir };
 }
 /** สรุปความคืบหน้าของมิติ dim ในรอบเดือนที่กำลังดูอยู่: จากกิจกรรมที่ใช้งานทั้งหมด มีกี่อันที่ "ถึงเป้าหมาย/เสร็จสิ้น" แล้ว */
+/** สรุปความคืบหน้าของหมวด dim ในรอบเดือนที่กำลังดูอยู่: แยกเป็น "ถึงเป้าหมาย" กับ "มีข้อมูลแล้วแต่ยังไม่ถึงเป้า/กำลังสำรวจ"
+ *  เพื่อให้การ์ดสรุปหน้าแรกไม่โชว์ 0% เฉย ๆ จนดูเหมือนไม่มีข้อมูล ทั้งที่จริงมีการกรอก/ดึงข้อมูลอยู่ แค่ยังไม่ถึงเป้า */
 function planDimSummary(dim){
   const per  = period();
   const acts = planActivitiesOf(dim).filter(a=>a.active!==false);
-  let achieved = 0;
+  let achieved = 0, inProgress = 0;
   acts.forEach(a=>{
     const auto = planAutoResult(a.source);
-    const ok = auto ? (auto.has && auto.achieved) : (planManualResult(a.id, per).state==='achieved');
-    if(ok) achieved++;
+    if(auto){
+      if(auto.has && auto.achieved) achieved++;
+      else if(auto.has) inProgress++;
+    }else{
+      const st = planManualResult(a.id, per).state;
+      if(st==='achieved') achieved++;
+      else if(st==='partial' || st==='notachieved') inProgress++;
+    }
   });
-  return { total: acts.length, achieved, pct: acts.length ? Math.round(achieved/acts.length*100) : null };
+  return { total: acts.length, achieved, inProgress, pct: acts.length ? Math.round(achieved/acts.length*100) : null };
 }
 const rows5s  = ()=> state.db.check5s.filter(r=>r.period===period());
 const rowsGCL = ()=> state.db.onegcl.filter(r=>r.period===period());
@@ -1389,7 +1397,7 @@ function vHome(){
         <div class="zn"><span>${esc(d.name)}</span></div>
         <div class="score">${s.pct==null?'—':s.pct+'%'}<span style="font-size:13px;font-weight:500;color:var(--muted)"> ถึงเป้า</span></div>
         <div class="bar"><i style="width:${pct}%"></i></div>
-        <div class="meta">${s.total? `${s.achieved}/${s.total} ตัวชี้วัดถึงเป้าหมาย` : 'ยังไม่มีตัวชี้วัดในหมวดนี้'}</div>
+        <div class="meta">${s.total? `${s.achieved}/${s.total} ถึงเป้าหมาย${s.inProgress? ` · ${s.inProgress} มีข้อมูลแล้ว` : ''}` : 'ยังไม่มีตัวชี้วัดในหมวดนี้'}</div>
       </button>`;
     }).join('')}</div>
   </div>
