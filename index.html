@@ -420,7 +420,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
         สรุปรายเดือน</button>
       <button data-page="plan">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="17" rx="2.2"/><path d="M9 2.3h6v3H9z"/><path d="M8 12h5M8 15.5h8"/><path d="M8 8.5h8"/></svg>
-        แผนปฏิบัติการ 4 มิติ</button>
+        แผนปฏิบัติการ (ตัวชี้วัด CQI)</button>
       <button data-page="team">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M17 5.5a3.2 3.2 0 0 1 0 6M18.5 20c0-2.6-.9-4.3-2.2-5.4"/></svg>
         สมาชิกทีมโซน</button>
@@ -490,13 +490,10 @@ const ZONES = [
 ];
 const Z = Object.fromEntries(ZONES.map(z=>[z.id,z]));
 
-/* ---------- 2b. แผนปฏิบัติการ 4 มิติ ---------- */
+/* ---------- 2b. แผนปฏิบัติการ: ตัวชี้วัดผลลัพธ์ & ตัวชี้วัดกระบวนการ ---------- */
 const DIMS = [
-  { id:'green',  name:'พื้นที่สีเขียว',       hex:'#4CA64C' },
-  { id:'clean',  name:'สะอาดปลอดภัย',         hex:'#2C64C8' },
-  { id:'ethic',  name:'บุคลากรมีจริยธรรม',     hex:'#D6489B' },
-  { id:'energy', name:'ประหยัดพลังงาน',       hex:'#E5B71C' },
-  { id:'cross',  name:'ภาพรวมข้ามมิติ',       hex:'#175943' }
+  { id:'outcome', name:'ตัวชี้วัดผลลัพธ์',     hex:'#2C64C8' },
+  { id:'process', name:'ตัวชี้วัดกระบวนการ',   hex:'#4CA64C' }
 ];
 const DIM = Object.fromEntries(DIMS.map(d=>[d.id,d]));
 const PLAN_STATUS = [
@@ -505,29 +502,16 @@ const PLAN_STATUS = [
   { id:'done',  label:'เสร็จสิ้น' },
   { id:'late',  label:'ล่าช้า' }
 ];
-/* กิจกรรมตั้งต้น ใช้ตอนกดปุ่ม "โหลดกิจกรรมตัวอย่าง 4 มิติ" ในหน้าแผนปฏิบัติการ */
+/* ชุดตัวชี้วัดปัจจุบัน: dimension, activity, responsible, frequency, method, source, target, dir ('higher'=ยิ่งมากยิ่งดี ค่าเริ่มต้น, 'lower'=ยิ่งน้อยยิ่งดี) */
 const PLAN_SEED = [
-  ['green','จัดมุมสีเขียว/มุมพักสายตา','ทีมโซนที่รับผิดชอบพื้นที่นั้น','ครั้งเดียว + ดูแลรายสัปดาห์','เช็กลิสต์สภาพต้นไม้/ความเรียบร้อย',''],
-  ['green','ดำเนินกิจกรรม 5ส. จัดระเบียบอุปกรณ์-เอกสาร-พื้นที่ปฏิบัติงาน','หัวหน้าโซนแต่ละโซน','ทุกวันจันทร์','แบบตรวจ 5ส. ที่มีอยู่ในระบบแล้ว',''],
-  ['green','ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg'],
-  ['green','ติดตามอัตราการส่งบันทึกต้นไม้ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (ต้นไม้)','onegcl_tree'],
-  ['green','ติดตามอัตราการส่งบันทึก One Lean ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Lean)','onegcl_lean'],
-  ['clean','ตรวจสอบ-แก้ไขจุดเสี่ยงด้านสิ่งแวดล้อม','เวรที่ปฏิบัติงานแต่ละกะ + ผู้ดูแลอาคารสถานที่','ทุกเวร','บันทึกจุดเสี่ยงที่พบ/แก้ไขแล้วในระบบ',''],
-  ['clean','ทำความสะอาดจุดที่มือแตะบ่อย','ผู้ช่วยเหลือคนไข้/แม่บ้านประจำโซน','ทุกเวร','เช็กลิสต์ทำความสะอาดรายจุด',''],
-  ['clean','รณรงค์ล้างมือผ่านโครงการธนาคารมือสะอาด','ทีมควบคุมการติดเชื้อประจำหอผู้ป่วย','ต่อเนื่องทุกวัน','สรุปยอดสะสม/อัตราการล้างมือรายเดือน',''],
-  ['clean','ติดตามอัตราการส่งบันทึก One Cleaned ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Cleaned)','onegcl_clean'],
-  ['ethic','ทบทวนแนวทางจริยธรรมบริการกับบุคลากร','หัวหน้าหอผู้ป่วย/พี่เลี้ยงเวร','เดือนละ 1 ครั้ง','บันทึกการประชุม/ผู้เข้าร่วม',''],
-  ['ethic','ติดตามอัตราการส่งบันทึก Ethics ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L & Ethics','onegcl_ethic'],
-  ['ethic','สังเกตพฤติกรรมบริการระหว่างปฏิบัติงาน','หัวหน้าเวร','ทุกเวร (สุ่มสังเกต)','แบบประเมินพฤติกรรมบริการ',''],
-  ['ethic','เก็บข้อมูลความพึงพอใจ/ข้อร้องเรียนจากผู้ป่วยและญาติ','ผู้ประสานงานโครงการ','รายเดือน','แบบสอบถามความพึงพอใจ + สรุปข้อร้องเรียน — แหล่งข้อมูลภายนอก กรอกเอง',''],
-  ['energy','ปิดไฟ/พัดลม/แอร์ ถอดปลั๊กเมื่อไม่ใช้งาน','ทุกเวรที่ปฏิบัติงาน','ทุกเวร (ก่อนเปลี่ยนเวร)','เช็กลิสต์ตรวจก่อนเปลี่ยนเวร',''],
-  ['energy','ติดป้ายเตือน/รณรงค์ประหยัดพลังงาน','ทีมประชาสัมพันธ์ภายในหน่วยงาน','ครั้งเดียว + ทบทวนทุกไตรมาส','ภาพถ่ายจุดติดป้าย',''],
-  ['energy','ติดตามอัตราการบันทึกกิจกรรมประหยัดพลังงาน (One Lean)','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Lean หมวดประหยัดพลังงาน)','onegcl_lean_energy'],
-  ['cross','กิจกรรม One Green One Lean One Clean One Safe One Etic','บุคลากรทุกคนร่วมกัน','ทุกเดือน','บันทึกการเข้าร่วมกิจกรรม',''],
-  ['cross','ประชุมติดตามผลรวม 4 มิติ','หัวหน้าหอผู้ป่วย + ผู้ประสานงานโครงการ','ทุกสิ้นเดือน','สรุปผลเทียบเป้าหมายทั้ง 4 ตัวชี้วัด นำเสนอในที่ประชุม','']
+  ['outcome','ความพึงพอใจของผู้ป่วยและญาติต่อสภาพแวดล้อมและการบริการ','ผู้ประสานงานโครงการ','สำรวจรายสัปดาห์','สำรวจความพึงพอใจ (กรอกเอง) เป้าหมายมากกว่าร้อยละ 95','',95,'higher'],
+  ['outcome','การพลัดตกหกล้มของผู้ป่วยในหอผู้ป่วย','หัวหน้าเวร','สำรวจรายสัปดาห์','นับจำนวนครั้งที่เกิดขึ้น (กรอกเอง) เป้าหมาย 0 ครั้ง','',0,'lower'],
+  ['outcome','จำนวนข้อร้องเรียนของผู้รับบริการด้านพฤติกรรมบริการ จริยธรรม และการคุ้มครองสิทธิผู้ป่วย','ผู้ประสานงานโครงการ','สำรวจรายสัปดาห์','นับจำนวนข้อร้องเรียน (กรอกเอง) เป้าหมาย 0 ครั้ง','',0,'lower'],
+  ['process','บุคลากรเข้าร่วมโครงการ','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากผู้เข้าร่วมตรวจ 5ส. และผู้ส่งบันทึก One G-C-L','onegcl_or_check5s',100,'higher'],
+  ['process','คะแนนการประเมิน 5ส. เฉลี่ยแต่ละโซน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg',85,'higher']
 ];
 /* แหล่งข้อมูลอัตโนมัติที่รองรับ — ดึงจากหน้า One G-C-L & Ethics (รายบุคคล/เดือน) และหน้าตรวจ 5ส. (รายสัปดาห์)
-   สิ่งที่ยังไม่มีชีตเก็บข้อมูลในระบบ (ความพึงพอใจผู้รับบริการ, ค่าไฟ) จึงยังต้องกรอกเอง */
+   ตัวชี้วัดผลลัพธ์ทั้ง 3 ตัว ไม่มีชีตข้อมูลรองรับในระบบ จึงต้องกรอกเอง (สำรวจรายสัปดาห์แล้วเฉลี่ย) */
 const AUTO_SOURCE_CONF = {
   onegcl_ethic: { kind:'onegcl',     field:'ethic', target:95, label:'One G-C-L & Ethics (จริยธรรม)' },
   onegcl_tree:  { kind:'onegcl',     field:'tree',  target:90, label:'One G-C-L (ต้นไม้ / พื้นที่สีเขียว)' },
@@ -535,7 +519,8 @@ const AUTO_SOURCE_CONF = {
   onegcl_lean:  { kind:'onegcl',     field:'lean',  target:90, label:'One G-C-L (One Lean)' },
   onegcl_lean_energy: { kind:'onegcl_tag', field:'lean', tagField:'leanSum', tagValue:'ประหยัดพลังงาน', target:80,
                          label:'One G-C-L (One Lean · หมวดประหยัดพลังงาน)' },
-  check5s_avg:  { kind:'check5s', target:80,               label:'ตรวจ 5ส. รายสัปดาห์' }
+  onegcl_or_check5s: { kind:'participation', target:100, label:'ผู้ตรวจ 5ส. + ผู้ส่ง One G-C-L' },
+  check5s_avg:  { kind:'check5s', target:85,               label:'ตรวจ 5ส. รายสัปดาห์' }
 };
 const PLAN_SOURCES = [
   { id:'',             label:'กรอกเอง' },
@@ -544,6 +529,7 @@ const PLAN_SOURCES = [
   { id:'onegcl_clean',  label:'ดึงจาก One G-C-L (One Cleaned) อัตโนมัติ' },
   { id:'onegcl_lean',   label:'ดึงจาก One G-C-L (One Lean) อัตโนมัติ' },
   { id:'onegcl_lean_energy', label:'ดึงจาก One G-C-L (One Lean · ประหยัดพลังงาน) อัตโนมัติ' },
+  { id:'onegcl_or_check5s',  label:'ดึงจากผู้เข้าร่วมตรวจ 5ส. + ผู้ส่ง One G-C-L อัตโนมัติ' },
   { id:'check5s_avg',   label:'ดึงจากคะแนนตรวจ 5ส. อัตโนมัติ' }
 ];
 /** สัดส่วนบุคลากรที่ส่งบันทึกหัวข้อ field (ethic/tree/clean/lean) ในหน้า One G-C-L ของรอบเดือนที่กำลังดูอยู่ */
@@ -566,6 +552,18 @@ function onegclTagStats(field, tagField, tagValue){
   const pct   = total ? Math.round(sent/total*100) : 0;
   return { total, sent, pct };
 }
+/** "เข้าร่วมโครงการ" = ส่งบันทึก One G-C-L อย่างน้อย 1 หัวข้อ (ต้นไม้/Clean/Lean/จริยธรรม) หรือเป็นผู้ตรวจ 5ส. อย่างน้อย 1 ครั้งในเดือนนี้ */
+function participationStats(){
+  const per = period();
+  const gclNames = new Set(state.db.onegcl
+    .filter(r=>r.period===per && (String(r.tree||'').trim() || String(r.clean||'').trim() || String(r.lean||'').trim() || String(r.ethic||'').trim()))
+    .map(r=>r.name));
+  const s5Names = new Set(rows5s().map(r=>r.inspector).filter(Boolean));
+  const total = state.db.members.length;
+  const sent  = new Set([...gclNames, ...s5Names]).size;
+  const pct   = total ? Math.round(sent/total*100) : 0;
+  return { total, sent, pct };
+}
 /** คะแนนตรวจ 5ส. เฉลี่ยของทุกโซนในรอบเดือนที่กำลังดูอยู่ (เต็ม 100 ต่อครั้งตรวจ) */
 function check5sAvgStats(){
   const rows = rows5s();
@@ -582,6 +580,10 @@ function planAutoResult(source){
   }
   if(conf.kind==='onegcl_tag'){
     const s = onegclTagStats(conf.field, conf.tagField, conf.tagValue);
+    return { has:true, achieved: s.pct>=conf.target, text:`${s.sent}/${s.total} คน (${s.pct}%)`, label:conf.label };
+  }
+  if(conf.kind==='participation'){
+    const s = participationStats();
     return { has:true, achieved: s.pct>=conf.target, text:`${s.sent}/${s.total} คน (${s.pct}%)`, label:conf.label };
   }
   if(conf.kind==='check5s'){
@@ -925,17 +927,12 @@ function periodFromDate(iso){
   if(y < 2400) y += 543;                 // ค.ศ. เป็น พ.ศ.
   return y+'-'+m[2];
 }
-/* จับคู่อัตโนมัติ: ถ้าชื่อกิจกรรมตรงกับที่ระบบมีข้อมูลรองรับ จะตั้งแหล่งข้อมูลเป็นอัตโนมัติให้เองโดยไม่ต้องเลือกเอง
-   ครอบคลุมทั้งชื่อกิจกรรมรุ่นใหม่และรุ่นเก่า (เผื่อชีตที่เคยสร้างไว้ก่อนหน้านี้) */
+/* จับคู่อัตโนมัติ: ถ้าชื่อกิจกรรมตรงกับที่ระบบมีข้อมูลรองรับ จะตั้งแหล่งข้อมูลเป็นอัตโนมัติให้เองโดยไม่ต้องเลือกเอง */
 const AUTO_SOURCE_MAP = {
-  'ติดตามอัตราการส่งบันทึก Ethics ประจำเดือน': 'onegcl_ethic',
-  'ติดตามอัตราการส่งบันทึกต้นไม้ประจำเดือน': 'onegcl_tree',
-  'ติดตามอัตราการส่งบันทึก One Cleaned ประจำเดือน': 'onegcl_clean',
-  'ติดตามอัตราการส่งบันทึก One Lean ประจำเดือน': 'onegcl_lean',
-  'ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน': 'check5s_avg',
-  'ตรวจประเมินความเรียบร้อยของพื้นที่': 'check5s_avg',   // ชื่อกิจกรรมรุ่นก่อนหน้า
-  'ติดตามอัตราการบันทึกกิจกรรมประหยัดพลังงาน (One Lean)': 'onegcl_lean_energy',
-  'เก็บข้อมูลการใช้พลังงานไฟฟ้าของหน่วยงาน': 'onegcl_lean_energy'   // ชื่อกิจกรรมรุ่นก่อนหน้า (กรอกเอง) → เปลี่ยนมาดึงจาก One Lean แทน
+  'บุคลากรเข้าร่วมโครงการ': 'onegcl_or_check5s',
+  'คะแนนการประเมิน 5ส. เฉลี่ยแต่ละโซน': 'check5s_avg',
+  'ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน': 'check5s_avg',          // ชื่อกิจกรรมรุ่นก่อนหน้า
+  'ตรวจประเมินความเรียบร้อยของพื้นที่': 'check5s_avg'          // ชื่อกิจกรรมรุ่นก่อนหน้า
 };
 /** ใส่แหล่งข้อมูลอัตโนมัติให้กิจกรรมที่ชื่อตรงกับหัวข้อที่ระบบดึงข้อมูลได้ กิจกรรมอื่นที่ไม่ตรงจะยังกรอกเองเหมือนเดิม
  *  คืนค่า true ถ้ามีการแก้ไข (ใช้เพื่อรู้ว่าต้อง persist กลับขึ้นชีตหรือไม่) */
@@ -949,13 +946,10 @@ function backfillPlanSources(list){
   });
   return changed;
 }
-/* กิจกรรมติดตามอัตโนมัติที่แนะนำ — ใช้เติมให้รายการที่เคยสร้างไว้ก่อนหน้านี้ (ยังไม่มีตัวนี้) โดยไม่แตะกิจกรรมอื่นที่มีอยู่แล้ว */
+/* กิจกรรมติดตามอัตโนมัติที่แนะนำ (ชุดตัวชี้วัดกระบวนการปัจจุบัน) — ใช้เติมให้รายการที่ยังขาดตัวนี้ โดยไม่แตะกิจกรรมอื่นที่มีอยู่แล้ว */
 const RECOMMENDED_AUTO_ACTIVITIES = [
-  ['green','ติดตามคะแนนเฉลี่ย 5ส. ประจำเดือน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg'],
-  ['green','ติดตามอัตราการส่งบันทึกต้นไม้ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (ต้นไม้)','onegcl_tree'],
-  ['green','ติดตามอัตราการส่งบันทึก One Lean ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Lean)','onegcl_lean'],
-  ['clean','ติดตามอัตราการส่งบันทึก One Cleaned ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L (One Cleaned)','onegcl_clean'],
-  ['ethic','ติดตามอัตราการส่งบันทึก Ethics ประจำเดือน','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากหน้า One G-C-L & Ethics','onegcl_ethic']
+  ['process','บุคลากรเข้าร่วมโครงการ','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากผู้เข้าร่วมตรวจ 5ส. และผู้ส่งบันทึก One G-C-L','onegcl_or_check5s',100,'higher'],
+  ['process','คะแนนการประเมิน 5ส. เฉลี่ยแต่ละโซน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg',85,'higher']
 ];
 /** เติมกิจกรรมติดตามอัตโนมัติที่ยังขาดหายไปในรายการเดิม (ทำงานเฉพาะกรณีมีรายการอยู่แล้วอย่างน้อย 1 อัน
  *  เพื่อไม่ไปแทรกข้อมูลให้ผู้ที่ยังไม่เคยตั้งค่าอะไรเลย) คืนค่า true ถ้ามีการเพิ่ม */
@@ -965,11 +959,26 @@ function addMissingAutoActivities(list){
   const existingNames = new Set(list.map(a=>String(a.activity||'').trim()));
   RECOMMENDED_AUTO_ACTIVITIES.forEach((s,i)=>{
     if(!existingNames.has(s[1])){
-      list.push({ id:'auto'+i+'_'+Date.now().toString(36), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4], active:true, source:s[5] });
+      list.push({ id:'auto'+i+'_'+Date.now().toString(36), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4], active:true, source:s[5], target:s[6], dir:s[7] });
       changed = true;
     }
   });
   return changed;
+}
+/* มิติรุ่นก่อนหน้า (4 มิติ) — ถ้ายังเจอในชีตแปลว่ายังไม่ได้ปรับเป็นชุดตัวชี้วัดผลลัพธ์/กระบวนการปัจจุบัน จะแทนที่ทั้งชุดให้อัตโนมัติ */
+const OLD_DIM_IDS = ['green','clean','ethic','energy','cross'];
+/** ปรับรุ่นรายการกิจกรรมจากโมเดล "4 มิติ" เดิม มาเป็นโมเดล "ตัวชี้วัดผลลัพธ์/กระบวนการ" ปัจจุบัน
+ *  แทนที่ทั้งรายการด้วยชุดจาก PLAN_SEED (ข้อมูลรายสัปดาห์ที่เคยกรอกไว้ในกิจกรรมเดิมจะยังอยู่ในชีต แต่จะไม่ถูกใช้แสดงผลอีก)
+ *  คืนค่า true ถ้ามีการแทนที่ */
+function migratePlanModel(list){
+  const hasOld = list.some(a=>OLD_DIM_IDS.includes(a.dimension));
+  if(!hasOld) return false;
+  list.length = 0;
+  PLAN_SEED.forEach((s,i)=>{
+    list.push({ id:'p'+(i+1), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4],
+                active:true, source:s[5]||'', target:s[6], dir:s[7]||'higher' });
+  });
+  return true;
 }
 function normalizeDb(db){
   ['check5s','onegcl','waste'].forEach(k=>{
@@ -984,13 +993,46 @@ function normalizeDb(db){
   if(!db.planActivities) db.planActivities = [];
   if(!db.planTracking)   db.planTracking   = [];
   db.planActivities.forEach(a=>{ if(a.active===''||a.active==null) a.active = true; });
+  const migrated  = migratePlanModel(db.planActivities);
   const backfilled = backfillPlanSources(db.planActivities);
   const added = addMissingAutoActivities(db.planActivities);
-  db._planSourceBackfilled = backfilled || added;
+  db._planSourceBackfilled = migrated || backfilled || added;
   return db;
 }
 function planActivitiesOf(dim){ return (state.db.planActivities||[]).filter(a=>a.dimension===dim); }
-function planTrackFor(activityId, per){ return (state.db.planTracking||[]).find(t=>t.activityId===activityId && t.period===per); }
+function planTrackFor(activityId, per){ return (state.db.planTracking||[]).find(t=>t.activityId===activityId && t.period===per && !t.week); }
+const WEEK_LIST = [1,2,3,4];
+/** รายการบันทึกรายสัปดาห์ของกิจกรรมกรอกเอง (activityId) ในรอบเดือน per */
+function planWeeklyRows(activityId, per){
+  return (state.db.planTracking||[]).filter(t=>t.activityId===activityId && t.period===per && t.week);
+}
+function planWeeklyRec(activityId, per, week){
+  return planWeeklyRows(activityId, per).find(t=>t.week===week);
+}
+/** ค่ารวม/ค่าเฉลี่ยของคะแนนรายสัปดาห์ที่กรอกแล้ว: filled = จำนวนสัปดาห์ที่กรอก, sum = ผลรวม, avg = ค่าเฉลี่ย (ปัดเศษ, null ถ้ายังไม่มีเลย) */
+function planWeeklyAvg(activityId, per){
+  const rows = planWeeklyRows(activityId, per);
+  const scored = rows.filter(r=>r.score!==''&&r.score!=null&&!isNaN(Number(r.score)));
+  const sum = scored.length ? scored.reduce((a,r)=>a+Number(r.score),0) : null;
+  const avg = scored.length ? Math.round(sum/scored.length) : null;
+  return { filled: scored.length, sum, avg };
+}
+/** สรุปผลกิจกรรมกรอกเอง (รายสัปดาห์): todo=ยังไม่เริ่ม, partial=กำลังสำรวจ, achieved/notachieved=ครบ 4 สัปดาห์แล้ว
+ *  อ่านเป้าหมาย (target) และทิศทาง (dir: 'higher' ยิ่งมากยิ่งดี ค่าเริ่มต้น, 'lower' ยิ่งน้อยยิ่งดี เช่น จำนวนครั้งพลัดตกหกล้ม/ข้อร้องเรียน) จากตัวกิจกรรมเอง
+ *  ตัวชี้วัดแบบ "lower" ถือเป็นการนับจำนวนครั้งสะสมทั้งเดือน จึงเทียบจากผลรวม (sum) ไม่ใช่ค่าเฉลี่ย เพื่อไม่ให้การปัดเศษบดบังจำนวนครั้งที่เกิดขึ้นจริง */
+function planManualResult(activityId, per){
+  const act = (state.db.planActivities||[]).find(x=>x.id===activityId) || {};
+  const target = (act.target!=null && act.target!=='') ? Number(act.target) : 80;
+  const dir = act.dir || 'higher';
+  const avg = planWeeklyAvg(activityId, per);
+  let state_ = 'todo';
+  if(avg.filled>0 && avg.filled<WEEK_LIST.length) state_ = 'partial';
+  else if(avg.filled>=WEEK_LIST.length){
+    const ok = dir==='lower' ? avg.sum<=target : avg.avg>=target;
+    state_ = ok ? 'achieved' : 'notachieved';
+  }
+  return { avg, state: state_, target, dir };
+}
 /** สรุปความคืบหน้าของมิติ dim ในรอบเดือนที่กำลังดูอยู่: จากกิจกรรมที่ใช้งานทั้งหมด มีกี่อันที่ "ถึงเป้าหมาย/เสร็จสิ้น" แล้ว */
 function planDimSummary(dim){
   const per  = period();
@@ -998,7 +1040,7 @@ function planDimSummary(dim){
   let achieved = 0;
   acts.forEach(a=>{
     const auto = planAutoResult(a.source);
-    const ok = auto ? (auto.has && auto.achieved) : ((planTrackFor(a.id, per)||{}).status==='done');
+    const ok = auto ? (auto.has && auto.achieved) : (planManualResult(a.id, per).state==='achieved');
     if(ok) achieved++;
   });
   return { total: acts.length, achieved, pct: acts.length ? Math.round(achieved/acts.length*100) : null };
@@ -1338,16 +1380,16 @@ function vHome(){
   </section>
 
   <div class="card" style="margin-bottom:18px">
-    <h3>ความคืบหน้าแผนปฏิบัติการ 4 มิติ · ${TH_MONTHS[state.month-1]} ${state.year}</h3>
-    <p class="hint">กิจกรรมที่ “ถึงเป้าหมาย/เสร็จสิ้น” แล้วในแต่ละมิติของเดือนนี้ — แตะการ์ดเพื่อดูรายละเอียด</p>
-    <div class="grid g4">${DIMS.filter(d=>d.id!=='cross').map(d=>{
+    <h3>ความคืบหน้าแผนปฏิบัติการ · ${TH_MONTHS[state.month-1]} ${state.year}</h3>
+    <p class="hint">ตัวชี้วัดที่ “ถึงเป้าหมาย” แล้วในแต่ละหมวดของเดือนนี้ — แตะการ์ดเพื่อดูรายละเอียด</p>
+    <div class="grid g2">${DIMS.map(d=>{
       const s = planDimSummary(d.id);
       const pct = s.pct==null ? 0 : s.pct;
       return `<button class="zone-card" data-go="plan" style="--zc:${d.hex}">
         <div class="zn"><span>${esc(d.name)}</span></div>
         <div class="score">${s.pct==null?'—':s.pct+'%'}<span style="font-size:13px;font-weight:500;color:var(--muted)"> ถึงเป้า</span></div>
         <div class="bar"><i style="width:${pct}%"></i></div>
-        <div class="meta">${s.total? `${s.achieved}/${s.total} กิจกรรมถึงเป้าหมาย` : 'ยังไม่มีกิจกรรมในมิตินี้'}</div>
+        <div class="meta">${s.total? `${s.achieved}/${s.total} ตัวชี้วัดถึงเป้าหมาย` : 'ยังไม่มีตัวชี้วัดในหมวดนี้'}</div>
       </button>`;
     }).join('')}</div>
   </div>
@@ -2126,7 +2168,13 @@ function vReport(){
 }
 
 /* ---------- หน้า: สมาชิกทีม ---------- */
-/* ---------- หน้า: แผนปฏิบัติการ 4 มิติ ---------- */
+/* ---------- หน้า: แผนปฏิบัติการ (ตัวชี้วัดผลลัพธ์/กระบวนการ) ---------- */
+function nameOptionsHTML(current){
+  const names = (state.db.members||[]).map(m=>m.name).filter(Boolean);
+  return `<option value="">— เลือกผู้กรอก —</option>` +
+    names.map(n=>`<option value="${esc(n)}" ${current===n?'selected':''}>${esc(n)}</option>`).join('');
+}
+
 function vPlan(){
   const per  = period();
 
@@ -2134,24 +2182,56 @@ function vPlan(){
     const rows = planActivitiesOf(d.id).filter(a=>a.active!==false);
     if(!rows.length) return '';
     const trs = rows.map(a=>{
-      const t = planTrackFor(a.id, per) || {};
-      let statusCell, valueCell, lastCell;
       const auto = planAutoResult(a.source);
+      let statusCell, valueCell, actionCell, lastCell;
 
       if(auto){
         statusCell = !auto.has ? `<span class="chip late">ยังไม่มีข้อมูล</span>`
           : `<span class="${auto.achieved?'chip':'chip late'}">${auto.achieved?'ถึงเป้าหมาย':'ยังไม่ถึงเป้าหมาย'}</span>`;
         valueCell  = auto.text;
+        actionCell = '—';
         lastCell   = `<span class="chip" style="background:#EAF4EE">ดึงอัตโนมัติ</span><br><span style="font-size:11px;color:var(--muted)">จาก ${esc(auto.label)}</span>`;
-      }else{
-        const st = t.status || 'todo';
-        statusCell = `<select data-tact="${a.id}" data-tf="status">${PLAN_STATUS.map(s=>`<option value="${s.id}" ${st===s.id?'selected':''}>${s.label}</option>`).join('')}</select>`;
-        valueCell  = `<input type="text" data-tact="${a.id}" data-tf="value" value="${esc(t.value||'')}" placeholder="ผลที่วัดได้" style="width:100%">`;
-        lastCell   = t.doneAt
-          ? `${thDate(t.doneAt)}<br><span style="font-size:11px;color:var(--muted)">ผู้กรอก: ${esc(t.doneBy||'—')}</span>`
-          : `<span style="font-size:11px;color:var(--muted)">ยังไม่มีผู้กรอก</span>`;
+
+        return `<tr>
+          <td data-label="กิจกรรม" style="min-width:0">
+            <b style="font-size:13px">${esc(a.activity||'')}</b><br>
+            <span style="font-size:11.5px;color:var(--muted)">${esc(a.responsible||'—')} · ${esc(a.frequency||'—')}</span>
+          </td>
+          <td data-label="สถานะ">${statusCell}</td>
+          <td data-label="ผลที่วัดได้">${valueCell}</td>
+          <td data-label="รายสัปดาห์">${actionCell}</td>
+          <td data-label="แหล่งข้อมูล / ผู้กรอก">${lastCell}</td>
+        </tr>`;
       }
-      const noteCell = `<input type="text" data-tact="${a.id}" data-tf="note" value="${esc(t.note||'')}" placeholder="หมายเหตุ" style="width:100%">`;
+
+      // กิจกรรมกรอกเอง — สำรวจรายสัปดาห์แล้วนำมาเฉลี่ย
+      const mr = planManualResult(a.id, per);
+      const open = !!(state.planOpen && state.planOpen[a.id]);
+      const STATE_LABEL = { todo:['ยังไม่เริ่ม','chip late'], partial:['กำลังสำรวจ','chip late'],
+                             achieved:['ถึงเป้าหมาย','chip'], notachieved:['ยังไม่ถึงเป้าหมาย','chip late'] };
+      const [stLabel, stCls] = STATE_LABEL[mr.state];
+      const targetTxt = (mr.dir==='lower' ? '≤ ' : '≥ ') + mr.target + (mr.dir==='lower' ? ' ครั้ง' : (mr.target<=100?'%':''));
+      statusCell = `<span class="${stCls}">${stLabel}</span>`;
+      valueCell  = mr.avg.avg==null ? 'ยังไม่มีข้อมูล'
+        : (mr.dir==='lower' ? `รวม ${mr.avg.sum} ครั้ง` : `เฉลี่ย ${mr.avg.avg}`);
+      valueCell += `<br><span style="font-size:11px;color:var(--muted)">${mr.avg.filled}/${WEEK_LIST.length} สัปดาห์ · เป้าหมาย ${targetTxt}</span>`;
+      actionCell = `<button class="btn btn-sm" data-toggle="${a.id}">${open?'▾ ซ่อนรายสัปดาห์':'▸ สำรวจรายสัปดาห์'}</button>`;
+      lastCell   = `<span style="font-size:11px;color:var(--muted)">กรอกเอง (รายสัปดาห์)</span>`;
+
+      const weekTable = !open ? '' : `<tr data-weekrow="${a.id}"><td colspan="5" style="background:#FAFCFB;padding:10px 8px">
+        <table class="tbl" style="margin:0">
+          <thead><tr><th style="width:110px">สัปดาห์</th><th style="width:110px">ค่าที่วัดได้</th><th style="text-align:left">หมายเหตุ</th><th style="width:190px">ผู้กรอก</th></tr></thead>
+          <tbody>${WEEK_LIST.map(w=>{
+            const rec = planWeeklyRec(a.id, per, w) || {};
+            return `<tr>
+              <td>สัปดาห์ที่ ${w}</td>
+              <td><input type="number" min="0" data-wk="${a.id}|${w}" data-wf="score" value="${esc(rec.score||'')}" style="width:80px" placeholder="${a.dir==='lower'?'ครั้ง':'%'}"></td>
+              <td><input type="text" data-wk="${a.id}|${w}" data-wf="note" value="${esc(rec.note||'')}" placeholder="หมายเหตุ" style="width:100%"></td>
+              <td><select data-wk="${a.id}|${w}" data-wf="doneBy">${nameOptionsHTML(rec.doneBy||'')}</select></td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </td></tr>`;
 
       return `<tr>
         <td data-label="กิจกรรม" style="min-width:0">
@@ -2160,26 +2240,28 @@ function vPlan(){
         </td>
         <td data-label="สถานะ">${statusCell}</td>
         <td data-label="ผลที่วัดได้">${valueCell}</td>
-        <td data-label="หมายเหตุ">${noteCell}</td>
+        <td data-label="รายสัปดาห์">${actionCell}</td>
         <td data-label="แหล่งข้อมูล / ผู้กรอก">${lastCell}</td>
-      </tr>`;
+      </tr>${weekTable}`;
     }).join('');
     return `<div class="card scroll stack-host" style="margin-bottom:14px;border-top:4px solid ${d.hex}">
       <h3 style="color:${d.hex};margin-bottom:2px">${esc(d.name)}</h3>
-      <p class="hint">${rows.length} กิจกรรม</p>
+      <p class="hint">${rows.length} ตัวชี้วัด</p>
       <table class="tbl wide stack"><thead><tr>
         <th style="text-align:left">กิจกรรม</th><th style="width:150px">สถานะ</th>
-        <th style="width:170px;text-align:left">ผลที่วัดได้</th><th style="width:190px;text-align:left">หมายเหตุ</th>
-        <th style="width:150px">แหล่งข้อมูล / ผู้กรอก</th>
+        <th style="width:170px;text-align:left">ผลที่วัดได้</th><th style="width:150px">รายสัปดาห์</th>
+        <th style="width:170px">แหล่งข้อมูล / ผู้กรอก</th>
       </tr></thead><tbody>${trs}</tbody></table>
     </div>`;
   }).join('');
 
   const trackHTML = dimSections || `<div class="card">${emptyHTML('ยังไม่มีกิจกรรมให้ติดตาม','ยังไม่มีการตั้งค่ากิจกรรมในระบบ')}</div>`;
 
-  return `<h2 class="page-title">แผนปฏิบัติการ 4 มิติ</h2>
-  <p class="page-sub">ติดตามผลรายเดือนแยกตาม 4 มิติ · ${TH_MONTHS[state.month-1]} ${state.year} — เลือกเดือน/ปีได้จากแถบด้านบน</p>
-  ${trackHTML}`;
+  return `<h2 class="page-title">แผนปฏิบัติการ (ตัวชี้วัดผลลัพธ์/กระบวนการ)</h2>
+  <p class="page-sub">ติดตามตัวชี้วัดผลลัพธ์และตัวชี้วัดกระบวนการรายเดือน · ${TH_MONTHS[state.month-1]} ${state.year} — ตัวชี้วัดที่กรอกเองให้สำรวจทีละสัปดาห์แล้วระบบจะเฉลี่ยให้เอง อย่าลืมกด “บันทึกข้อมูลเดือนนี้” เมื่อกรอกเสร็จ</p>
+  <div style="margin-bottom:14px"><button class="btn btn-primary" id="savePlanMonth">บันทึกข้อมูลเดือนนี้</button></div>
+  ${trackHTML}
+  ${ dimSections ? `<div style="margin-top:4px"><button class="btn btn-primary" id="savePlanMonth2">บันทึกข้อมูลเดือนนี้</button></div>` : '' }`;
 }
 
 function vTeam(){
@@ -2539,22 +2621,49 @@ function bind(){
     });
   }
 
-  // แผนปฏิบัติการ 4 มิติ
+  // แผนปฏิบัติการ (ตัวชี้วัดผลลัพธ์/กระบวนการ)
   if(state.page==='plan'){
-    document.querySelectorAll('[data-tact]').forEach(el=>{
+    // ปุ่มเปิด/ปิดตารางสำรวจรายสัปดาห์ของกิจกรรมกรอกเอง
+    document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{
+      const id = b.dataset.toggle;
+      state.planOpen = state.planOpen || {};
+      state.planOpen[id] = !state.planOpen[id];
+      render();
+    });
+
+    // ช่องกรอกคะแนน/หมายเหตุ/ผู้กรอกรายสัปดาห์ — บันทึกลงเครื่องทันที แต่ยังไม่ส่งขึ้นชีตจนกว่าจะกดปุ่ม "บันทึกข้อมูลเดือนนี้"
+    document.querySelectorAll('[data-wk]').forEach(el=>{
+      const isSelect = el.tagName==='SELECT';
       const h = ()=>{
-        const aid = el.dataset.tact, f = el.dataset.tf, per = period();
-        let t = state.db.planTracking.find(x=>x.activityId===aid && x.period===per);
+        const [aid, wkStr] = el.dataset.wk.split('|');
+        const week = Number(wkStr), f = el.dataset.wf, per = period();
+        let t = state.db.planTracking.find(x=>x.activityId===aid && x.period===per && x.week===week);
         if(!t){
-          t = { id:'t_'+aid+'_'+per.replace('-',''), activityId:aid, period:per, status:'todo', value:'', note:'', doneBy:'', doneAt:'' };
+          t = { id:'t_'+aid+'_'+per.replace('-','')+'_w'+week, activityId:aid, period:per, week, score:'', note:'', doneBy:'', doneAt:'' };
           state.db.planTracking.push(t);
         }
         t[f] = el.value;
-        t.doneAt = todayISO(); t.doneBy = state.user;
-        persist();
+        t.doneAt = todayISO();
+        if(!t.doneBy) t.doneBy = state.user;
+        store.write(state.db);   // เก็บลงเครื่องก่อน ยังไม่ส่งขึ้นชีต
       };
-      el.addEventListener(el.tagName==='SELECT' ? 'change' : 'input', h);
+      // คะแนนและผู้กรอก: อัปเดตหน้าจอทันทีตอนเปลี่ยนค่า (ค่าเฉลี่ย/สถานะจะรีเฟรช)
+      // หมายเหตุ: ใช้ input เฉย ๆ เพื่อไม่ให้เคอร์เซอร์กระโดดขณะพิมพ์
+      if(isSelect || el.type==='number'){
+        el.addEventListener('change', ()=>{ h(); render(); });
+      }else{
+        el.addEventListener('input', h);
+      }
     });
+
+    const doSave = ()=>{
+      persist();
+      clearTimeout(saveTimer);
+      flushSave();
+      toast('บันทึกข้อมูลเดือนนี้แล้ว');
+    };
+    const s1 = $('#savePlanMonth');  if(s1) s1.onclick = doSave;
+    const s2 = $('#savePlanMonth2'); if(s2) s2.onclick = doSave;
   }
 
   // สมาชิกทีม
@@ -2646,7 +2755,7 @@ function fillUsers(){
 const PAGE_TITLE = {
   home:'ภาพรวมหอผู้ป่วย', map:'แผนผังโซน', check5s:'ตรวจ 5ส รายสัปดาห์',
   round:'ตาราง Round 5ส', onegcl:'One G-C-L & Ethics', waste:'ค่าขยะ & รายรับ',
-  report:'สรุปรายเดือน', plan:'แผนปฏิบัติการ 4 มิติ', team:'สมาชิกทีมโซน'
+  report:'สรุปรายเดือน', plan:'แผนปฏิบัติการ (ตัวชี้วัด CQI)', team:'สมาชิกทีมโซน'
 };
 const drawer = {
   open(){ $('#side').classList.add('open'); $('#scrim').classList.add('show');
