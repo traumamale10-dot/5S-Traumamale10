@@ -503,12 +503,13 @@ const PLAN_STATUS = [
   { id:'late',  label:'ล่าช้า' }
 ];
 /* ชุดตัวชี้วัดปัจจุบัน: dimension, activity, responsible, frequency, method, source, target, dir ('higher'=ยิ่งมากยิ่งดี ค่าเริ่มต้น, 'lower'=ยิ่งน้อยยิ่งดี) */
+/* dimension, activity, responsible, frequency, method, source, target, dir, periodMode ('monthly'=กรอกครั้งเดียวต่อเดือน, ไม่ระบุ=รายสัปดาห์ 4 ครั้ง) */
 const PLAN_SEED = [
-  ['outcome','ความพึงพอใจของผู้ป่วยและญาติต่อสภาพแวดล้อมและการบริการ','ผู้ประสานงานโครงการ','สำรวจรายสัปดาห์','สำรวจความพึงพอใจ (กรอกเอง) เป้าหมายมากกว่าร้อยละ 95','',95,'higher'],
-  ['outcome','การพลัดตกหกล้มของผู้ป่วยในหอผู้ป่วย','หัวหน้าเวร','สำรวจรายสัปดาห์','นับจำนวนครั้งที่เกิดขึ้น (กรอกเอง) เป้าหมาย 0 ครั้ง','',0,'lower'],
-  ['outcome','จำนวนข้อร้องเรียนของผู้รับบริการด้านพฤติกรรมบริการ จริยธรรม และการคุ้มครองสิทธิผู้ป่วย','ผู้ประสานงานโครงการ','สำรวจรายสัปดาห์','นับจำนวนข้อร้องเรียน (กรอกเอง) เป้าหมาย 0 ครั้ง','',0,'lower'],
-  ['process','บุคลากรเข้าร่วมโครงการ','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากผู้เข้าร่วมตรวจ 5ส. และผู้ส่งบันทึก One G-C-L','onegcl_or_check5s',100,'higher'],
-  ['process','คะแนนการประเมิน 5ส. เฉลี่ยแต่ละโซน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg',85,'higher']
+  ['outcome','ความพึงพอใจของผู้ป่วยและญาติต่อสภาพแวดล้อมและการบริการ','ผู้ประสานงานโครงการ','รายเดือน','สำรวจความพึงพอใจ (กรอกเอง) เป้าหมายมากกว่าร้อยละ 95','',95,'higher','monthly'],
+  ['outcome','การพลัดตกหกล้มของผู้ป่วยในหอผู้ป่วย','หัวหน้าเวร','รายเดือน','นับจำนวนครั้งที่เกิดขึ้น (กรอกเอง) เป้าหมาย 0 ครั้ง','',0,'lower','monthly'],
+  ['outcome','จำนวนข้อร้องเรียนของผู้รับบริการด้านพฤติกรรมบริการ จริยธรรม และการคุ้มครองสิทธิผู้ป่วย','ผู้ประสานงานโครงการ','รายเดือน','นับจำนวนข้อร้องเรียน (กรอกเอง) เป้าหมาย 0 ครั้ง','',0,'lower','monthly'],
+  ['process','บุคลากรเข้าร่วมโครงการ','ผู้ประสานงานโครงการ','รายเดือน','ดึงข้อมูลอัตโนมัติจากผู้เข้าร่วมตรวจ 5ส. และผู้ส่งบันทึก One G-C-L','onegcl_or_check5s',100,'higher',''],
+  ['process','คะแนนการประเมิน 5ส. เฉลี่ยแต่ละโซน','ทีมตรวจ 5ส. ประจำสัปดาห์','รายสัปดาห์','ดึงข้อมูลอัตโนมัติจากหน้าตรวจ 5ส. รายสัปดาห์','check5s_avg',85,'higher','']
 ];
 /* แหล่งข้อมูลอัตโนมัติที่รองรับ — ดึงจากหน้า One G-C-L & Ethics (รายบุคคล/เดือน) และหน้าตรวจ 5ส. (รายสัปดาห์)
    ตัวชี้วัดผลลัพธ์ทั้ง 3 ตัว ไม่มีชีตข้อมูลรองรับในระบบ จึงต้องกรอกเอง (สำรวจรายสัปดาห์แล้วเฉลี่ย) */
@@ -976,9 +977,27 @@ function migratePlanModel(list){
   list.length = 0;
   PLAN_SEED.forEach((s,i)=>{
     list.push({ id:'p'+(i+1), dimension:s[0], activity:s[1], responsible:s[2], frequency:s[3], method:s[4],
-                active:true, source:s[5]||'', target:s[6], dir:s[7]||'higher' });
+                active:true, source:s[5]||'', target:s[6], dir:s[7]||'higher', periodMode:s[8]||'' });
   });
   return true;
+}
+/* ตัวชี้วัดผลลัพธ์ 3 ตัวนี้ปรับให้กรอกเดือนละครั้ง (ไม่ใช่รายสัปดาห์) — ใช้จับคู่ตามชื่อกิจกรรม เผื่อชีตที่ตั้งค่าไว้ก่อนหน้านี้ */
+const MONTHLY_ACTIVITY_NAMES = [
+  'ความพึงพอใจของผู้ป่วยและญาติต่อสภาพแวดล้อมและการบริการ',
+  'การพลัดตกหกล้มของผู้ป่วยในหอผู้ป่วย',
+  'จำนวนข้อร้องเรียนของผู้รับบริการด้านพฤติกรรมบริการ จริยธรรม และการคุ้มครองสิทธิผู้ป่วย'
+];
+/** ตั้ง periodMode='monthly' ให้กิจกรรมที่ชื่อตรงกับ MONTHLY_ACTIVITY_NAMES (ถ้ายังไม่ได้ตั้งไว้) คืนค่า true ถ้ามีการแก้ */
+function backfillPeriodMode(list){
+  let changed = false;
+  (list||[]).forEach(a=>{
+    if(a.periodMode!=='monthly' && MONTHLY_ACTIVITY_NAMES.includes(String(a.activity||'').trim())){
+      a.periodMode = 'monthly';
+      if(a.frequency!=='รายเดือน'){ a.frequency = 'รายเดือน'; }
+      changed = true;
+    }
+  });
+  return changed;
 }
 function normalizeDb(db){
   ['check5s','onegcl','waste'].forEach(k=>{
@@ -995,13 +1014,17 @@ function normalizeDb(db){
   db.planActivities.forEach(a=>{ if(a.active===''||a.active==null) a.active = true; });
   const migrated  = migratePlanModel(db.planActivities);
   const backfilled = backfillPlanSources(db.planActivities);
+  const monthlyFixed = backfillPeriodMode(db.planActivities);
   const added = addMissingAutoActivities(db.planActivities);
-  db._planSourceBackfilled = migrated || backfilled || added;
+  db._planSourceBackfilled = migrated || backfilled || monthlyFixed || added;
   return db;
 }
 function planActivitiesOf(dim){ return (state.db.planActivities||[]).filter(a=>a.dimension===dim); }
 function planTrackFor(activityId, per){ return (state.db.planTracking||[]).find(t=>t.activityId===activityId && t.period===per && !t.week); }
 const WEEK_LIST = [1,2,3,4];
+const MONTH_LIST = [1];
+/** จำนวน "รอบ" ที่ต้องกรอกต่อเดือนของกิจกรรม a: รายเดือน (periodMode='monthly') = กรอกครั้งเดียว, ค่าเริ่มต้น = รายสัปดาห์ 4 ครั้ง */
+function planWeeksFor(act){ return (act && act.periodMode==='monthly') ? MONTH_LIST : WEEK_LIST; }
 /** รายการบันทึกรายสัปดาห์ของกิจกรรมกรอกเอง (activityId) ในรอบเดือน per */
 function planWeeklyRows(activityId, per){
   return (state.db.planTracking||[]).filter(t=>t.activityId===activityId && t.period===per && t.week);
@@ -1017,21 +1040,22 @@ function planWeeklyAvg(activityId, per){
   const avg = scored.length ? Math.round(sum/scored.length) : null;
   return { filled: scored.length, sum, avg };
 }
-/** สรุปผลกิจกรรมกรอกเอง (รายสัปดาห์): todo=ยังไม่เริ่ม, partial=กำลังสำรวจ, achieved/notachieved=ครบ 4 สัปดาห์แล้ว
+/** สรุปผลกิจกรรมกรอกเอง: todo=ยังไม่เริ่ม, partial=กำลังสำรวจ (ยังกรอกไม่ครบจำนวนรอบของเดือน), achieved/notachieved=กรอกครบแล้ว
  *  อ่านเป้าหมาย (target) และทิศทาง (dir: 'higher' ยิ่งมากยิ่งดี ค่าเริ่มต้น, 'lower' ยิ่งน้อยยิ่งดี เช่น จำนวนครั้งพลัดตกหกล้ม/ข้อร้องเรียน) จากตัวกิจกรรมเอง
  *  ตัวชี้วัดแบบ "lower" ถือเป็นการนับจำนวนครั้งสะสมทั้งเดือน จึงเทียบจากผลรวม (sum) ไม่ใช่ค่าเฉลี่ย เพื่อไม่ให้การปัดเศษบดบังจำนวนครั้งที่เกิดขึ้นจริง */
 function planManualResult(activityId, per){
   const act = (state.db.planActivities||[]).find(x=>x.id===activityId) || {};
   const target = (act.target!=null && act.target!=='') ? Number(act.target) : 80;
   const dir = act.dir || 'higher';
+  const weeks = planWeeksFor(act);
   const avg = planWeeklyAvg(activityId, per);
   let state_ = 'todo';
-  if(avg.filled>0 && avg.filled<WEEK_LIST.length) state_ = 'partial';
-  else if(avg.filled>=WEEK_LIST.length){
+  if(avg.filled>0 && avg.filled<weeks.length) state_ = 'partial';
+  else if(avg.filled>=weeks.length){
     const ok = dir==='lower' ? avg.sum<=target : avg.avg>=target;
     state_ = ok ? 'achieved' : 'notachieved';
   }
-  return { avg, state: state_, target, dir };
+  return { avg, state: state_, target, dir, weeks };
 }
 /** สรุปความคืบหน้าของมิติ dim ในรอบเดือนที่กำลังดูอยู่: จากกิจกรรมที่ใช้งานทั้งหมด มีกี่อันที่ "ถึงเป้าหมาย/เสร็จสิ้น" แล้ว */
 /** สรุปความคืบหน้าของหมวด dim ในรอบเดือนที่กำลังดูอยู่: แยกเป็น "ถึงเป้าหมาย" กับ "มีข้อมูลแล้วแต่ยังไม่ถึงเป้า/กำลังสำรวจ"
@@ -2212,8 +2236,11 @@ function vPlan(){
         </tr>`;
       }
 
-      // กิจกรรมกรอกเอง — สำรวจรายสัปดาห์แล้วนำมาเฉลี่ย
+      // กิจกรรมกรอกเอง — รายเดือน (กรอกครั้งเดียว) หรือรายสัปดาห์ (4 ครั้ง) แล้วนำมาเฉลี่ย/รวม แล้วแต่ประเภทกิจกรรม
       const mr = planManualResult(a.id, per);
+      const isMonthly = a.periodMode==='monthly';
+      const weeks = mr.weeks;
+      const unitLabel = isMonthly ? 'เดือน' : 'สัปดาห์';
       const open = !!(state.planOpen && state.planOpen[a.id]);
       const STATE_LABEL = { todo:['ยังไม่เริ่ม','chip late'], partial:['กำลังสำรวจ','chip late'],
                              achieved:['ถึงเป้าหมาย','chip'], notachieved:['ยังไม่ถึงเป้าหมาย','chip late'] };
@@ -2222,17 +2249,19 @@ function vPlan(){
       statusCell = `<span class="${stCls}">${stLabel}</span>`;
       valueCell  = mr.avg.avg==null ? 'ยังไม่มีข้อมูล'
         : (mr.dir==='lower' ? `รวม ${mr.avg.sum} ครั้ง` : `เฉลี่ย ${mr.avg.avg}`);
-      valueCell += `<br><span style="font-size:11px;color:var(--muted)">${mr.avg.filled}/${WEEK_LIST.length} สัปดาห์ · เป้าหมาย ${targetTxt}</span>`;
-      actionCell = `<button class="btn btn-sm" data-toggle="${a.id}">${open?'▾ ซ่อนรายสัปดาห์':'▸ สำรวจรายสัปดาห์'}</button>`;
-      lastCell   = `<span style="font-size:11px;color:var(--muted)">กรอกเอง (รายสัปดาห์)</span>`;
+      valueCell += `<br><span style="font-size:11px;color:var(--muted)">${mr.avg.filled}/${weeks.length} ${unitLabel} · เป้าหมาย ${targetTxt}</span>`;
+      actionCell = isMonthly
+        ? `<button class="btn btn-sm" data-toggle="${a.id}">${open?'▾ ซ่อน':'▸ กรอกข้อมูลเดือนนี้'}</button>`
+        : `<button class="btn btn-sm" data-toggle="${a.id}">${open?'▾ ซ่อนรายสัปดาห์':'▸ สำรวจรายสัปดาห์'}</button>`;
+      lastCell   = `<span style="font-size:11px;color:var(--muted)">กรอกเอง (${isMonthly?'รายเดือน':'รายสัปดาห์'})</span>`;
 
       const weekTable = !open ? '' : `<tr data-weekrow="${a.id}"><td colspan="5" style="background:#FAFCFB;padding:10px 8px">
         <table class="tbl" style="margin:0">
-          <thead><tr><th style="width:110px">สัปดาห์</th><th style="width:110px">ค่าที่วัดได้</th><th style="text-align:left">หมายเหตุ</th><th style="width:190px">ผู้กรอก</th></tr></thead>
-          <tbody>${WEEK_LIST.map(w=>{
+          <thead><tr><th style="width:110px">${isMonthly?'เดือนนี้':'สัปดาห์'}</th><th style="width:110px">ค่าที่วัดได้</th><th style="text-align:left">หมายเหตุ</th><th style="width:190px">ผู้กรอก</th></tr></thead>
+          <tbody>${weeks.map(w=>{
             const rec = planWeeklyRec(a.id, per, w) || {};
             return `<tr>
-              <td>สัปดาห์ที่ ${w}</td>
+              <td>${isMonthly ? (TH_MONTHS[state.month-1]+' '+state.year) : ('สัปดาห์ที่ '+w)}</td>
               <td><input type="number" min="0" data-wk="${a.id}|${w}" data-wf="score" value="${esc(rec.score||'')}" style="width:80px" placeholder="${a.dir==='lower'?'ครั้ง':'%'}"></td>
               <td><input type="text" data-wk="${a.id}|${w}" data-wf="note" value="${esc(rec.note||'')}" placeholder="หมายเหตุ" style="width:100%"></td>
               <td><select data-wk="${a.id}|${w}" data-wf="doneBy">${nameOptionsHTML(rec.doneBy||'')}</select></td>
