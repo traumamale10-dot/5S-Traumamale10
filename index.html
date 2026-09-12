@@ -428,7 +428,6 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
 
     <div class="side-foot">
       <div id="connState"><span class="dot" style="background:#E6B400"></span>โหมดทดลอง (เก็บในเครื่อง)</div>
-      <div style="margin-top:8px">ผู้ใช้งาน: <b id="whoami">—</b></div>
     </div>
   </aside>
 
@@ -454,7 +453,7 @@ legend{font-weight:600;padding:0 8px;color:var(--canopy)}
         <select id="selMonth"></select>
         <select id="selYear"></select>
       </div>
-      <div class="period">
+      <div class="period" id="userField" style="display:none">
         <label for="selUser">ผู้บันทึก</label>
         <select id="selUser"></select>
       </div>
@@ -739,7 +738,11 @@ const store = {
   read(){ try{ return JSON.parse(localStorage.getItem(CFG.LS)||'null'); }catch(e){ return null; } },
   write(d){ try{ localStorage.setItem(CFG.LS, JSON.stringify(d)); }catch(e){} },
   readCfg(){ try{ return localStorage.getItem(CFG.LS+'.api')||''; }catch(e){ return ''; } },
-  writeCfg(v){ try{ localStorage.setItem(CFG.LS+'.api', v); }catch(e){} }
+  writeCfg(v){ try{ localStorage.setItem(CFG.LS+'.api', v); }catch(e){} },
+  // จำชื่อที่เลือกไว้ล่าสุดในหน้า One G-C-L ไว้ข้ามการรีเฟรชหน้าเว็บ (ก่อนหน้านี้ค่านี้อยู่ในหน่วยความจำอย่างเดียว
+  // รีเฟรชทีไรก็หลุดกลับไปเป็นคนแรกในรายชื่อทุกที ทำให้ดูเหมือนเลือกชื่อแล้ว "ไม่ติด")
+  readGclName(){ try{ return localStorage.getItem(CFG.LS+'.gclName')||''; }catch(e){ return ''; } },
+  writeGclName(v){ try{ localStorage.setItem(CFG.LS+'.gclName', v||''); }catch(e){} }
 };
 
 async function api(action, payload){
@@ -1797,7 +1800,7 @@ function vGCL(){
   const all  = rowsGCL();
   const list = all.filter(r=>!r.legacy);
 
-  const who = state.gclName || state.user || (state.db.members[0]||{}).name || '';
+  const who = state.gclName || (state.db.members[0]||{}).name || '';
   const ex  = list.find(r => r.name === who);
 
   const formHTML = `
@@ -1809,7 +1812,8 @@ function vGCL(){
 
     <div class="row">
       <div class="field"><label for="gName">ชื่อ–สกุล</label>
-        <select id="gName">${memberOptions(who)}</select></div>
+        <select id="gName">${memberOptions(who)}</select>
+        <button type="button" class="btn btn-sm" id="refreshGName" style="margin-top:6px">↻ ดึงรายชื่อใหม่จากชีต</button></div>
       <div class="field"><label for="gDate">วันที่บันทึก</label>
         <input type="date" id="gDate" value="${ex?ex.date:todayISO()}"></div>
       <div class="field"><label for="gZone">โซน</label>
@@ -2473,11 +2477,30 @@ function bind(){
     const picked = id => { const b=document.querySelector('#'+id+' button[aria-pressed="true"]'); return b?b.dataset.v:''; };
 
     // เปลี่ยนชื่อผู้บันทึกแล้วโหลดข้อมูลของคนนั้นขึ้นมาแก้ไข
+    // หมายเหตุ: ต้องรอให้ picker ของมือถือ (iOS) ปิดตัวเสร็จก่อนค่อย render ใหม่ ไม่งั้นค่าที่เพิ่งเลือกจะเด้งกลับ
     const gn = $('#gName');
-    if(gn) gn.onchange = ()=>{ state.gclName = gn.value; state.pics = {}; render(); };
+    if(gn) gn.onchange = ()=>{
+      const v = gn.value;
+      setTimeout(()=>{ state.gclName = v; store.writeGclName(v); state.pics = {}; render(); }, 0);
+    };
+
+    // ดึงรายชื่อล่าสุดจาก Google Sheet เฉพาะหน้า "บันทึก / แก้ไข" โดยไม่แตะข้อมูลอื่น (check5s, onegcl, waste ฯลฯ ที่ค้างอยู่ในหน่วยความจำ)
+    const rgn = $('#refreshGName');
+    if(rgn) rgn.onclick = async()=>{
+      rgn.disabled = true; const oldTxt = rgn.textContent; rgn.textContent = 'กำลังดึงรายชื่อ…';
+      try{
+        const d = await api('getAll', {});
+        state.db.members = (d.members||[]).filter(m=>String(m.name||'').trim());
+        toast('ดึงรายชื่อใหม่แล้ว '+state.db.members.length+' คน');
+        render();
+      }catch(e){
+        toast('ดึงรายชื่อไม่สำเร็จ: '+e.message);
+        rgn.disabled = false; rgn.textContent = oldTxt;
+      }
+    };
 
     document.querySelectorAll('[data-editg]').forEach(b=>b.onclick=()=>{
-      state.gclName = b.dataset.editg; state.gclTab='form'; state.pics={}; render();
+      state.gclName = b.dataset.editg; store.writeGclName(b.dataset.editg); state.gclTab='form'; state.pics={}; render();
     });
 
     bindPicInputs(['ethic','tree','clean','lean']);
@@ -2524,7 +2547,7 @@ function bind(){
 
     const dc = $('#delGCLcur');
     if(dc) dc.onclick = ()=>{
-      const prev = rowsGCL().find(r=>!r.legacy && r.name===(state.gclName||state.user));
+      const prev = rowsGCL().find(r=>!r.legacy && r.name===state.gclName);
       if(!prev) return;
       if(!confirm('ลบข้อมูลของเดือนนี้?')) return;
       state.db.onegcl = state.db.onegcl.filter(r=>r.id!==prev.id);
@@ -2781,12 +2804,12 @@ function fillTop(){
 }
 function fillUsers(){
   const u=$('#selUser');
+  if(!u) return;
   // ถ้าคนที่เลือกไว้ไม่มีในรายชื่อล่าสุดแล้ว ให้กลับไปใช้คนแรก
   if(state.user && !state.db.members.some(m=>m.name===state.user)) state.user = '';
   if(!state.user && state.db.members[0]) state.user = state.db.members[0].name;
   u.innerHTML = memberOptions(state.user);
-  $('#whoami').textContent = state.user.replace(/^นาง(สาว)?/,'');
-  u.onchange=()=>{ state.user=u.value; $('#whoami').textContent=state.user.replace(/^นาง(สาว)?/,''); };
+  u.onchange=()=>{ state.user=u.value; render(); };
 }
 
 const PAGE_TITLE = {
@@ -2832,6 +2855,7 @@ window.addEventListener('beforeunload', ()=>{
 
 (async function init(){
   CFG.API_URL = store.readCfg() || DEFAULT_API;
+  state.gclName = store.readGclName();   // จำชื่อที่เลือกไว้ล่าสุดในหน้า One G-C-L ข้ามการรีเฟรชหน้าเว็บ
   loadLocal();                       // แสดงข้อมูลที่แคชไว้ทันที ไม่ต้องรอเซิร์ฟเวอร์
   fillTop(); fillUsers(); render();
   setConn(null);
