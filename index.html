@@ -1800,8 +1800,14 @@ function vGCL(){
   const all  = rowsGCL();
   const list = all.filter(r=>!r.legacy);
 
-  const who = state.gclName || (state.db.members[0]||{}).name || '';
+  // อ้างอิงคนที่กำลังกรอกด้วยรหัสประจำตัว (id) แทนการเทียบชื่อเป็นตัวอักษร กันปัญหาช่องว่าง/อักขระที่พิมพ์ไม่ตรงกัน
+  const gm  = state.db.members.find(m=>m.id===state.gclId) || state.db.members[0] || null;
+  const who = gm ? gm.name : '';
   const ex  = list.find(r => r.name === who);
+
+  const gNameOptions = state.db.members.length
+    ? state.db.members.map(m=>`<option value="${esc(m.id)}" ${m.id===(gm&&gm.id)?'selected':''}>${esc(m.name)}</option>`).join('')
+    : '<option value="">— ยังไม่มีรายชื่อในชีต Members —</option>';
 
   const formHTML = `
   <div class="card">
@@ -1812,7 +1818,7 @@ function vGCL(){
 
     <div class="row">
       <div class="field"><label for="gName">ชื่อ–สกุล</label>
-        <select id="gName">${memberOptions(who)}</select>
+        <select id="gName">${gNameOptions}</select>
         <button type="button" class="btn btn-sm" id="refreshGName" style="margin-top:6px">↻ ดึงรายชื่อใหม่จากชีต</button></div>
       <div class="field"><label for="gDate">วันที่บันทึก</label>
         <input type="date" id="gDate" value="${ex?ex.date:todayISO()}"></div>
@@ -1874,7 +1880,7 @@ function vGCL(){
           <td>${r?'<span class="chip">ส่งแล้ว</span>':'<span class="chip late">ยังไม่ส่ง</span>'}</td>
           <td style="white-space:nowrap">${r?thDate(r.date):'—'}</td>
           <td style="font-size:12px">${esc(acts)||'—'}</td>
-          <td><button class="btn btn-sm" data-editg="${esc(m.name)}">${r?'แก้ไข':'บันทึก'}</button></td>
+          <td><button class="btn btn-sm" data-editg="${esc(m.id)}">${r?'แก้ไข':'บันทึก'}</button></td>
         </tr>`;
       }).join('')}</tbody></table>
       <div style="margin-top:12px"><button class="btn btn-primary btn-sm" id="printGCL">พิมพ์สรุปประจำเดือน</button></div>
@@ -1892,7 +1898,7 @@ function vGCL(){
       <td>${esc(r.lean||'—')}${r.leanSum?`<br><span class="chip">${esc(r.leanSum)}</span>`:''}</td>
       <td style="font-size:12px">${esc((r.ethic||'').split('—')[0]||'—')}</td>
       <td><div class="thumb-row">${[['ethicImg','ethicImgId'],['treeImg','treeImgId'],['cleanImg','cleanImgId'],['leanImg','leanImgId']].map(k=>thumbHTML(r[k[0]],r[k[1]])).join('')||'<span style="color:var(--muted)">—</span>'}</div></td>
-      <td style="white-space:nowrap">${r.legacy?'':`<button class="btn btn-sm" data-editg="${esc(r.name)}">แก้ไข</button> <button class="btn btn-sm" data-delg="${r.id}">ลบ</button>`}</td>
+      <td style="white-space:nowrap">${r.legacy?'':`<button class="btn btn-sm" data-editg="${esc((state.db.members.find(mm=>mm.name===r.name)||{}).id||'')}">แก้ไข</button> <button class="btn btn-sm" data-delg="${r.id}">ลบ</button>`}</td>
     </tr>`).join('')}</tbody></table>
     <div style="margin-top:12px"><button class="btn btn-primary btn-sm" id="printGCL2">พิมพ์สรุปประจำเดือน</button></div></div>`
     : `<div class="card">${emptyHTML('ยังไม่มีบันทึกในเดือนนี้','เริ่มจากแท็บ “บันทึก / แก้ไข”')}</div>`;
@@ -2476,12 +2482,17 @@ function bind(){
     document.querySelectorAll('#gclTabs button').forEach(b=>b.onclick=()=>{ state.gclTab=b.dataset.t; state.pics={}; render(); });
     const picked = id => { const b=document.querySelector('#'+id+' button[aria-pressed="true"]'); return b?b.dataset.v:''; };
 
-    // เปลี่ยนชื่อผู้บันทึกแล้วโหลดข้อมูลของคนนั้นขึ้นมาแก้ไข
-    // หมายเหตุ: ต้องรอให้ picker ของมือถือ (iOS) ปิดตัวเสร็จก่อนค่อย render ใหม่ ไม่งั้นค่าที่เพิ่งเลือกจะเด้งกลับ
+    // เปลี่ยนชื่อผู้บันทึกแล้วโหลดข้อมูลของคนนั้นขึ้นมาแก้ไข (อ้างอิงด้วยรหัสประจำตัว ไม่ใช่ชื่อ)
     const gn = $('#gName');
     if(gn) gn.onchange = ()=>{
-      const v = gn.value;
-      setTimeout(()=>{ state.gclName = v; store.writeGclName(v); state.pics = {}; render(); }, 0);
+      try{
+        state.gclId = gn.value;
+        store.writeGclName(gn.value);
+        state.pics = {};
+        render();
+      }catch(e){
+        toast('เกิดข้อผิดพลาดตอนเปลี่ยนชื่อ: '+e.message);
+      }
     };
 
     // ดึงรายชื่อล่าสุดจาก Google Sheet เฉพาะหน้า "บันทึก / แก้ไข" โดยไม่แตะข้อมูลอื่น (check5s, onegcl, waste ฯลฯ ที่ค้างอยู่ในหน่วยความจำ)
@@ -2500,14 +2511,16 @@ function bind(){
     };
 
     document.querySelectorAll('[data-editg]').forEach(b=>b.onclick=()=>{
-      state.gclName = b.dataset.editg; store.writeGclName(b.dataset.editg); state.gclTab='form'; state.pics={}; render();
+      state.gclId = b.dataset.editg; store.writeGclName(b.dataset.editg); state.gclTab='form'; state.pics={}; render();
     });
 
     bindPicInputs(['ethic','tree','clean','lean']);
 
     const sv = $('#saveGCL');
     if(sv) sv.onclick = async()=>{
-      const who  = $('#gName').value;
+      const gid  = $('#gName').value;
+      const gmem = state.db.members.find(m=>m.id===gid) || {};
+      const who  = gmem.name || '';
       const date = $('#gDate').value || todayISO();
       const prev = rowsGCL().find(r=>!r.legacy && r.name===who);
       const rec  = Object.assign({}, prev || { id: uid() });
@@ -2519,7 +2532,7 @@ function bind(){
         tree: $('#gTree').value.trim(),
         clean: $('#gClean').value.trim(), cleanSum: picked('gCleanSum'),
         lean: $('#gLean').value.trim(),  leanSum: picked('gLeanSum'),
-        email:(state.db.members.find(m=>m.name===who)||{}).email||''
+        email: gmem.email||''
       });
 
       const hasPic = Object.keys(state.pics).length;
@@ -2547,7 +2560,8 @@ function bind(){
 
     const dc = $('#delGCLcur');
     if(dc) dc.onclick = ()=>{
-      const prev = rowsGCL().find(r=>!r.legacy && r.name===state.gclName);
+      const gmem = state.db.members.find(m=>m.id===state.gclId) || {};
+      const prev = rowsGCL().find(r=>!r.legacy && r.name===gmem.name);
       if(!prev) return;
       if(!confirm('ลบข้อมูลของเดือนนี้?')) return;
       state.db.onegcl = state.db.onegcl.filter(r=>r.id!==prev.id);
@@ -2855,7 +2869,7 @@ window.addEventListener('beforeunload', ()=>{
 
 (async function init(){
   CFG.API_URL = store.readCfg() || DEFAULT_API;
-  state.gclName = store.readGclName();   // จำชื่อที่เลือกไว้ล่าสุดในหน้า One G-C-L ข้ามการรีเฟรชหน้าเว็บ
+  state.gclId = store.readGclName();   // จำคนที่เลือกไว้ล่าสุดในหน้า One G-C-L (เก็บเป็นรหัสประจำตัว) ข้ามการรีเฟรชหน้าเว็บ
   loadLocal();                       // แสดงข้อมูลที่แคชไว้ทันที ไม่ต้องรอเซิร์ฟเวอร์
   fillTop(); fillUsers(); render();
   setConn(null);
